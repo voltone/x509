@@ -2,6 +2,7 @@ defmodule X509.ASN1 do
   @moduledoc false
 
   require Record
+  alias X509.ASN1.OIDImport
 
   # Records to import from :public_key's HRL files, and their snake-case names
   @records [
@@ -71,8 +72,8 @@ defmodule X509.ASN1 do
   def null, do: open_type(<<5, 0>>)
 
   # OIDs taken from :public_key's header files
-  @oids X509.ASN1.OIDImport.from_lib("public_key/include/OTP-PUB-KEY.hrl") ++
-          X509.ASN1.OIDImport.from_lib("public_key/include/PKCS-FRAME.hrl")
+  @oids OIDImport.from_lib("public_key/include/OTP-PUB-KEY.hrl") ++
+          OIDImport.from_lib("public_key/include/PKCS-FRAME.hrl")
 
   # OIDs defined as macros, so they may be used in pattern matching
   for {name, oid} <- @oids do

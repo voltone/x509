@@ -152,9 +152,9 @@ defmodule X509.PublicKey do
   @doc """
   Converts a public key to DER (binary) format.
 
-  Options:
+  ## Options:
 
-    * `wrap` - Wrap the private key in a SubjectPublicKeyInfo container
+    * `:wrap` - Wrap the private key in a SubjectPublicKeyInfo container
       (default: `false`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
@@ -172,11 +172,11 @@ defmodule X509.PublicKey do
   @doc """
   Converts a public key to PEM format.
 
-  Options:
+  ## Options:
 
-    * `wrap` - Wrap the private key in a SubjectPublicKeyInfo container; for
+    * `:wrap` - Wrap the private key in a SubjectPublicKeyInfo container; for
       RSA public keys this defaults to `false`, but for EC public keys this
-      option is ingored and the key is always exported in SubjectPublicKeyInfo
+      option is ignored and the key is always exported in SubjectPublicKeyInfo
       format
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()

@@ -13,6 +13,8 @@ defmodule X509.ASN1.OIDImport do
     |> get_oids()
   end
 
+  # Parse an Erlang header file without preprocessing, and extract any OID
+  # definitions
   defp get_oids(file) do
     case :epp_dodger.parse_file(file) do
       {:ok, tree} ->

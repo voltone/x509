@@ -5,8 +5,8 @@ defmodule X509.PublicKeyTest do
   doctest X509.PublicKey
 
   setup_all do
-    rsa = X509.PrivateKey.new(:rsa, 512)
-    ec = X509.PrivateKey.new(:ec, :secp256k1)
+    rsa = X509.PrivateKey.new_rsa(512)
+    ec = X509.PrivateKey.new_ec(:secp256k1)
 
     [
       rsa_key: rsa,

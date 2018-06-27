@@ -2,16 +2,16 @@ defmodule X509 do
   @moduledoc """
   This top-level module includes generic, entity-independent conversion
   functions to/from DER and PEM format.
+
+  Note that the `X509.PublicKey` and `X509.PrivateKey` modules offer
+  specialized implementations of these functions for dealing with public and
+  private keys, respectively.
   """
 
   @doc """
   Converts an X.509 or related record to DER (binary) format.
-
-  Note that the `X509.PublicKey` and `X509.PrivateKey` modules offer
-  specialized implementations of this function that accept additional options
-  relevant to public and private keys, respectively.
   """
-  @spec to_der(term()) :: binary()
+  @spec to_der(tuple()) :: binary()
   def to_der(entity) when is_tuple(entity) do
     entity
     |> elem(0)
@@ -20,10 +20,6 @@ defmodule X509 do
 
   @doc """
   Converts an X.509 or related record to PEM format.
-
-  Note that the `X509.PublicKey` and `X509.PrivateKey` modules offer
-  specialized implementations of this function that accept additional options
-  relevant to public and private keys, respectively.
   """
   @spec to_pem(tuple()) :: String.t()
   def to_pem(entity) when is_tuple(entity) do
@@ -36,12 +32,8 @@ defmodule X509 do
 
   @doc """
   Decodes an X.509 or related record in DER (binary) format.
-
-  Note that the `X509.PublicKey` and `X509.PrivateKey` modules offer
-  specialized implementations of this function that accept additional options
-  relevant to public and private keys, respectively.
   """
-  @spec from_der(binary(), :public_key.pki_asn1_type()) :: term()
+  @spec from_der(binary(), :public_key.pki_asn1_type()) :: tuple()
   def from_der(der, type) when is_binary(der) and is_atom(type) do
     :public_key.der_decode(type, der)
   end
@@ -52,13 +44,10 @@ defmodule X509 do
   An optional list of data types may be specified to filter the result down
   to entries of the given types. If an empty list is specified (the default),
   the results are not filtered.
-
-  Note that the `X509.PublicKey` and `X509.PrivateKey` modules offer
-  specialized implementations of this function that accept additional options
-  relevant to public and private keys, respectively.
   """
-  @spec from_pem(String.t(), :public_key.pki_asn1_type() | [:public_key.pki_asn1_type()]) ::
-          term()
+  @spec from_pem(String.t(), :public_key.pki_asn1_type() | [:public_key.pki_asn1_type()]) :: [
+          tuple()
+        ]
   def from_pem(pem, types \\ [])
 
   def from_pem(pem, []) when is_binary(pem) do

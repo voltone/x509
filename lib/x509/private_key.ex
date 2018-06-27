@@ -2,7 +2,7 @@ defmodule X509.PrivateKey do
   import X509.ASN1
 
   @moduledoc """
-  Functions for generating, reading and writing RSA and EC key pairs.
+  Functions for generating, reading and writing RSA and EC private keys.
   """
 
   @typedoc "RSA or EC private key"
@@ -11,28 +11,29 @@ defmodule X509.PrivateKey do
   @default_e 65537
 
   @doc """
-  Generates a new private key of the given type.
+  Generates a new private RSA private key. To derive the public key, use
+  `X509.PublicKey.derive/1`.
 
-  If the type is `:rsa`, the key length in bits must be specified as an
-  integer of 256 or higher. The default exponent of #{@default_e} can be
-  overridden using the `:exponent` option. Warning: the custom exponent value
-  is not checked for safety!
+  The key length in bits must be specified as an integer (minimum 256 bits).
+  The default exponent of #{@default_e} can be overridden using the `:exponent`
+  option. Warning: the custom exponent value is not checked for safety!
 
-  If the type is `:ec`, the second parameter must specify a named curve. The
-  curve can be specified as an atom or an OID tuple.
-
-  To derive the public key, use `X509.PublicKey.derive/1`.
   """
-  @spec new(:rsa, non_neg_integer(), Keyword.t()) :: :public_key.rsa_private_key()
-  @spec new(:ec, :crypto.ec_named_curve() | :public_key.oid()) :: :public_key.ec_private_key()
-  def new(type, subtype, opts \\ [])
-
-  def new(:rsa, keysize, opts) when is_integer(keysize) and keysize >= 256 do
+  @spec new_rsa(non_neg_integer(), Keyword.t()) :: :public_key.rsa_private_key()
+  def new_rsa(keysize, opts \\ []) when is_integer(keysize) and keysize >= 256 do
     e = Keyword.get(opts, :exponent, @default_e)
     :public_key.generate_key({:rsa, keysize, e})
   end
 
-  def new(:ec, curve, []) when is_atom(curve) or is_tuple(curve) do
+  @doc """
+  Generates a new private EC private key. To derive the public key, use
+  `X509.PublicKey.derive/1`.
+
+  The second parameter must specify a named curve. The curve can be specified
+  as an atom or an OID tuple.
+  """
+  @spec new_ec(:crypto.ec_named_curve() | :public_key.oid()) :: :public_key.ec_private_key()
+  def new_ec(curve) when is_atom(curve) or is_tuple(curve) do
     :public_key.generate_key({:namedCurve, curve})
   end
 
@@ -87,9 +88,9 @@ defmodule X509.PrivateKey do
   @doc """
   Converts a private key to DER (binary) format.
 
-  Options:
+  ## Options:
 
-    * `wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
+    * `:wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
       (default: `false`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
@@ -107,10 +108,10 @@ defmodule X509.PrivateKey do
   @doc """
   Converts a private key to PEM format.
 
-  Options:
+  ## Options:
 
-    * `wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
-      (default: false)
+    * `:wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
+      (default: `false`)
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
   def to_pem(private_key, opts \\ []) do
@@ -152,8 +153,14 @@ defmodule X509.PrivateKey do
 
   If the data cannot be parsed as a supported private key type, `nil` is
   returned.
+
+  ## Options:
+
+    * `:password` - the password used to decrypt an encrypted private key; may
+      be specified as a string or a charlist
+
   """
-  @spec from_pem(String.t(), Keyword.t()) :: t()
+  @spec from_pem(String.t(), Keyword.t()) :: t() | nil
   def from_pem(pem, opts \\ []) do
     pem
     |> :public_key.pem_decode()

@@ -7,15 +7,15 @@ defmodule X509.PrivateKeyTest do
   @otp_release :erlang.system_info(:otp_release) |> List.to_integer()
 
   setup_all do
-    [rsa_key: new(:rsa, 512), ec_key: new(:ec, :secp256k1)]
+    [rsa_key: new_rsa(512), ec_key: new_ec(:secp256k1)]
   end
 
   describe "RSA" do
     test "new" do
-      assert match?(rsa_private_key(), new(:rsa, 512))
-      assert match?(rsa_private_key(), new(:rsa, 2048, exponent: 17))
+      assert match?(rsa_private_key(), new_rsa(512))
+      assert match?(rsa_private_key(), new_rsa(2048, exponent: 17))
 
-      assert_raise(FunctionClauseError, fn -> new(:rsa, 192) end)
+      assert_raise(FunctionClauseError, fn -> new_rsa(192) end)
     end
 
     test "wrap and unwrap", context do
@@ -64,10 +64,10 @@ defmodule X509.PrivateKeyTest do
 
   describe "EC" do
     test "new" do
-      assert match?(ec_private_key(), new(:ec, :secp256k1))
-      assert match?(ec_private_key(), new(:ec, oid(:secp256k1)))
+      assert match?(ec_private_key(), new_ec(:secp256k1))
+      assert match?(ec_private_key(), new_ec(oid(:secp256k1)))
 
-      assert_raise(FunctionClauseError, fn -> new(:ec, :no_such_curve) end)
+      assert_raise(FunctionClauseError, fn -> new_ec(:no_such_curve) end)
     end
 
     test "wrap and unwrap", context do
