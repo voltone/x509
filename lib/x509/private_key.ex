@@ -14,14 +14,12 @@ defmodule X509.PrivateKey do
   Generates a new private key of the given type.
 
   If the type is `:rsa`, the key length in bits must be specified as an
-  integer of 256 or higher. Note that RSA key generation requires Erlang/OTP
-  20 or later.
-
-  The default exponent of #{@default_e} can be overridden using the `:exponent`
-  option. Warning: the custom exponent value is not checked for safety!
+  integer of 256 or higher. The default exponent of #{@default_e} can be
+  overridden using the `:exponent` option. Warning: the custom exponent value
+  is not checked for safety!
 
   If the type is `:ec`, the second parameter must specify a named curve. The
-  curve can be specified as an atom (OTP 20 or later) or an OID tuple.
+  curve can be specified as an atom or an OID tuple.
 
   To derive the public key, use `X509.PublicKey.derive/1`.
   """
