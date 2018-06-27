@@ -21,7 +21,7 @@ defmodule X509.PrivateKeyTest do
          219_161_162_109_175_029_122_928_556_460_042_143_835,
          171_557_237_711_815_247_951_042_605_366_815_049_555,
          271_299_031_718_718_009_562_995_406_017_567_663_068, :asn1_NOVALUE},
-        ec_key: new(:ec, :secp256k1)
+        ec_key: new(:ec, oid(:secp256k1))
       ]
     end
   end
@@ -82,8 +82,11 @@ defmodule X509.PrivateKeyTest do
 
   describe "EC" do
     test "new" do
-      assert match?(ec_private_key(), new(:ec, :secp256k1))
-      assert match?(ec_private_key(), new(:ec, {1, 3, 132, 0, 10}))
+      if @otp_release >= 20 do
+        assert match?(ec_private_key(), new(:ec, :secp256k1))
+      end
+
+      assert match?(ec_private_key(), new(:ec, oid(:secp256k1)))
 
       assert_raise(FunctionClauseError, fn -> new(:ec, :no_such_curve) end)
     end

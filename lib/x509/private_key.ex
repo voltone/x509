@@ -21,9 +21,7 @@ defmodule X509.PrivateKey do
   option. Warning: the custom exponent value is not checked for safety!
 
   If the type is `:ec`, the second parameter must specify a named curve. The
-  curve can be specified as an atom or an OID tuple. Please use
-  `:crypto.ec_curves/0` to obtain a list of named curves supported by the
-  Erlang/OTP runtime.
+  curve can be specified as an atom (OTP 20 or later) or an OID tuple.
 
   To derive the public key, use `X509.PublicKey.derive/1`.
   """
