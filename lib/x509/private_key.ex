@@ -162,7 +162,14 @@ defmodule X509.PrivateKey do
     |> Enum.filter(&(elem(&1, 0) in [:RSAPrivateKey, :ECPrivateKey, :PrivateKeyInfo]))
     |> case do
       [{_, _, :not_encrypted} = entry] ->
-        :public_key.pem_entry_decode(entry)
+        case :public_key.pem_entry_decode(entry) do
+          # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
+          private_key_info() = pki ->
+            unwrap(pki)
+
+          private_key ->
+            private_key
+        end
 
       [{_, _, _encryption} = entry] ->
         password =
@@ -170,7 +177,14 @@ defmodule X509.PrivateKey do
           |> Keyword.fetch!(:password)
           |> to_charlist()
 
-        :public_key.pem_entry_decode(entry, password)
+        case :public_key.pem_entry_decode(entry, password) do
+          # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
+          private_key_info() = pki ->
+            unwrap(pki)
+
+          private_key ->
+            private_key
+        end
 
       _ ->
         nil
