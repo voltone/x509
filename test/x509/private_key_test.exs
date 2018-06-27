@@ -7,15 +7,33 @@ defmodule X509.PrivateKeyTest do
   @otp_release :erlang.system_info(:otp_release) |> List.to_integer()
 
   setup_all do
-    [rsa_key: new(:rsa, 512), ec_key: new(:ec, :secp256k1)]
+    if @otp_release >= 20 do
+      [rsa_key: new(:rsa, 512), ec_key: new(:ec, :secp256k1)]
+    else
+      # OTP 19 cannot generate RSA keys
+      [
+        {:RSAPrivateKey, :"two-prime",
+         84_597_038_066_613_188_910_836_752_703_058_693_414_615_826_046_559_107_650_341_123_593_624_059_067_749,
+         3,
+         56_398_025_377_742_125_940_557_835_135_372_462_276_019_832_297_885_081_489_820_111_233_922_515_518_443,
+         328_741_743_163_762_543_684_392_834_690_063_215_753,
+         257_335_856_567_722_871_926_563_908_050_222_574_333,
+         219_161_162_109_175_029_122_928_556_460_042_143_835,
+         171_557_237_711_815_247_951_042_605_366_815_049_555,
+         271_299_031_718_718_009_562_995_406_017_567_663_068, :asn1_NOVALUE},
+        ec_key: new(:ec, :secp256k1)
+      ]
+    end
   end
 
   describe "RSA" do
-    test "new" do
-      assert match?(rsa_private_key(), new(:rsa, 512))
-      assert match?(rsa_private_key(), new(:rsa, 2048, exponent: 17))
+    if @otp_release >= 20 do
+      test "new" do
+        assert match?(rsa_private_key(), new(:rsa, 512))
+        assert match?(rsa_private_key(), new(:rsa, 2048, exponent: 17))
 
-      assert_raise(FunctionClauseError, fn -> new(:rsa, 192) end)
+        assert_raise(FunctionClauseError, fn -> new(:rsa, 192) end)
+      end
     end
 
     test "wrap and unwrap", context do
