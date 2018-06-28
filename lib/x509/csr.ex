@@ -34,7 +34,7 @@ defmodule X509.CSR do
   include `:md5` (RSA only) and `:sha`. The use of these algorithms is
   discouraged.
   """
-  @spec new(X509.PrivateKey.t(), X509.name(), Keyword.t()) :: t()
+  @spec new(X509.PrivateKey.t(), String.t() | X509.RDNSequence.t(), Keyword.t()) :: t()
   def new(private_key, subject, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
 
