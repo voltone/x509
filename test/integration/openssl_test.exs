@@ -52,6 +52,30 @@ defmodule X509.OpenSSLTest do
       assert openssl(["ec", "-pubin", "-in", pem_file, "-text", "-noout"]) =~
                "ASN1 OID: secp256k1"
     end
+
+    test "OpenSSL can read CSRs (RSA)" do
+      pem_file =
+        X509.PrivateKey.new_rsa(2048)
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
+        |> write_tmp_pem()
+
+      openssl_out = openssl(["req", "-in", pem_file, "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
+      assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
+    end
+
+    test "OpenSSL can read CSRs (ECDSA)" do
+      pem_file =
+        X509.PrivateKey.new_ec(:secp256k1)
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
+        |> write_tmp_pem()
+
+      openssl_out = openssl(["req", "-in", pem_file, "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
+      assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
+    end
   end
 
   describe "DER encode" do
@@ -93,6 +117,30 @@ defmodule X509.OpenSSLTest do
 
       assert openssl(["ec", "-pubin", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
                "ASN1 OID: secp256k1"
+    end
+
+    test "OpenSSL can read CSRs (RSA)" do
+      pem_file =
+        X509.PrivateKey.new_rsa(2048)
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
+        |> write_tmp_der()
+
+      openssl_out = openssl(["req", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
+      assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
+    end
+
+    test "OpenSSL can read CSRs (ECDSA)" do
+      pem_file =
+        X509.PrivateKey.new_ec(:secp256k1)
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
+        |> write_tmp_der()
+
+      openssl_out = openssl(["req", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
+      assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
     end
   end
 
