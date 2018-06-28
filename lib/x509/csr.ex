@@ -14,7 +14,7 @@ defmodule X509.CSR do
   @typedoc """
   `:CertificationRequest` record , as used in Erlang's `:public_key` module
   """
-  @opaque t :: X509.ASN.record(:certification_request)
+  @opaque t :: X509.ASN1.record(:certification_request)
 
   # CertificationRequest record version
   @version :v1
