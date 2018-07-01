@@ -71,11 +71,11 @@ defmodule X509.PublicKey do
           algorithm: oid(:rsaEncryption),
           parameters: :NULL
         ),
-      subjectPublicKey: :public_key.der_encode(:RSAPublicKey, public_key)
+      subjectPublicKey: public_key
     )
   end
 
-  def wrap({ec_point(point: public_key), parameters}, :OTPSubjectPublicKeyInfo) do
+  def wrap({ec_point() = public_key, parameters}, :OTPSubjectPublicKeyInfo) do
     otp_subject_public_key_info(
       algorithm:
         public_key_algorithm(
@@ -127,10 +127,10 @@ defmodule X509.PublicKey do
   def unwrap(otp_subject_public_key_info(algorithm: algorithm, subjectPublicKey: public_key)) do
     case algorithm do
       public_key_algorithm(algorithm: oid(:rsaEncryption)) ->
-        :public_key.der_decode(:RSAPublicKey, public_key)
+        public_key
 
       public_key_algorithm(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
-        {ec_point(point: public_key), parameters}
+        {public_key, parameters}
     end
   end
 
