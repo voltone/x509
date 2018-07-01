@@ -139,7 +139,7 @@ defmodule X509.RDNSequence do
   Converts an `:rdnSquence` tuple to a human readable string, in hierarchical
   format.
 
-  ## Examples
+  ## Examples:
 
       iex> X509.RDNSequence.new("C=CN, givenName=麗") |> X509.RDNSequence.to_string
       "/C=CN/GN=麗"
