@@ -215,7 +215,7 @@ defmodule X509.Certificate do
         plain_ski ->
           plain_ski
           |> :pubkey_cert_records.transform(:decode)
-          |> extension(:extnValue)
+          |> X509.ASN1.extension(:extnValue)
       end
 
     update_aki(template, aki)
