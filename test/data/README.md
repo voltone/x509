@@ -67,3 +67,12 @@ Generating DER output:
 openssl req -in csr_rsa.pem -out csr_rsa.der -outform der
 openssl req -in csr_prime256v1.pem -out csr_prime256v1.der -outform der
 ```
+
+## Certificates
+
+Generating PEM output:
+
+```bash
+openssl req -new -key rsa.pem -days 365 -x509 -subj "/C=US/ST=NT/L=Springfield/O=ACME Inc." -out selfsigned_rsa.pem
+openssl req -new -key prime256v1.pem -days 365 -x509 -subj "/C=US/ST=NT/L=Springfield/O=ACME Inc." -out selfsigned_prime256v1.pem
+```

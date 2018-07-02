@@ -38,17 +38,7 @@ defmodule X509.CSR do
   def new(private_key, subject, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
 
-    algorithm =
-      case private_key do
-        rsa_private_key() ->
-          sign_type(hash, :rsa)
-
-        ec_private_key() ->
-          sign_type(hash, :ecdsa)
-
-        private_key ->
-          raise ArgumentError, "Invalid private key: #{inspect(private_key)}"
-      end
+    algorithm = sign_type(hash, private_key)
 
     # Convert subject to RDNSequence, if necessary
     subject_rdn_sequence =
@@ -122,6 +112,14 @@ defmodule X509.CSR do
   # Returns a :CertificationRequest_signatureAlgorithm record for the given
   # public key type and hash algorithm; this is essentially the reverse
   # of `:public_key.pkix_sign_types/1`
+  defp sign_type(hash, rsa_private_key()) do
+    sign_type(hash, :rsa)
+  end
+
+  defp sign_type(hash, ec_private_key()) do
+    sign_type(hash, :ecdsa)
+  end
+
   defp sign_type(:md5, :rsa) do
     certification_request_signature_algorithm(
       algorithm: oid(:md5WithRSAEncryption),

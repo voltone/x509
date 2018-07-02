@@ -34,7 +34,9 @@ defmodule X509.ASN1 do
     certification_request_signature_algorithm: :CertificationRequest_signatureAlgorithm,
 
     # Certificates
+    certificate: :Certificate,
     otp_certificate: :OTPCertificate,
+    tbs_certificate: :TBSCertificate,
     otp_tbs_certificate: :OTPTBSCertificate,
     signature_algorithm: :SignatureAlgorithm,
     validity: :Validity,

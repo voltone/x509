@@ -11,7 +11,7 @@ defmodule X509.MixProject do
       name: "X509",
       description: description(),
       package: package(),
-      docs: [main: X509],
+      docs: docs(),
       source_url: "https://github.com/voltone/x509"
     ]
   end
@@ -41,6 +41,13 @@ defmodule X509.MixProject do
       maintainers: ["Bram Verburg"],
       licenses: ["BSD 3-Clause"],
       links: %{"GitHub" => "https://github.com/voltone/x509"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md"]
     ]
   end
 end

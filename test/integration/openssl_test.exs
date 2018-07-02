@@ -78,6 +78,44 @@ defmodule X509.OpenSSLTest do
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
     end
+
+    test "OpenSSL can read certificates (RSA)" do
+      pem_file =
+        X509.PrivateKey.new_rsa(2048)
+        |> X509.Certificate.self_signed(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+          extensions: [
+            subject_alt_name:
+              X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
+          ]
+        )
+        |> write_tmp_pem()
+
+      openssl_out = openssl(["x509", "-in", pem_file, "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
+      assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
+      assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
+    end
+
+    test "OpenSSL can read certificates (ECDSA)" do
+      pem_file =
+        X509.PrivateKey.new_ec(:secp256r1)
+        |> X509.Certificate.self_signed(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+          extensions: [
+            subject_alte_name:
+              X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
+          ]
+        )
+        |> write_tmp_pem()
+
+      openssl_out = openssl(["x509", "-in", pem_file, "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
+      assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
+      assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
+    end
   end
 
   describe "DER encode" do
@@ -149,6 +187,44 @@ defmodule X509.OpenSSLTest do
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
+    end
+
+    test "OpenSSL can read certificates (RSA)" do
+      pem_file =
+        X509.PrivateKey.new_rsa(2048)
+        |> X509.Certificate.self_signed(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+          extensions: [
+            subject_alt_name:
+              X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
+          ]
+        )
+        |> write_tmp_der()
+
+      openssl_out = openssl(["x509", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
+      assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
+      assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
+    end
+
+    test "OpenSSL can read certificates (ECDSA)" do
+      pem_file =
+        X509.PrivateKey.new_ec(:secp256r1)
+        |> X509.Certificate.self_signed(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+          extensions: [
+            subject_alt_name:
+              X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
+          ]
+        )
+        |> write_tmp_der()
+
+      openssl_out = openssl(["x509", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
+      assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
+      assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
     end
   end
 
