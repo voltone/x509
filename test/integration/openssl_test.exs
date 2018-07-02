@@ -59,7 +59,8 @@ defmodule X509.OpenSSLTest do
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
         |> write_tmp_pem()
 
-      openssl_out = openssl(["req", "-in", pem_file, "-text", "-noout"])
+      openssl_out = openssl(["req", "-verify", "-in", pem_file, "-text", "-noout"])
+      assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
@@ -71,7 +72,8 @@ defmodule X509.OpenSSLTest do
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
         |> write_tmp_pem()
 
-      openssl_out = openssl(["req", "-in", pem_file, "-text", "-noout"])
+      openssl_out = openssl(["req", "-verify", "-in", pem_file, "-text", "-noout"])
+      assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
@@ -125,7 +127,10 @@ defmodule X509.OpenSSLTest do
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
         |> write_tmp_der()
 
-      openssl_out = openssl(["req", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      openssl_out =
+        openssl(["req", "-verify", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+
+      assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
@@ -137,7 +142,10 @@ defmodule X509.OpenSSLTest do
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
         |> write_tmp_der()
 
-      openssl_out = openssl(["req", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      openssl_out =
+        openssl(["req", "-verify", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+
+      assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
