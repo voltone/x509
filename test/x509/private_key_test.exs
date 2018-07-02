@@ -7,7 +7,7 @@ defmodule X509.PrivateKeyTest do
   @otp_release :erlang.system_info(:otp_release) |> List.to_integer()
 
   setup_all do
-    [rsa_key: new_rsa(512), ec_key: new_ec(:secp256k1)]
+    [rsa_key: new_rsa(512), ec_key: new_ec(:secp256r1)]
   end
 
   describe "RSA" do
@@ -64,8 +64,8 @@ defmodule X509.PrivateKeyTest do
 
   describe "EC" do
     test "new" do
-      assert match?(ec_private_key(), new_ec(:secp256k1))
-      assert match?(ec_private_key(), new_ec(oid(:secp256k1)))
+      assert match?(ec_private_key(), new_ec(:secp256r1))
+      assert match?(ec_private_key(), new_ec(oid(:secp256r1)))
 
       assert_raise(FunctionClauseError, fn -> new_ec(:no_such_curve) end)
     end
@@ -76,20 +76,20 @@ defmodule X509.PrivateKeyTest do
     end
 
     test "PEM decode and encode", context do
-      pem = File.read!("test/data/secp256k1.pem")
+      pem = File.read!("test/data/prime256v1.pem")
       assert match?(ec_private_key(), from_pem(pem))
 
       assert context.ec_key == context.ec_key |> to_pem() |> from_pem()
 
-      pem_des3 = File.read!("test/data/secp256k1_des3.pem")
+      pem_des3 = File.read!("test/data/prime256v1_des3.pem")
       assert match?(ec_private_key(), from_pem(pem_des3, password: "secret"))
 
-      pem_aes = File.read!("test/data/secp256k1_aes.pem")
+      pem_aes = File.read!("test/data/prime256v1_aes.pem")
       assert match?(ec_private_key(), from_pem(pem_aes, password: "secret"))
     end
 
     test "PKCS8 PEM decode and encode", context do
-      pem = File.read!("test/data/secp256k1_pkcs8.pem")
+      pem = File.read!("test/data/prime256v1_pkcs8.pem")
       assert match?(ec_private_key(), from_pem(pem))
 
       if @otp_release >= 21 do
@@ -99,13 +99,13 @@ defmodule X509.PrivateKeyTest do
     end
 
     test "DER decode and encode" do
-      der = File.read!("test/data/secp256k1.der")
+      der = File.read!("test/data/prime256v1.der")
       assert match?(ec_private_key(), from_der(der))
       assert der == der |> from_der() |> to_der()
     end
 
     test "PKCS8 DER decode and encode" do
-      der = File.read!("test/data/secp256k1_pkcs8.der")
+      der = File.read!("test/data/prime256v1_pkcs8.der")
       assert match?(ec_private_key(), from_der(der))
       assert der == der |> from_der() |> to_der(wrap: true)
     end

@@ -6,7 +6,7 @@ defmodule X509.PublicKeyTest do
 
   setup_all do
     rsa = X509.PrivateKey.new_rsa(512)
-    ec = X509.PrivateKey.new_ec(:secp256k1)
+    ec = X509.PrivateKey.new_ec(:secp256r1)
 
     [
       rsa_key: rsa,
@@ -92,7 +92,7 @@ defmodule X509.PublicKeyTest do
     end
 
     test "PEM decode and encode", context do
-      pem = File.read!("test/data/secp256k1_pub.pem")
+      pem = File.read!("test/data/prime256v1_pub.pem")
       assert match?({ec_point(), _}, from_pem(pem))
 
       assert context.ec_pub == context.ec_pub |> to_pem() |> from_pem()
@@ -102,7 +102,7 @@ defmodule X509.PublicKeyTest do
     end
 
     test "DER decode and encode" do
-      der = File.read!("test/data/secp256k1_pub.der")
+      der = File.read!("test/data/prime256v1_pub.der")
       assert match?({ec_point(), _}, from_der(der))
       assert der == der |> from_der() |> to_der()
     end

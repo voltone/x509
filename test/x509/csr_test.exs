@@ -7,7 +7,7 @@ defmodule X509.CSRTest do
   setup_all do
     [
       rsa_key: X509.PrivateKey.new_rsa(512),
-      ec_key: X509.PrivateKey.new_ec(:secp256k1)
+      ec_key: X509.PrivateKey.new_ec(:secp256r1)
     ]
   end
 
@@ -73,7 +73,7 @@ defmodule X509.CSRTest do
     end
 
     test "PEM decode and encode" do
-      pem = File.read!("test/data/csr_secp256k1.pem")
+      pem = File.read!("test/data/csr_prime256v1.pem")
       csr = X509.from_pem(pem) |> hd
       assert match?(certification_request(), csr)
       assert X509.CSR.valid?(csr)
@@ -82,7 +82,7 @@ defmodule X509.CSRTest do
     end
 
     test "DER decode and encode" do
-      der = File.read!("test/data/csr_secp256k1.der")
+      der = File.read!("test/data/csr_prime256v1.der")
       assert match?(certification_request(), X509.from_der(der, :CertificationRequest))
       assert der == der |> X509.from_der(:CertificationRequest) |> X509.to_der()
     end

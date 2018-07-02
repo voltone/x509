@@ -36,21 +36,21 @@ defmodule X509.OpenSSLTest do
 
     test "OpenSSL can read EC private keys" do
       pem_file =
-        X509.PrivateKey.new_ec(:secp256k1)
+        X509.PrivateKey.new_ec(:secp256r1)
         |> write_tmp_pem()
 
-      assert openssl(["ec", "-in", pem_file, "-text", "-noout"]) =~ "ASN1 OID: secp256k1"
+      assert openssl(["ec", "-in", pem_file, "-text", "-noout"]) =~ "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read EC public keys" do
       pem_file =
-        X509.PrivateKey.new_ec(:secp256k1)
+        X509.PrivateKey.new_ec(:secp256r1)
         |> X509.PublicKey.derive()
         |> X509.PublicKey.wrap()
         |> write_tmp_pem()
 
       assert openssl(["ec", "-pubin", "-in", pem_file, "-text", "-noout"]) =~
-               "ASN1 OID: secp256k1"
+               "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read CSRs (RSA)" do
@@ -67,7 +67,7 @@ defmodule X509.OpenSSLTest do
 
     test "OpenSSL can read CSRs (ECDSA)" do
       pem_file =
-        X509.PrivateKey.new_ec(:secp256k1)
+        X509.PrivateKey.new_ec(:secp256r1)
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
         |> write_tmp_pem()
 
@@ -101,22 +101,22 @@ defmodule X509.OpenSSLTest do
 
     test "OpenSSL can read EC private keys" do
       der_file =
-        X509.PrivateKey.new_ec(:secp256k1)
+        X509.PrivateKey.new_ec(:secp256r1)
         |> write_tmp_der()
 
       assert openssl(["ec", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
-               "ASN1 OID: secp256k1"
+               "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read EC public keys" do
       der_file =
-        X509.PrivateKey.new_ec(:secp256k1)
+        X509.PrivateKey.new_ec(:secp256r1)
         |> X509.PublicKey.derive()
         |> X509.PublicKey.wrap()
         |> write_tmp_der()
 
       assert openssl(["ec", "-pubin", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
-               "ASN1 OID: secp256k1"
+               "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read CSRs (RSA)" do
@@ -133,7 +133,7 @@ defmodule X509.OpenSSLTest do
 
     test "OpenSSL can read CSRs (ECDSA)" do
       pem_file =
-        X509.PrivateKey.new_ec(:secp256k1)
+        X509.PrivateKey.new_ec(:secp256r1)
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
         |> write_tmp_der()
 
