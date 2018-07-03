@@ -20,6 +20,31 @@ defmodule X509.Certificate do
 
   @doc """
   Issues a new certificate.
+
+  The public key can be an RSA key or an EC key (which results in an ECDSA
+  certificate).
+
+  The Subject can be specified as a string, to be parsed by
+  `X509.RDNSequence.new/1`, or a custom RDN sequence tuple.
+
+  The next parameters are the issuing certificate and the associated private
+  key (RSA or EC). The Issuer field of the new certificate is taken from the
+  issuing certificate's Subject.
+
+  ## Options:
+
+  * `:template` - an `X509.Certificate.Template` struct, or an atom selecting
+    a built-in template (default: `:server`)
+  * `:hash` - the hashing algorithm to use when signing the certificate
+    (default: from template)
+  * `:serial` - the certificate's serial number (default: from template, where
+    it will typically be set to `nil`, resulting in a random value)
+  * `:validity` - an integer specifying the certificate's validity in days,
+    or an `X509.Certificate.Validity` record defining the 'not before' and
+    'not after' timestamps (default: from template)
+  * `:extensions` - a keyword list of extension names and values, to be merged
+    with the extensions defined in the template; refer to the
+    `X509.Certificate.Template` documentation for details
   """
   @spec new(
           X509.PublicKey.t(),
@@ -60,6 +85,29 @@ defmodule X509.Certificate do
 
   @doc """
   Generates a new self-signed certificate.
+
+  The private key is used both to sign and to extract the public key to be
+  embedded in the certificate. It can be an RSA key or an EC key (which results
+  in an ECDSA certificate).
+
+  The Subject can be specified as a string, to be parsed by
+  `X509.RDNSequence.new/1`, or a custom RDN sequence tuple. The same value is
+  used in the Issuer field as well.
+
+  ## Options:
+
+  * `:template` - an `X509.Certificate.Template` struct, or an atom selecting
+    a built-in template (default: `:server`)
+  * `:hash` - the hashing algorithm to use when signing the certificate
+    (default: from template)
+  * `:serial` - the certificate's serial number (default: from template, where
+    it will typically be set to `nil`, resulting in a random value)
+  * `:validity` - an integer specifying the certificate's validity in days,
+    or an `X509.Certificate.Validity` record defining the 'not before' and
+    'not after' timestamps (default: from template)
+  * `:extensions` - a keyword list of extension names and values, to be merged
+    with the extensions defined in the template; refer to the
+    `X509.Certificate.Template` documentation for details
   """
   @spec self_signed(
           X509.PrivateKey.t(),
