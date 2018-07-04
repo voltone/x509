@@ -14,7 +14,7 @@ Generate a self-signed CA certificate and private key:
 iex> ca_key = X509.PrivateKey.new_ec(:secp256r1)
 {:ECPrivateKey, ...}
 iex> ca = X509.Certificate.self_signed(ca_key,
-...>   "/C=US/ST=CA/L=San Fransisco/O=Acme/CN=ECDSA Root CA",
+...>   "/C=US/ST=CA/L=San Francisco/O=Acme/CN=ECDSA Root CA",
 ...>   template: :root_ca
 ...>)
 {:Certificate, ...}
@@ -28,7 +28,7 @@ iex> my_key = X509.PrivateKey.new_ec(:secp256r1)
 iex> my_cert = my_key |>
 ...> X509.PublicKey.derive() |>
 ...> X509.Certificate.new(
-...>   "/C=US/ST=CA/L=San Fransisco/O=Acme/CN=Sample",
+...>   "/C=US/ST=CA/L=San Francisco/O=Acme/CN=Sample",
 ...>   ca, ca_key,
 ...>   extensions: [
 ...>     subject_alt_name: X509.Certificate.Extension.subject_alt_name(["example.org", "www.example.org"])
