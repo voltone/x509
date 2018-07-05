@@ -1,5 +1,6 @@
 language: elixir
 sudo: false
+script: mix test --include openssl
 matrix:
   include:
   - elixir: '1.6.6'
