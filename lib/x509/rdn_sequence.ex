@@ -127,7 +127,8 @@ defmodule X509.RDNSequence do
   end
 
   def new(list, :plain) do
-    {:rdnSequence, Enum.map(list, &[new_attr(&1)])}
+    list
+    |> new(:otp)
     |> :pubkey_cert_records.transform(:encode)
   end
 

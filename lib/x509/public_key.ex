@@ -113,7 +113,7 @@ defmodule X509.PublicKey do
 
   Supports the same container structures as `wrap/2`.
   """
-  @spec wrap(spki()) :: t()
+  @spec unwrap(spki()) :: t()
   def unwrap(subject_public_key_info(algorithm: algorithm, subjectPublicKey: public_key)) do
     case algorithm do
       algorithm_identifier(algorithm: oid(:rsaEncryption)) ->
