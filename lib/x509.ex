@@ -1,17 +1,23 @@
 defmodule X509 do
+  import X509.ASN1
+
   @moduledoc """
   This top-level module includes generic, entity-independent conversion
   functions to/from DER and PEM format.
 
-  Note that the `X509.PublicKey` and `X509.PrivateKey` modules offer
-  specialized implementations of these functions for dealing with public and
-  private keys, respectively.
+  Note that the `X509.PublicKey`, `X509.PrivateKey` and `X509.Certificate`
+  modules offer specialized implementations of these functions for dealing with
+  public keys, private keys and certificates, respectively.
   """
 
   @doc """
   Converts an X.509 or related record to DER (binary) format.
   """
   @spec to_der(tuple()) :: binary()
+  def to_der(otp_certificate() = entity) do
+    X509.Certificate.to_der(entity)
+  end
+
   def to_der(entity) when is_tuple(entity) do
     entity
     |> elem(0)
@@ -22,6 +28,10 @@ defmodule X509 do
   Converts an X.509 or related record to PEM format.
   """
   @spec to_pem(tuple()) :: String.t()
+  def to_pem(otp_certificate() = entity) do
+    X509.Certificate.to_pem(entity)
+  end
+
   def to_pem(entity) when is_tuple(entity) do
     entity
     |> elem(0)

@@ -14,7 +14,7 @@ defmodule X509.Certificate do
   @typedoc """
   `:Certificate` record , as used in Erlang's `:public_key` module
   """
-  @opaque t :: X509.ASN1.record(:certificate)
+  @opaque t :: X509.ASN1.record(:otp_certificate)
 
   @version :v3
 
@@ -80,7 +80,7 @@ defmodule X509.Certificate do
     public_key
     |> new_otp_tbs_certificate(subject_rdn, issuer_rdn, algorithm, template)
     |> :public_key.pkix_sign(issuer_key)
-    |> X509.from_der(:Certificate)
+    |> from_der()
   end
 
   @doc """
@@ -132,7 +132,7 @@ defmodule X509.Certificate do
     public_key
     |> new_otp_tbs_certificate(subject_rdn, subject_rdn, algorithm, template)
     |> :public_key.pkix_sign(private_key)
-    |> X509.from_der(:Certificate)
+    |> from_der()
   end
 
   @doc """
@@ -212,6 +212,48 @@ defmodule X509.Certificate do
     |> extensions()
     |> Extension.find(extension_id)
   end
+
+  @spec to_der(t()) :: binary()
+  def to_der(otp_certificate() = certificate) do
+    :public_key.pkix_encode(:OTPCertificate, certificate, :otp)
+  end
+
+  def to_der(certificate() = certificate) do
+    :public_key.pkix_encode(:Certificate, certificate, :plain)
+  end
+
+  @spec to_pem(t()) :: String.t()
+  def to_pem(certificate) do
+    {:Certificate, to_der(certificate), :not_encrypted}
+    |> List.wrap()
+    |> :public_key.pem_encode()
+  end
+
+  @spec from_der(binary(), OTPCertificate | Certificate) :: t() | nil
+  def from_der(der, type \\ :OTPCertificate)
+
+  def from_der(der, :OTPCertificate) do
+    :public_key.pkix_decode_cert(der, :otp)
+  end
+
+  def from_der(der, :Certificate) do
+    :public_key.pkix_decode_cert(der, :plain)
+  end
+
+  # @spec from_pem(String.t(), OTPCertificate | Certificate) :: t() | nil
+  def from_pem(pem, type \\ :OTPCertificate) do
+    pem
+    |> :public_key.pem_decode()
+    |> Enum.filter(&(elem(&1, 0) == :Certificate))
+    |> case do
+      [{_, der, :not_encrypted} | _] -> from_der(der, type)
+      _else -> nil
+    end
+  end
+
+  #
+  # Helpers
+  #
 
   defp new_otp_tbs_certificate(public_key, subject_rdn, issuer_rdn, algorithm, template) do
     otp_tbs_certificate(
