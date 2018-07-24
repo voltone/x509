@@ -213,6 +213,9 @@ defmodule X509.Certificate do
     |> Extension.find(extension_id)
   end
 
+  @doc """
+  Converts a certificate to DER (binary) format.
+  """
   @spec to_der(t()) :: binary()
   def to_der(otp_certificate() = certificate) do
     :public_key.pkix_encode(:OTPCertificate, certificate, :otp)
@@ -222,6 +225,9 @@ defmodule X509.Certificate do
     :public_key.pkix_encode(:Certificate, certificate, :plain)
   end
 
+  @doc """
+  Converts a certificate to PEM format.
+  """
   @spec to_pem(t()) :: String.t()
   def to_pem(certificate) do
     {:Certificate, to_der(certificate), :not_encrypted}
@@ -229,7 +235,15 @@ defmodule X509.Certificate do
     |> :public_key.pem_encode()
   end
 
-  @spec from_der(binary(), OTPCertificate | Certificate) :: t() | nil
+  @doc """
+  Attempts to parse a certificate in DER (binary) format.
+
+  The optional second parameter specifies the record type to be returned:
+  `:OTPCertificate` (default) or `:Certificate`.
+
+  Raises `MatchError` when the DER certificate cannot be parsed.
+  """
+  @spec from_der(binary(), OTPCertificate | Certificate) :: t() | no_return()
   def from_der(der, type \\ :OTPCertificate)
 
   def from_der(der, :OTPCertificate) do
@@ -240,13 +254,21 @@ defmodule X509.Certificate do
     :public_key.pkix_decode_cert(der, :plain)
   end
 
-  # @spec from_pem(String.t(), OTPCertificate | Certificate) :: t() | nil
+  @doc """
+  Attempts to parse a certificate in  PEM format.
+
+  The optional second parameter specifies the record type to be returned:
+  `:OTPCertificate` (default) or `:Certificate`.
+
+  If the data cannot be parsed as a certificate, `nil` is returned.
+  """
+  @spec from_pem(String.t(), OTPCertificate | Certificate) :: t() | nil
   def from_pem(pem, type \\ :OTPCertificate) do
     pem
     |> :public_key.pem_decode()
     |> Enum.filter(&(elem(&1, 0) == :Certificate))
     |> case do
-      [{_, der, :not_encrypted} | _] -> from_der(der, type)
+      [{_, der, :not_encrypted}] -> from_der(der, type)
       _else -> nil
     end
   end
