@@ -1,10 +1,12 @@
 defmodule X509.MixProject do
   use Mix.Project
 
+  @version "0.1.1"
+
   def project do
     [
       app: :x509,
-      version: "0.1.1",
+      version: @version,
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -47,7 +49,8 @@ defmodule X509.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"]
+      extras: ["README.md"],
+      source_ref: "v#{@version}"
     ]
   end
 end
