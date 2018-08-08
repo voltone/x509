@@ -1,5 +1,11 @@
 # Changes
 
+## v0.3.0
+
+### Enhancements
+
+  * Support Elixir v1.7 and ExDoc v0.19
+
 ## v0.2.0
 
 ### Breaking changes
@@ -11,4 +17,6 @@
   * [X509] `to_der` and `to_pem` now delegate now support `:OTPCertificate` records, by delegating to `X509.Certificate`
   * [X509.Certificate] Added certificate-specific implementations of `to_der`, `to_pem`, `from_der` and `from_pem`
 
-### Fixes
+## v0.1.0
+
+First public release
