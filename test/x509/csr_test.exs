@@ -40,17 +40,17 @@ defmodule X509.CSRTest do
 
     test "PEM decode and encode" do
       pem = File.read!("test/data/csr_rsa.pem")
-      csr = X509.from_pem(pem) |> hd
+      csr = X509.CSR.from_pem!(pem)
       assert match?(certification_request(), csr)
       assert X509.CSR.valid?(csr)
 
-      assert csr == csr |> X509.to_pem() |> X509.from_pem() |> hd()
+      assert csr == csr |> X509.CSR.to_pem() |> X509.CSR.from_pem!()
     end
 
     test "DER decode and encode" do
       der = File.read!("test/data/csr_rsa.der")
-      assert match?(certification_request(), X509.from_der(der, :CertificationRequest))
-      assert der == der |> X509.from_der(:CertificationRequest) |> X509.to_der()
+      assert match?(certification_request(), X509.CSR.from_der!(der))
+      assert der == der |> X509.CSR.from_der!() |> X509.CSR.to_der()
     end
   end
 
@@ -74,17 +74,17 @@ defmodule X509.CSRTest do
 
     test "PEM decode and encode" do
       pem = File.read!("test/data/csr_prime256v1.pem")
-      csr = X509.from_pem(pem) |> hd
+      csr = X509.CSR.from_pem!(pem)
       assert match?(certification_request(), csr)
       assert X509.CSR.valid?(csr)
 
-      assert csr == csr |> X509.to_pem() |> X509.from_pem() |> hd()
+      assert csr == csr |> X509.CSR.to_pem() |> X509.CSR.from_pem!()
     end
 
     test "DER decode and encode" do
       der = File.read!("test/data/csr_prime256v1.der")
-      assert match?(certification_request(), X509.from_der(der, :CertificationRequest))
-      assert der == der |> X509.from_der(:CertificationRequest) |> X509.to_der()
+      assert match?(certification_request(), X509.CSR.from_der!(der))
+      assert der == der |> X509.CSR.from_der!() |> X509.CSR.to_der()
     end
   end
 end

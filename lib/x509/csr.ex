@@ -109,6 +109,95 @@ defmodule X509.CSR do
     :public_key.verify(info_der, digest_type, signature, public_key(csr))
   end
 
+  @doc """
+  Converts a CSR to DER (binary) format.
+  """
+  @doc since: "0.3.0"
+  @spec to_der(t()) :: binary()
+  def to_der(certification_request() = csr) do
+    :public_key.der_encode(:CertificationRequest, csr)
+  end
+
+  @doc """
+  Converts a CSR to PEM format.
+  """
+  @doc since: "0.3.0"
+  @spec to_pem(t()) :: String.t()
+  def to_pem(certification_request() = csr) do
+    :public_key.pem_entry_encode(:CertificationRequest, csr)
+    |> List.wrap()
+    |> :public_key.pem_encode()
+  end
+
+  @doc """
+  Attempts to parse a CSR in DER (binary) format. Raises in case of failure.
+  """
+  @doc since: "0.3.0"
+  @spec from_der!(binary()) :: t() | no_return()
+  def from_der!(der) do
+    :public_key.der_decode(:CertificationRequest, der)
+  end
+
+  @doc """
+  Parses a CSR in DER (binary) format.
+
+  Returns an `:ok` tuple in case of success, or an `:error` tuple in case of
+  failure. Possible error reasons are:
+
+    * `:malformed` - the data could not be decoded as a CSR
+  """
+  @doc since: "0.3.0"
+  @spec from_der(binary()) :: {:ok, t()} | {:error, :malformed}
+  def from_der(der) do
+    {:ok, from_der!(der)}
+  rescue
+    MatchError -> {:error, :malformed}
+  end
+
+  @doc """
+  Attempts to parse a CSR in PEM format. Raises in case of failure.
+
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "CERTIFICATE REQUEST".
+  """
+  @doc since: "0.3.0"
+  @spec from_pem!(String.t()) :: t() | no_return()
+  def from_pem!(pem) do
+    {:ok, csr} = from_pem(pem)
+    csr
+  end
+
+  @doc """
+  Parses a CSR in PEM format.
+
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "CERTIFICATE REQUEST". Returns an `:ok` tuple in case of success, or an
+  `:error` tuple in case of failure. Possible error reasons are:
+
+    * `:malformed` - the data could not be decoded as a CSR
+    * `:mismatch` - the PEM entry fround is of the wrong type
+    * `:multiple` - the string provided contains multiple PEM entities
+
+  *Note*: use `X509.from_pem/2` to decode and filter a string that may contain
+  multiple PEM entities and get the results as a list, e.g.:
+
+      csr_list = X509.from_pem(string, :CertificationRequest)
+  """
+  @doc since: "0.3.0"
+  @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :mismatch | :multiple}
+  def from_pem(pem) do
+    case :public_key.pem_decode(pem) do
+      [{:CertificationRequest, der, :not_encrypted}] ->
+        from_der(der)
+
+      [_entry] ->
+        {:error, :mismatch}
+
+      _ ->
+        {:error, :multiple}
+    end
+  end
+
   # Returns a :CertificationRequest_signatureAlgorithm record for the given
   # public key type and hash algorithm; this is essentially the reverse
   # of `:public_key.pkix_sign_types/1`

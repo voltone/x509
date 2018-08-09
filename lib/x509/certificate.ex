@@ -236,31 +236,65 @@ defmodule X509.Certificate do
   end
 
   @doc """
-  Attempts to parse a certificate in DER (binary) format.
+  Attempts to parse a certificate in DER (binary) format. Raises in case of failure.
 
   The optional second parameter specifies the record type to be returned:
   `:OTPCertificate` (default) or `:Certificate`.
-
-  Raises `MatchError` when the DER certificate cannot be parsed.
   """
-  @spec from_der(binary(), OTPCertificate | Certificate) :: t() | no_return()
-  def from_der(der, type \\ :OTPCertificate)
+  @doc since: "0.3.0"
+  @spec from_der!(binary(), OTPCertificate | Certificate) :: t() | no_return()
+  def from_der!(der, type \\ :OTPCertificate)
 
-  def from_der(der, :OTPCertificate) do
+  def from_der!(der, :OTPCertificate) do
     :public_key.pkix_decode_cert(der, :otp)
   end
 
-  def from_der(der, :Certificate) do
+  def from_der!(der, :Certificate) do
     :public_key.pkix_decode_cert(der, :plain)
+  end
+
+  @doc """
+  Attempts to parse a certificate in DER (binary) format.
+
+  The optional second parameter specifies the record type to be returned:
+  `:OTPCertificate` (default) or `:Certificate`. If the data cannot be parsed
+  as a certificate, `nil` is returned.
+
+  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
+  the near future; in existing applications, consider using `from_der!/2` to
+  ease the migration.
+  """
+  @spec from_der(binary(), OTPCertificate | Certificate) :: t() | nil
+  def from_der(der, type \\ :OTPCertificate) do
+    from_der!(der, type)
+  rescue
+    MatchError ->
+      nil
+  end
+
+  @doc """
+  Attempts to parse a certificate in  PEM format. Raises in case of failure.
+
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "CERTIFICATE". The optional second parameter specifies the record type
+  to be returned: `:OTPCertificate` (default) or `:Certificate`.
+  """
+  @spec from_pem!(String.t(), OTPCertificate | Certificate) :: t() | no_return()
+  def from_pem!(pem, type \\ :OTPCertificate) do
+    pem
+    |> :public_key.pem_decode()
+    |> case do
+      [{_, der, :not_encrypted}] -> from_der!(der, type)
+    end
   end
 
   @doc """
   Attempts to parse a certificate in  PEM format.
 
-  The optional second parameter specifies the record type to be returned:
-  `:OTPCertificate` (default) or `:Certificate`.
-
-  If the data cannot be parsed as a certificate, `nil` is returned.
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "CERTIFICATE". The optional second parameter specifies the record type
+  to be returned: `:OTPCertificate` (default) or `:Certificate`. If the data
+  cannot be parsed as a certificate, `nil` is returned.
   """
   @spec from_pem(String.t(), OTPCertificate | Certificate) :: t() | nil
   def from_pem(pem, type \\ :OTPCertificate) do

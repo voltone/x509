@@ -133,11 +133,35 @@ defmodule X509.PrivateKey do
   end
 
   @doc """
-  Attempts to parse a private key in DER (binary) format. Unwraps the PKCS#8
-  PrivateKeyInfo container, if present.
+  Attempts to parse a private key in DER (binary) format. Raises in case of failure.
 
-  If the data cannot be parsed as a supported private key type, `nil` is
-  returned.
+  Unwraps the PKCS#8 PrivateKeyInfo container, if present.
+  """
+  @doc since: "0.3.0"
+  @spec from_der!(binary()) :: t() | no_return()
+  def from_der!(der) do
+    case X509.try_der_decode(der, [:PrivateKeyInfo, :RSAPrivateKey, :ECPrivateKey]) do
+      private_key_info() = pki ->
+        # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
+        unwrap(pki)
+
+      rsa_private_key() = key ->
+        key
+
+      ec_private_key() = key ->
+        key
+    end
+  end
+
+  @doc """
+  Attempts to parse a private key in DER (binary) format.
+
+  Unwraps the PKCS#8 PrivateKeyInfo container, if present. If the data cannot
+  be parsed as a supported private key type, `nil` is returned.
+
+  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
+  the near future; in existing applications, consider using `from_der!/2` to
+  ease the migration.
   """
   @spec from_der(binary()) :: t() | nil
   def from_der(der) do
@@ -155,11 +179,63 @@ defmodule X509.PrivateKey do
   end
 
   @doc """
-  Attempts to parse a private key in PEM format. Unwraps the PKCS#8
+  Attempts to parse a private key in PEM format. Raises in case of failure.
+
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "PRIVATE KEY", "RSA PRIVATE KEY" or "EC PRIVATE KEY". Unwraps the PKCS#8
   PrivateKeyInfo container, if present.
 
-  If the data cannot be parsed as a supported private key type, `nil` is
-  returned.
+  ## Options:
+
+    * `:password` - the password used to decrypt an encrypted private key; may
+      be specified as a string or a charlist
+
+  """
+  @doc since: "0.3.0"
+  @spec from_pem!(String.t(), Keyword.t()) :: t() | no_return()
+  def from_pem!(pem, opts \\ []) do
+    pem
+    |> :public_key.pem_decode()
+    |> Enum.filter(&(elem(&1, 0) in [:RSAPrivateKey, :ECPrivateKey, :PrivateKeyInfo]))
+    |> case do
+      [{_, _, :not_encrypted} = entry] ->
+        case :public_key.pem_entry_decode(entry) do
+          # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
+          private_key_info() = pki ->
+            unwrap(pki)
+
+          private_key ->
+            private_key
+        end
+
+      [{_, _, _encryption} = entry] ->
+        password =
+          opts
+          |> Keyword.fetch!(:password)
+          |> to_charlist()
+
+        case :public_key.pem_entry_decode(entry, password) do
+          # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
+          private_key_info() = pki ->
+            unwrap(pki)
+
+          private_key ->
+            private_key
+        end
+    end
+  end
+
+  @doc """
+  Attempts to parse a private key in PEM format.
+
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "PRIVATE KEY", "RSA PRIVATE KEY" or "EC PRIVATE KEY". Unwraps the PKCS#8
+  PrivateKeyInfo container, if present. If the data cannot be parsed as a
+  supported private key type, `nil` is returned.
+
+  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
+  the near future; in existing applications, consider using `from_der!/2` to
+  ease the migration.
 
   ## Options:
 
