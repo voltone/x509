@@ -196,7 +196,7 @@ defmodule X509.PublicKey do
 
   Unwraps a SubjectPublicKeyInfo style container, if present.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_der!(binary()) :: t() | no_return()
   def from_der!(der) do
     case X509.try_der_decode(der, [:RSAPublicKey, :SubjectPublicKeyInfo]) do
@@ -239,7 +239,7 @@ defmodule X509.PublicKey do
   type "PUBLIC KEY" or "RSA PUBLIC KEY". Unwraps a SubjectPublicKeyInfo style
   container, if present.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_pem!(String.t()) :: t() | no_return()
   def from_pem!(pem) do
     case :public_key.pem_decode(pem) do

@@ -241,7 +241,7 @@ defmodule X509.Certificate do
   The optional second parameter specifies the record type to be returned:
   `:OTPCertificate` (default) or `:Certificate`.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_der!(binary(), OTPCertificate | Certificate) :: t() | no_return()
   def from_der!(der, type \\ :OTPCertificate)
 

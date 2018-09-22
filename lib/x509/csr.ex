@@ -112,7 +112,7 @@ defmodule X509.CSR do
   @doc """
   Converts a CSR to DER (binary) format.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec to_der(t()) :: binary()
   def to_der(certification_request() = csr) do
     :public_key.der_encode(:CertificationRequest, csr)
@@ -121,7 +121,7 @@ defmodule X509.CSR do
   @doc """
   Converts a CSR to PEM format.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec to_pem(t()) :: String.t()
   def to_pem(certification_request() = csr) do
     :public_key.pem_entry_encode(:CertificationRequest, csr)
@@ -132,7 +132,7 @@ defmodule X509.CSR do
   @doc """
   Attempts to parse a CSR in DER (binary) format. Raises in case of failure.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_der!(binary()) :: t() | no_return()
   def from_der!(der) do
     :public_key.der_decode(:CertificationRequest, der)
@@ -146,7 +146,7 @@ defmodule X509.CSR do
 
     * `:malformed` - the data could not be decoded as a CSR
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_der(binary()) :: {:ok, t()} | {:error, :malformed}
   def from_der(der) do
     {:ok, from_der!(der)}
@@ -160,7 +160,7 @@ defmodule X509.CSR do
   Expects the input string to include exactly one PEM entry, which must be of
   type "CERTIFICATE REQUEST".
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_pem!(String.t()) :: t() | no_return()
   def from_pem!(pem) do
     {:ok, csr} = from_pem(pem)
@@ -183,7 +183,7 @@ defmodule X509.CSR do
 
       csr_list = X509.from_pem(string, :CertificationRequest)
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :mismatch | :multiple}
   def from_pem(pem) do
     case :public_key.pem_decode(pem) do

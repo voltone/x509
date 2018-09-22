@@ -137,7 +137,7 @@ defmodule X509.PrivateKey do
 
   Unwraps the PKCS#8 PrivateKeyInfo container, if present.
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_der!(binary()) :: t() | no_return()
   def from_der!(der) do
     case X509.try_der_decode(der, [:PrivateKeyInfo, :RSAPrivateKey, :ECPrivateKey]) do
@@ -191,7 +191,7 @@ defmodule X509.PrivateKey do
       be specified as a string or a charlist
 
   """
-  @doc since: "0.3.0"
+  # @doc since: "0.3.0"
   @spec from_pem!(String.t(), Keyword.t()) :: t() | no_return()
   def from_pem!(pem, opts \\ []) do
     pem
