@@ -13,6 +13,7 @@ defmodule X509 do
   @doc """
   Converts an X.509 or related record to DER (binary) format.
   """
+  # @doc deprecated: "Use `to_der` in entity-specific module instead"
   @spec to_der(tuple()) :: binary()
   def to_der(otp_certificate() = entity) do
     X509.Certificate.to_der(entity)
@@ -27,6 +28,7 @@ defmodule X509 do
   @doc """
   Converts an X.509 or related record to PEM format.
   """
+  # @doc deprecated: "Use `to_pem` in entity-specific module instead"
   @spec to_pem(tuple()) :: String.t()
   def to_pem(otp_certificate() = entity) do
     X509.Certificate.to_pem(entity)
@@ -43,6 +45,7 @@ defmodule X509 do
   @doc """
   Decodes an X.509 or related record in DER (binary) format.
   """
+  # @doc deprecated: "Use `from_der` in entity-specific module instead"
   @spec from_der(binary(), :public_key.pki_asn1_type()) :: tuple()
   def from_der(der, type) when is_binary(der) and is_atom(type) do
     :public_key.der_decode(type, der)

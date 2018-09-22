@@ -192,11 +192,31 @@ defmodule X509.PublicKey do
   end
 
   @doc """
-  Attempts to parse a public key in DER (binary) format. Unwraps a
-  SubjectPublicKeyInfo style container, if present.
+  Attempts to parse a public key in DER (binary) format. Raises in case of failure.
 
-  If the data cannot be parsed as a supported public key type, `nil` is
-  returned.
+  Unwraps a SubjectPublicKeyInfo style container, if present.
+  """
+  # @doc since: "0.3.0"
+  @spec from_der!(binary()) :: t() | no_return()
+  def from_der!(der) do
+    case X509.try_der_decode(der, [:RSAPublicKey, :SubjectPublicKeyInfo]) do
+      rsa_public_key() = key ->
+        key
+
+      subject_public_key_info() = spki ->
+        unwrap(spki)
+    end
+  end
+
+  @doc """
+  Attempts to parse a public key in DER (binary) format.
+
+  Unwraps a SubjectPublicKeyInfo style container, if present. If the data
+  cannot be parsed as a supported public key type, `nil` is returned.
+
+  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
+  the near future; in existing applications, consider using `from_der!/2` to
+  ease the migration.
   """
   @spec from_der(binary()) :: t() | nil
   def from_der(der) do
@@ -213,11 +233,32 @@ defmodule X509.PublicKey do
   end
 
   @doc """
-  Attempts to parse a public key in PEM format. Unwraps a SubjectPublicKeyInfo
-  style container, if present.
+  Attempts to parse a public key in PEM format. Raises in case of failure.
 
-  If the data cannot be parsed as a supported public key type, `nil` is
-  returned.
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "PUBLIC KEY" or "RSA PUBLIC KEY". Unwraps a SubjectPublicKeyInfo style
+  container, if present.
+  """
+  # @doc since: "0.3.0"
+  @spec from_pem!(String.t()) :: t() | no_return()
+  def from_pem!(pem) do
+    case :public_key.pem_decode(pem) do
+      [{type, _, :not_encrypted} = entry] when type in [:RSAPublicKey, :SubjectPublicKeyInfo] ->
+        :public_key.pem_entry_decode(entry)
+    end
+  end
+
+  @doc """
+  Attempts to parse a public key in PEM format.
+
+  Expects the input string to include exactly one PEM entry, which must be of
+  type "PUBLIC KEY" or "RSA PUBLIC KEY". Unwraps a SubjectPublicKeyInfo
+  style container, if present. If the data cannot be parsed as a supported
+  public key type, `nil` is returned.
+
+  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
+  the near future; in existing applications, consider using `from_der!/2` to
+  ease the migration.
   """
   @spec from_pem(String.t()) :: t() | nil
   def from_pem(pem) do

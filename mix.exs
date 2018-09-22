@@ -1,7 +1,7 @@
 defmodule X509.MixProject do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.3.0-dev"
 
   def project do
     [
@@ -28,7 +28,7 @@ defmodule X509.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.18.3", only: :dev}
+      {:ex_doc, "~> 0.19", only: :dev}
     ]
   end
 
