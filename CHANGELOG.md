@@ -1,5 +1,10 @@
 # Changes
 
+## v0.4.0
+
+### Enhancements
+
+
 ## v0.3.0
 
 This release paves the way for some changes in the way PEM and DER
