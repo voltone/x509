@@ -4,6 +4,7 @@
 
 ### Enhancements
 
+  * Add `x509.gen.selfsigned` Mix task
 
 ## v0.3.0
 
