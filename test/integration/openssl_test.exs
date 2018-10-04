@@ -16,50 +16,52 @@ defmodule X509.OpenSSLTest do
 
   describe "PEM encode" do
     test "OpenSSL can read RSA private keys" do
-      pem_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
-        |> write_tmp_pem()
+        |> X509.PrivateKey.to_pem()
+        |> write_tmp()
 
-      assert openssl(["rsa", "-in", pem_file, "-text", "-noout"]) =~ "Private-Key: (2048 bit)"
+      assert openssl(["rsa", "-in", file, "-text", "-noout"]) =~ "Private-Key: (2048 bit)"
     end
 
     test "OpenSSL can read RSA public keys" do
-      pem_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
         |> X509.PublicKey.derive()
-        |> X509.PublicKey.wrap()
-        |> write_tmp_pem()
+        |> X509.PublicKey.to_pem(wrap: true)
+        |> write_tmp()
 
-      assert openssl(["rsa", "-pubin", "-in", pem_file, "-text", "-noout"]) =~
+      assert openssl(["rsa", "-pubin", "-in", file, "-text", "-noout"]) =~
                "Public-Key: (2048 bit)"
     end
 
     test "OpenSSL can read EC private keys" do
-      pem_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
-        |> write_tmp_pem()
+        |> X509.PrivateKey.to_pem()
+        |> write_tmp()
 
-      assert openssl(["ec", "-in", pem_file, "-text", "-noout"]) =~ "ASN1 OID: prime256v1"
+      assert openssl(["ec", "-in", file, "-text", "-noout"]) =~ "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read EC public keys" do
-      pem_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
         |> X509.PublicKey.derive()
-        |> X509.PublicKey.wrap()
-        |> write_tmp_pem()
+        |> X509.PublicKey.to_pem(wrap: true)
+        |> write_tmp()
 
-      assert openssl(["ec", "-pubin", "-in", pem_file, "-text", "-noout"]) =~
-               "ASN1 OID: prime256v1"
+      assert openssl(["ec", "-pubin", "-in", file, "-text", "-noout"]) =~ "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read CSRs (RSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
-        |> write_tmp_pem()
+        |> X509.CSR.to_pem()
+        |> write_tmp()
 
-      openssl_out = openssl(["req", "-verify", "-in", pem_file, "-text", "-noout"])
+      openssl_out = openssl(["req", "-verify", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
@@ -67,12 +69,13 @@ defmodule X509.OpenSSLTest do
     end
 
     test "OpenSSL can read CSRs (ECDSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
-        |> write_tmp_pem()
+        |> X509.CSR.to_pem()
+        |> write_tmp()
 
-      openssl_out = openssl(["req", "-verify", "-in", pem_file, "-text", "-noout"])
+      openssl_out = openssl(["req", "-verify", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
@@ -80,7 +83,7 @@ defmodule X509.OpenSSLTest do
     end
 
     test "OpenSSL can read certificates (RSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
         |> X509.Certificate.self_signed(
           "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
@@ -89,9 +92,10 @@ defmodule X509.OpenSSLTest do
               X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
           ]
         )
-        |> write_tmp_pem()
+        |> X509.Certificate.to_pem()
+        |> write_tmp()
 
-      openssl_out = openssl(["x509", "-in", pem_file, "-text", "-noout"])
+      openssl_out = openssl(["x509", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
@@ -99,7 +103,7 @@ defmodule X509.OpenSSLTest do
     end
 
     test "OpenSSL can read certificates (ECDSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
         |> X509.Certificate.self_signed(
           "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
@@ -108,9 +112,10 @@ defmodule X509.OpenSSLTest do
               X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
           ]
         )
-        |> write_tmp_pem()
+        |> X509.Certificate.to_pem()
+        |> write_tmp()
 
-      openssl_out = openssl(["x509", "-in", pem_file, "-text", "-noout"])
+      openssl_out = openssl(["x509", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
@@ -120,53 +125,55 @@ defmodule X509.OpenSSLTest do
 
   describe "DER encode" do
     test "OpenSSL can read RSA private keys" do
-      der_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
-        |> write_tmp_der()
+        |> X509.PrivateKey.to_der()
+        |> write_tmp()
 
-      assert openssl(["rsa", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
+      assert openssl(["rsa", "-in", file, "-inform", "der", "-text", "-noout"]) =~
                "Private-Key: (2048 bit)"
     end
 
     test "OpenSSL can read RSA public keys" do
-      der_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
         |> X509.PublicKey.derive()
-        |> X509.PublicKey.wrap()
-        |> write_tmp_der()
+        |> X509.PublicKey.to_der(wrap: true)
+        |> write_tmp()
 
-      assert openssl(["rsa", "-pubin", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
+      assert openssl(["rsa", "-pubin", "-in", file, "-inform", "der", "-text", "-noout"]) =~
                "Public-Key: (2048 bit)"
     end
 
     test "OpenSSL can read EC private keys" do
-      der_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
-        |> write_tmp_der()
+        |> X509.PrivateKey.to_der()
+        |> write_tmp()
 
-      assert openssl(["ec", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
+      assert openssl(["ec", "-in", file, "-inform", "der", "-text", "-noout"]) =~
                "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read EC public keys" do
-      der_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
         |> X509.PublicKey.derive()
-        |> X509.PublicKey.wrap()
-        |> write_tmp_der()
+        |> X509.PublicKey.to_der(wrap: true)
+        |> write_tmp()
 
-      assert openssl(["ec", "-pubin", "-in", der_file, "-inform", "der", "-text", "-noout"]) =~
+      assert openssl(["ec", "-pubin", "-in", file, "-inform", "der", "-text", "-noout"]) =~
                "ASN1 OID: prime256v1"
     end
 
     test "OpenSSL can read CSRs (RSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
-        |> write_tmp_der()
+        |> X509.CSR.to_der()
+        |> write_tmp()
 
-      openssl_out =
-        openssl(["req", "-verify", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      openssl_out = openssl(["req", "-verify", "-in", file, "-inform", "der", "-text", "-noout"])
 
       assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
@@ -175,13 +182,13 @@ defmodule X509.OpenSSLTest do
     end
 
     test "OpenSSL can read CSRs (ECDSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
-        |> write_tmp_der()
+        |> X509.CSR.to_der()
+        |> write_tmp()
 
-      openssl_out =
-        openssl(["req", "-verify", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      openssl_out = openssl(["req", "-verify", "-in", file, "-inform", "der", "-text", "-noout"])
 
       assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
@@ -190,7 +197,7 @@ defmodule X509.OpenSSLTest do
     end
 
     test "OpenSSL can read certificates (RSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_rsa(2048)
         |> X509.Certificate.self_signed(
           "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
@@ -199,9 +206,10 @@ defmodule X509.OpenSSLTest do
               X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
           ]
         )
-        |> write_tmp_der()
+        |> X509.Certificate.to_der()
+        |> write_tmp()
 
-      openssl_out = openssl(["x509", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      openssl_out = openssl(["x509", "-in", file, "-inform", "der", "-text", "-noout"])
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
@@ -209,7 +217,7 @@ defmodule X509.OpenSSLTest do
     end
 
     test "OpenSSL can read certificates (ECDSA)" do
-      pem_file =
+      file =
         X509.PrivateKey.new_ec(:secp256r1)
         |> X509.Certificate.self_signed(
           "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
@@ -218,9 +226,10 @@ defmodule X509.OpenSSLTest do
               X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
           ]
         )
-        |> write_tmp_der()
+        |> X509.Certificate.to_der()
+        |> write_tmp()
 
-      openssl_out = openssl(["x509", "-in", pem_file, "-inform", "der", "-text", "-noout"])
+      openssl_out = openssl(["x509", "-in", file, "-inform", "der", "-text", "-noout"])
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
@@ -235,22 +244,12 @@ defmodule X509.OpenSSLTest do
     output
   end
 
-  defp write_tmp_pem(record) do
+  defp write_tmp(data) do
     tmp_file =
       System.tmp_dir!()
-      |> Path.join("openssl_test.pem")
+      |> Path.join("openssl_test.data")
 
-    File.write!(tmp_file, X509.to_pem(record))
-
-    tmp_file
-  end
-
-  defp write_tmp_der(record) do
-    tmp_file =
-      System.tmp_dir!()
-      |> Path.join("openssl_test.der")
-
-    File.write!(tmp_file, X509.to_der(record))
+    File.write!(tmp_file, data)
 
     tmp_file
   end

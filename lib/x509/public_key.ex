@@ -155,17 +155,17 @@ defmodule X509.PublicKey do
   ## Options:
 
     * `:wrap` - Wrap the private key in a SubjectPublicKeyInfo container
-      (default: `false`)
+      (default: `true`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
   def to_der(public_key, opts \\ []) do
     if Keyword.get(opts, :wrap, true) do
       public_key
       |> wrap()
-      |> X509.to_der()
+      |> der_encode()
     else
       public_key
-      |> X509.to_der()
+      |> der_encode()
     end
   end
 
@@ -175,7 +175,7 @@ defmodule X509.PublicKey do
   ## Options:
 
     * `:wrap` - Wrap the private key in a SubjectPublicKeyInfo container; for
-      RSA public keys this defaults to `false`, but for EC public keys this
+      RSA public keys this defaults to `true`, but for EC public keys this
       option is ignored and the key is always exported in SubjectPublicKeyInfo
       format
   """
@@ -184,11 +184,12 @@ defmodule X509.PublicKey do
     if Keyword.get(opts, :wrap, true) or match?({ec_point(), _}, public_key) do
       public_key
       |> wrap()
-      |> X509.to_pem()
     else
       public_key
-      |> X509.to_pem()
     end
+    |> pem_entry_encode()
+    |> List.wrap()
+    |> :public_key.pem_encode()
   end
 
   @doc """
@@ -269,5 +270,25 @@ defmodule X509.PublicKey do
       _ ->
         nil
     end
+  end
+
+  defp der_encode(rsa_public_key() = rsa_public_key) do
+    :public_key.der_encode(:RSAPublicKey, rsa_public_key)
+  end
+
+  defp der_encode(ec_point() = ec_point) do
+    :public_key.der_encode(:ECPoint, ec_point)
+  end
+
+  defp der_encode(subject_public_key_info() = subject_public_key_info) do
+    :public_key.der_encode(:SubjectPublicKeyInfo, subject_public_key_info)
+  end
+
+  defp pem_entry_encode(rsa_public_key() = rsa_public_key) do
+    :public_key.pem_entry_encode(:RSAPublicKey, rsa_public_key)
+  end
+
+  defp pem_entry_encode(subject_public_key_info() = subject_public_key_info) do
+    :public_key.pem_entry_encode(:SubjectPublicKeyInfo, subject_public_key_info)
   end
 end

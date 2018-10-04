@@ -105,10 +105,10 @@ defmodule X509.PrivateKey do
     if Keyword.get(opts, :wrap, false) do
       private_key
       |> wrap()
-      |> X509.to_der()
+      |> der_encode()
     else
       private_key
-      |> X509.to_der()
+      |> der_encode()
     end
   end
 
@@ -125,11 +125,12 @@ defmodule X509.PrivateKey do
     if Keyword.get(opts, :wrap, false) do
       private_key
       |> wrap()
-      |> X509.to_pem()
     else
       private_key
-      |> X509.to_pem()
     end
+    |> pem_entry_encode()
+    |> List.wrap()
+    |> :public_key.pem_encode()
   end
 
   @doc """
@@ -277,5 +278,29 @@ defmodule X509.PrivateKey do
       _ ->
         nil
     end
+  end
+
+  defp der_encode(rsa_private_key() = rsa_private_key) do
+    :public_key.der_encode(:RSAPrivateKey, rsa_private_key)
+  end
+
+  defp der_encode(ec_private_key() = ec_private_key) do
+    :public_key.der_encode(:ECPrivateKey, ec_private_key)
+  end
+
+  defp der_encode(private_key_info() = private_key_info) do
+    :public_key.der_encode(:PrivateKeyInfo, private_key_info)
+  end
+
+  defp pem_entry_encode(rsa_private_key() = rsa_private_key) do
+    :public_key.pem_entry_encode(:RSAPrivateKey, rsa_private_key)
+  end
+
+  defp pem_entry_encode(ec_private_key() = ec_private_key) do
+    :public_key.pem_entry_encode(:ECPrivateKey, ec_private_key)
+  end
+
+  defp pem_entry_encode(private_key_info() = private_key_info) do
+    :public_key.pem_entry_encode(:PrivateKeyInfo, private_key_info)
   end
 end

@@ -2,9 +2,18 @@
 
 ## v0.4.0
 
+### Breaking changes
+
+  * [X509] Removed `to_der/1`, `to_pem/1` and `from_der/2`
+
 ### Enhancements
 
   * Add `x509.gen.selfsigned` Mix task
+
+### Fixes
+
+  * [X509.PublicKey] Documentation: corrected the default value for the
+    `wrap` option for RSA keys in `to_der/1` and `to_pem/1`
 
 ## v0.3.0
 
