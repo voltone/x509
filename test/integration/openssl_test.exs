@@ -108,7 +108,7 @@ defmodule X509.OpenSSLTest do
         |> X509.Certificate.self_signed(
           "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
           extensions: [
-            subject_alte_name:
+            subject_alt_name:
               X509.Certificate.Extension.subject_alt_name(["acme.com", "www.acme.com"])
           ]
         )
