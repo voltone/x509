@@ -37,6 +37,10 @@ iex> my_cert = my_key |>
 {:Certificate, ...}
 ```
 
+Please refer to the documentation for the `X509.PrivateKey` module for
+examples showing asymmetrical encryption and decryption, as well as message
+signing and verification, with Erlang/OTP's `:public_key` APIs.
+
 ## Mix tasks
 
 The `x509.gen.selfsigned` Mix task generates a self-signed certificate for use
@@ -49,7 +53,7 @@ Add `x509` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:x509, "~> 0.2.0"}
+    {:x509, "~> 0.4.0"}
   ]
 end
 ```
