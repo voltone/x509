@@ -157,8 +157,7 @@ defmodule X509.CSR do
   @doc """
   Attempts to parse a CSR in PEM format. Raises in case of failure.
 
-  Expects the input string to include exactly one PEM entry, which must be of
-  type "CERTIFICATE REQUEST".
+  Processes the first PEM entry of type CERTIFICATE REQUEST found in the input.
   """
   # @doc since: "0.3.0"
   @spec from_pem!(String.t()) :: t() | no_return()
@@ -170,31 +169,22 @@ defmodule X509.CSR do
   @doc """
   Parses a CSR in PEM format.
 
-  Expects the input string to include exactly one PEM entry, which must be of
-  type "CERTIFICATE REQUEST". Returns an `:ok` tuple in case of success, or an
-  `:error` tuple in case of failure. Possible error reasons are:
+  Processes the first PEM entry of type CERTIFICATE REQUEST found in the input.
+  Returns an `:ok` tuple in case of success, or an `:error` tuple in case of
+  failure. Possible error reasons are:
 
-    * `:malformed` - the data could not be decoded as a CSR
-    * `:mismatch` - the PEM entry fround is of the wrong type
-    * `:multiple` - the string provided contains multiple PEM entities
-
-  *Note*: use `X509.from_pem/2` to decode and filter a string that may contain
-  multiple PEM entities and get the results as a list, e.g.:
-
-      csr_list = X509.from_pem(string, :CertificationRequest)
+    * `:not_found` - no PEM entry of type CERTIFICATE REQUEST was found
+    * `:malformed` - the entry could not be decoded as a CSR
   """
   # @doc since: "0.3.0"
-  @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :mismatch | :multiple}
+  @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :not_found}
   def from_pem(pem) do
-    case :public_key.pem_decode(pem) do
-      [{:CertificationRequest, der, :not_encrypted}] ->
-        from_der(der)
-
-      [_entry] ->
-        {:error, :mismatch}
-
-      _ ->
-        {:error, :multiple}
+    pem
+    |> :public_key.pem_decode()
+    |> Enum.find(&match?({:CertificationRequest, _, :not_encrypted}, &1))
+    |> case do
+      nil -> {:error, :not_found}
+      {:CertificationRequest, der, :not_encrypted} -> from_der(der)
     end
   end
 

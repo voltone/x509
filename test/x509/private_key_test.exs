@@ -25,40 +25,40 @@ defmodule X509.PrivateKeyTest do
 
     test "PEM decode and encode", context do
       pem = File.read!("test/data/rsa.pem")
-      assert match?(rsa_private_key(), from_pem(pem))
+      assert match?({:ok, rsa_private_key()}, from_pem(pem))
 
-      assert context.rsa_key == context.rsa_key |> to_pem() |> from_pem()
+      assert context.rsa_key == context.rsa_key |> to_pem() |> from_pem!()
 
       pem_des3 = File.read!("test/data/rsa_des3.pem")
-      assert match?(rsa_private_key(), from_pem(pem_des3, password: "secret"))
+      assert match?({:ok, rsa_private_key()}, from_pem(pem_des3, password: "secret"))
 
       pem_aes = File.read!("test/data/rsa_aes.pem")
-      assert match?(rsa_private_key(), from_pem(pem_aes, password: "secret"))
+      assert match?({:ok, rsa_private_key()}, from_pem(pem_aes, password: "secret"))
     end
 
     test "PKCS8 PEM decode and encode", context do
       pem = File.read!("test/data/rsa_pkcs8.pem")
-      assert match?(rsa_private_key(), from_pem(pem))
+      assert match?({:ok, rsa_private_key()}, from_pem(pem))
 
       # pem_enc = File.read!("test/data/rsa_pkcs8_enc.pem")
       # assert match?(rsa_private_key(), from_pem(pem_enc, password: "secret"))
 
       if @otp_release >= 21 do
         # PEM encoding of PKCS8 PrivateKeyInfo requires OTP 21 or later
-        assert context.rsa_key == context.rsa_key |> to_pem(wrap: true) |> from_pem()
+        assert context.rsa_key == context.rsa_key |> to_pem(wrap: true) |> from_pem!()
       end
     end
 
     test "DER decode and encode" do
       der = File.read!("test/data/rsa.der")
-      assert match?(rsa_private_key(), from_der(der))
-      assert der == der |> from_der() |> to_der()
+      assert match?(rsa_private_key(), from_der!(der))
+      assert der == der |> from_der!() |> to_der()
     end
 
     test "PKCS8 DER decode and encode" do
       der = File.read!("test/data/rsa_pkcs8.der")
-      assert match?(rsa_private_key(), from_der(der))
-      assert der == der |> from_der() |> to_der(wrap: true)
+      assert match?(rsa_private_key(), from_der!(der))
+      assert der == der |> from_der!() |> to_der(wrap: true)
     end
   end
 
@@ -77,37 +77,37 @@ defmodule X509.PrivateKeyTest do
 
     test "PEM decode and encode", context do
       pem = File.read!("test/data/prime256v1.pem")
-      assert match?(ec_private_key(), from_pem(pem))
+      assert match?({:ok, ec_private_key()}, from_pem(pem))
 
-      assert context.ec_key == context.ec_key |> to_pem() |> from_pem()
+      assert context.ec_key == context.ec_key |> to_pem() |> from_pem!()
 
       pem_des3 = File.read!("test/data/prime256v1_des3.pem")
-      assert match?(ec_private_key(), from_pem(pem_des3, password: "secret"))
+      assert match?({:ok, ec_private_key()}, from_pem(pem_des3, password: "secret"))
 
       pem_aes = File.read!("test/data/prime256v1_aes.pem")
-      assert match?(ec_private_key(), from_pem(pem_aes, password: "secret"))
+      assert match?({:ok, ec_private_key()}, from_pem(pem_aes, password: "secret"))
     end
 
     test "PKCS8 PEM decode and encode", context do
       pem = File.read!("test/data/prime256v1_pkcs8.pem")
-      assert match?(ec_private_key(), from_pem(pem))
+      assert match?({:ok, ec_private_key()}, from_pem(pem))
 
       if @otp_release >= 21 do
         # PEM encoding of PKCS8 PrivateKeyInfo requires OTP 21 or later
-        assert context.ec_key == context.ec_key |> to_pem(wrap: true) |> from_pem()
+        assert context.ec_key == context.ec_key |> to_pem(wrap: true) |> from_pem!()
       end
     end
 
     test "DER decode and encode" do
       der = File.read!("test/data/prime256v1.der")
-      assert match?(ec_private_key(), from_der(der))
-      assert der == der |> from_der() |> to_der()
+      assert match?(ec_private_key(), from_der!(der))
+      assert der == der |> from_der!() |> to_der()
     end
 
     test "PKCS8 DER decode and encode" do
       der = File.read!("test/data/prime256v1_pkcs8.der")
-      assert match?(ec_private_key(), from_der(der))
-      assert der == der |> from_der() |> to_der(wrap: true)
+      assert match?(ec_private_key(), from_der!(der))
+      assert der == der |> from_der!() |> to_der(wrap: true)
     end
   end
 end

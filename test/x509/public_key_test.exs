@@ -48,16 +48,16 @@ defmodule X509.PublicKeyTest do
 
     test "PEM decode and encode", context do
       pem = File.read!("test/data/rsa_pub.pem")
-      assert match?(rsa_public_key(), from_pem(pem))
+      assert match?({:ok, rsa_public_key()}, from_pem(pem))
 
-      assert context.rsa_pub == context.rsa_pub |> to_pem() |> from_pem()
-      assert context.rsa_pub == context.rsa_pub |> to_pem(wrap: false) |> from_pem()
+      assert context.rsa_pub == context.rsa_pub |> to_pem() |> from_pem!()
+      assert context.rsa_pub == context.rsa_pub |> to_pem(wrap: false) |> from_pem!()
     end
 
     test "DER decode and encode" do
       der = File.read!("test/data/rsa_pub.der")
-      assert match?(rsa_public_key(), from_der(der))
-      assert der == der |> from_der() |> to_der()
+      assert match?({:ok, rsa_public_key()}, from_der(der))
+      assert der == der |> from_der!() |> to_der()
     end
   end
 
@@ -93,18 +93,18 @@ defmodule X509.PublicKeyTest do
 
     test "PEM decode and encode", context do
       pem = File.read!("test/data/prime256v1_pub.pem")
-      assert match?({ec_point(), _}, from_pem(pem))
+      assert match?({:ok, {ec_point(), _}}, from_pem(pem))
 
-      assert context.ec_pub == context.ec_pub |> to_pem() |> from_pem()
+      assert context.ec_pub == context.ec_pub |> to_pem() |> from_pem!()
       # EC public key encoding always wraps, ignoring the `wrap: false` option,
       # so this test is effectively the same as the previous one
-      assert context.ec_pub == context.ec_pub |> to_pem(wrap: false) |> from_pem()
+      assert context.ec_pub == context.ec_pub |> to_pem(wrap: false) |> from_pem!()
     end
 
     test "DER decode and encode" do
       der = File.read!("test/data/prime256v1_pub.der")
-      assert match?({ec_point(), _}, from_der(der))
-      assert der == der |> from_der() |> to_der()
+      assert match?({:ok, {ec_point(), _}}, from_der(der))
+      assert der == der |> from_der!() |> to_der()
     end
   end
 end

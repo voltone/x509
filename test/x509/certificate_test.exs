@@ -11,19 +11,19 @@ defmodule X509.CertificateTest do
       selfsigned_rsa:
         "test/data/selfsigned_rsa.pem"
         |> File.read!()
-        |> X509.Certificate.from_pem(),
+        |> X509.Certificate.from_pem!(),
       selfsigned_rsa_key:
         "test/data/rsa.pem"
         |> File.read!()
-        |> X509.PrivateKey.from_pem(),
+        |> X509.PrivateKey.from_pem!(),
       selfsigned_ecdsa:
         "test/data/selfsigned_prime256v1.pem"
         |> File.read!()
-        |> X509.Certificate.from_pem(),
+        |> X509.Certificate.from_pem!(),
       selfsigned_ecdsa_key:
         "test/data/prime256v1.pem"
         |> File.read!()
-        |> X509.PrivateKey.from_pem()
+        |> X509.PrivateKey.from_pem!()
     ]
   end
 

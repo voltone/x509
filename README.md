@@ -37,6 +37,11 @@ iex> my_cert = my_key |>
 {:Certificate, ...}
 ```
 
+## Mix tasks
+
+The `x509.gen.selfsigned` Mix task generates a self-signed certificate for use
+with a TLS server in development or testing.
+
 ## Installation
 
 Add `x509` to your list of dependencies in `mix.exs`:

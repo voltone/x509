@@ -4,14 +4,26 @@
 
 ### Breaking changes
 
+All `from_der` and `from_pem` functions now return an `:error` tuple on failure
+instead of `nil`, and wrap their result in a `:ok` tuple in case of success.
+The only exception is the `from_pem` function in X509, which returns a
+(possibly empty) list.
+
   * [X509] Removed `to_der/1`, `to_pem/1` and `from_der/2`
+  * [X509.Certificate] Changed the return values of `from_der/1` and
+    `from_pem/1,2`, as described above
 
 ### Enhancements
 
   * Add `x509.gen.selfsigned` Mix task
+  * The various `from_pem` and `from_pem!` functions are now more lenient: they
+    scan for the first PEM entry of an appropriate type instead of requiring
+    that it be the only entry
 
 ### Fixes
 
+  * [X509.Certificate] Fixed the typespec for second parameter of
+    `from_der!/2`, `from_der/2`, `from_pem!/2` and `from_pem/2`
   * [X509.PublicKey] Documentation: corrected the default value for the
     `wrap` option for RSA keys in `to_der/1` and `to_pem/1`
 

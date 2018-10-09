@@ -14,6 +14,8 @@ defmodule X509.PublicKey do
           | X509.ASN.record(:otp_subject_public_key_info)
           | X509.ASN.record(:certification_request_subject_pk_info)
 
+  @public_key_records [:RSAPublicKey, :SubjectPublicKeyInfo]
+
   @doc """
   Derives the public key from the given RSA or EC private key.
   """
@@ -200,36 +202,31 @@ defmodule X509.PublicKey do
   # @doc since: "0.3.0"
   @spec from_der!(binary()) :: t() | no_return()
   def from_der!(der) do
-    case X509.try_der_decode(der, [:RSAPublicKey, :SubjectPublicKeyInfo]) do
-      rsa_public_key() = key ->
-        key
-
-      subject_public_key_info() = spki ->
-        unwrap(spki)
-    end
+    {:ok, result} = from_der(der)
+    result
   end
 
   @doc """
   Attempts to parse a public key in DER (binary) format.
 
-  Unwraps a SubjectPublicKeyInfo style container, if present. If the data
-  cannot be parsed as a supported public key type, `nil` is returned.
+  Unwraps a SubjectPublicKeyInfo style container, if present.
 
-  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
-  the near future; in existing applications, consider using `from_der!/2` to
-  ease the migration.
+  Returns an `:ok` tuple in case of success, or an `:error` tuple in case of
+  failure. Possible error reasons are:
+
+    * `:malformed` - the data could not be decoded as a public key
   """
-  @spec from_der(binary()) :: t() | nil
+  @spec from_der(binary()) :: {:ok, t()} | {:error, :malformed}
   def from_der(der) do
-    case X509.try_der_decode(der, [:RSAPublicKey, :SubjectPublicKeyInfo]) do
+    case X509.try_der_decode(der, @public_key_records) do
       nil ->
-        nil
+        {:error, :malformed}
 
       subject_public_key_info() = spki ->
-        unwrap(spki)
+        {:ok, unwrap(spki)}
 
       result ->
-        result
+        {:ok, result}
     end
   end
 
@@ -243,10 +240,8 @@ defmodule X509.PublicKey do
   # @doc since: "0.3.0"
   @spec from_pem!(String.t()) :: t() | no_return()
   def from_pem!(pem) do
-    case :public_key.pem_decode(pem) do
-      [{type, _, :not_encrypted} = entry] when type in [:RSAPublicKey, :SubjectPublicKeyInfo] ->
-        :public_key.pem_entry_decode(entry)
-    end
+    {:ok, result} = from_pem(pem)
+    result
   end
 
   @doc """
@@ -254,23 +249,37 @@ defmodule X509.PublicKey do
 
   Expects the input string to include exactly one PEM entry, which must be of
   type "PUBLIC KEY" or "RSA PUBLIC KEY". Unwraps a SubjectPublicKeyInfo
-  style container, if present. If the data cannot be parsed as a supported
-  public key type, `nil` is returned.
+  style container, if present. Returns an `:ok` tuple in case of success, or
+  an `:error` tuple in case of failure. Possible error reasons are:
 
-  *Note*: this function will be changed to return an `:ok` / `:error` tuple in
-  the near future; in existing applications, consider using `from_der!/2` to
-  ease the migration.
+    * `:not_found` - no PEM entry of a supported PRIVATE KEY type was found
+    * `:malformed` - the entry could not be decoded as a public key
   """
-  @spec from_pem(String.t()) :: t() | nil
+  @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :not_found}
   def from_pem(pem) do
-    case :public_key.pem_decode(pem) do
-      [{type, _, :not_encrypted} = entry] when type in [:RSAPublicKey, :SubjectPublicKeyInfo] ->
-        :public_key.pem_entry_decode(entry)
+    pem
+    |> :public_key.pem_decode()
+    |> Enum.find(&(elem(&1, 0) in @public_key_records))
+    |> case do
+      nil ->
+        {:error, :not_found}
 
-      _ ->
-        nil
+      entry ->
+        try do
+          :public_key.pem_entry_decode(entry)
+        rescue
+          MatchError ->
+            {:error, :malformed}
+        else
+          public_key ->
+            {:ok, public_key}
+        end
     end
   end
+
+  #
+  # Helpers
+  #
 
   defp der_encode(rsa_public_key() = rsa_public_key) do
     :public_key.der_encode(:RSAPublicKey, rsa_public_key)
