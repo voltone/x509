@@ -164,7 +164,7 @@ defmodule X509.Certificate.Extension do
 
   def subject_key_identifier({ec_point(), _parameters} = public_key) do
     :crypto.hash(:sha, X509.PublicKey.to_der(public_key))
-    |> authority_key_identifier()
+    |> subject_key_identifier()
   end
 
   def subject_key_identifier(id) when is_binary(id) do
