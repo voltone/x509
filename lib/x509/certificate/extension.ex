@@ -50,6 +50,9 @@ defmodule X509.Certificate.Extension do
       {:Extension, {2, 5, 29, 19}, false,
        {:BasicConstraints, false, :asn1_NOVALUE}}
 
+      iex> X509.Certificate.Extension.basic_constraints(true, nil)
+      {:Extension, {2, 5, 29, 19}, true, {:BasicConstraints, true, :asn1_NOVALUE}}
+
       iex> X509.Certificate.Extension.basic_constraints(true, 0)
       {:Extension, {2, 5, 29, 19}, true, {:BasicConstraints, true, 0}}
   """
@@ -61,6 +64,14 @@ defmodule X509.Certificate.Extension do
       extnID: oid(:"id-ce-basicConstraints"),
       critical: false,
       extnValue: X509.ASN1.basic_constraints(cA: false, pathLenConstraint: :asn1_NOVALUE)
+    )
+  end
+
+  def basic_constraints(true, nil) do
+    extension(
+      extnID: oid(:"id-ce-basicConstraints"),
+      critical: true,
+      extnValue: X509.ASN1.basic_constraints(cA: true)
     )
   end
 
