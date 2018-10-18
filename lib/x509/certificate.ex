@@ -214,6 +214,16 @@ defmodule X509.Certificate do
   end
 
   @doc """
+  Return the serial number of the certificate.
+  """
+  @spec serial(t()) :: non_neg_integer()
+  def serial(cert) do
+    cert
+    |> otp_certificate(:tbsCertificate)
+    |> otp_tbs_certificate(:serialNumber)
+  end
+
+  @doc """
   Converts a certificate to DER (binary) format.
   """
   @spec to_der(t()) :: binary()
@@ -307,6 +317,13 @@ defmodule X509.Certificate do
       nil -> {:error, :not_found}
       {:Certificate, der, :not_encrypted} -> from_der(der, type)
     end
+  end
+
+  @doc false
+  # Returns a random serial number as an integer
+  def random_serial(size) do
+    <<i::unsigned-size(size)-unit(8)>> = :crypto.strong_rand_bytes(size)
+    i
   end
 
   #
@@ -409,12 +426,6 @@ defmodule X509.Certificate do
         false -> false
       end)
     end)
-  end
-
-  # Returns a random serial number as an integer
-  defp random_serial(size) do
-    <<i::unsigned-size(size)-unit(8)>> = :crypto.strong_rand_bytes(size)
-    i
   end
 
   # Returns a :SignatureAlgorithm record for the given public key type and hash

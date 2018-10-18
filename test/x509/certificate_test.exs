@@ -92,4 +92,20 @@ defmodule X509.CertificateTest do
              |> :public_key.pkix_verify(X509.PublicKey.derive(context.ec_key))
     end
   end
+
+  test :serial_number, context do
+    serial = X509.Certificate.random_serial(8)
+
+    cert =
+      context.ec_key
+      |> X509.PublicKey.derive()
+      |> X509.Certificate.new(
+        "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Example",
+        context.selfsigned_ecdsa,
+        context.selfsigned_ecdsa_key,
+        template: X509.Certificate.Template.new(:server, serial: serial)
+      )
+
+    assert X509.Certificate.serial(cert) == serial
+  end
 end
