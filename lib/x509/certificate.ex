@@ -70,11 +70,11 @@ defmodule X509.Certificate do
       case issuer do
         certificate(tbsCertificate: tbs) ->
           tbs
-          |> otp_tbs_certificate(:issuer)
+          |> otp_tbs_certificate(:subject)
           |> :pubkey_cert_records.transform(:decode)
 
         otp_certificate(tbsCertificate: tbs) ->
-          otp_tbs_certificate(tbs, :issuer)
+          otp_tbs_certificate(tbs, :subject)
       end
 
     public_key
