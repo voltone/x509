@@ -24,6 +24,9 @@ The only exception is the `from_pem` function in X509, which returns a
 
   * [X509.Certificate] Fixed the typespec for second parameter of
     `from_der!/2`, `from_der/2`, `from_pem!/2` and `from_pem/2`
+  * [X509.Certificate] Extract the correct RDN from issuer certificate
+  * [X509.Certificate.Extensions] `subject_key_identifier/1` returned an AKI
+    record rather than SKI record for ECC keys
   * [X509.PublicKey] Documentation: corrected the default value for the
     `wrap` option for RSA keys in `to_der/1` and `to_pem/1`
 
