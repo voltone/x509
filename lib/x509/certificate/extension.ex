@@ -50,6 +50,9 @@ defmodule X509.Certificate.Extension do
       {:Extension, {2, 5, 29, 19}, false,
        {:BasicConstraints, false, :asn1_NOVALUE}}
 
+      iex> X509.Certificate.Extension.basic_constraints(true)
+      {:Extension, {2, 5, 29, 19}, true, {:BasicConstraints, true, :asn1_NOVALUE}}
+
       iex> X509.Certificate.Extension.basic_constraints(true, 0)
       {:Extension, {2, 5, 29, 19}, true, {:BasicConstraints, true, 0}}
   """
