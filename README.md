@@ -17,7 +17,7 @@ iex> ca = X509.Certificate.self_signed(ca_key,
 ...>   "/C=US/ST=CA/L=San Francisco/O=Acme/CN=ECDSA Root CA",
 ...>   template: :root_ca
 ...>)
-{:Certificate, ...}
+{:OTPCertificate, ...}
 ```
 
 Use a CA certificate to issue a server certificate :
@@ -34,7 +34,7 @@ iex> my_cert = my_key |>
 ...>     subject_alt_name: X509.Certificate.Extension.subject_alt_name(["example.org", "www.example.org"])
 ...>   ]
 ...> )
-{:Certificate, ...}
+{:OTPCertificate, ...}
 ```
 
 Please refer to the documentation for the `X509.PrivateKey` module for
