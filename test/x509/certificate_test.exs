@@ -179,5 +179,14 @@ defmodule X509.CertificateTest do
       )
 
     assert X509.Certificate.serial(cert) == serial
+
+    cert =
+      context.ec_key
+      |> X509.Certificate.self_signed(
+        "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Example",
+        serial: {:random, 2}
+      )
+
+    assert X509.Certificate.serial(cert) < 0x10000
   end
 end
