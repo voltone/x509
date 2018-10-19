@@ -127,6 +127,7 @@ defmodule X509.RDNSequence do
   end
 
   def new(list, :plain) do
+    # FIXME: avoid calls to undocumented functions in :public_key app
     list
     |> new(:otp)
     |> :pubkey_cert_records.transform(:encode)
@@ -155,6 +156,7 @@ defmodule X509.RDNSequence do
   end
 
   defp attr_to_string({:AttributeTypeAndValue, _, value} = attr) when is_binary(value) do
+    # FIXME: avoid calls to undocumented functions in :public_key app
     attr
     |> :pubkey_cert_records.transform(:decode)
     |> attr_to_string()

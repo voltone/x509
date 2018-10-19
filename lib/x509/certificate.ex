@@ -69,6 +69,7 @@ defmodule X509.Certificate do
     issuer_rdn =
       case issuer do
         certificate(tbsCertificate: tbs) ->
+          # FIXME: avoid calls to undocumented functions in :public_key app
           tbs
           |> otp_tbs_certificate(:subject)
           |> :pubkey_cert_records.transform(:decode)
@@ -386,6 +387,7 @@ defmodule X509.Certificate do
           nil
 
         plain_ski ->
+          # FIXME: avoid calls to undocumented functions in :public_key app
           plain_ski
           |> :pubkey_cert_records.transform(:decode)
           |> X509.ASN1.extension(:extnValue)
