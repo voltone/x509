@@ -216,6 +216,7 @@ defmodule X509.Certificate do
   @doc """
   Returns the serial number of the certificate.
   """
+  # @doc since: "0.4.0"
   @spec serial(t()) :: non_neg_integer()
   def serial(certificate(tbsCertificate: tbs)) do
     tbs_certificate(tbs, :serialNumber)
@@ -290,6 +291,7 @@ defmodule X509.Certificate do
   optional second parameter specifies the record type to be returned:
   `:OTPCertificate` (default) or `:Certificate`.
   """
+  # @doc since: "0.3.0"
   @spec from_pem!(String.t(), :OTPCertificate | :Certificate) :: t() | no_return()
   def from_pem!(pem, type \\ :OTPCertificate) do
     {:ok, result} = from_pem(pem, type)
