@@ -103,7 +103,7 @@ defmodule X509.CertificateTest do
         "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Example",
         context.selfsigned_ecdsa,
         context.selfsigned_ecdsa_key,
-        template: X509.Certificate.Template.new(:server, serial: serial)
+        serial: serial
       )
 
     assert X509.Certificate.serial(cert) == serial

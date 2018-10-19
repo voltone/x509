@@ -5,10 +5,10 @@ defmodule X509.Certificate.Template do
 
   import X509.Certificate.Extension
 
-  defstruct serial: nil, validity: 365, hash: :sha256, extensions: []
+  defstruct serial: {:random, 8}, validity: 365, hash: :sha256, extensions: []
 
   @type t :: %__MODULE__{
-          serial: pos_integer() | nil,
+          serial: pos_integer() | {:random, pos_integer()},
           validity: pos_integer() | X509.Certificate.Validity.t(),
           hash: atom(),
           extensions: [{atom(), X509.Certificate.Extension.t() | boolean()}]
@@ -55,6 +55,9 @@ defmodule X509.Certificate.Template do
 
       The default validity is 1 year, plus a 30 day grace period.
 
+  All of the above templates generate a random 8 byte (64 bit) serial number,
+  which can be overriden through the `:serial` option (see below).
+
   The `extensions` attribute of a template is a keyword list of extension
   name/value pairs, where the value should typically be an
   `X509.Certificate.Extension` record. The `subject_key_identifier` and
@@ -64,9 +67,8 @@ defmodule X509.Certificate.Template do
   ## Options:
 
     * `:hash` - the hash algorithm to use when signing the certificate
-    * `:serial` - the serial number of the certificate, `{:random, n}` to
-      generate an n-byte random serial number, or `nil` for the default
-      which is an 8-byte random serial number
+    * `:serial` - the serial number of the certificate (an integer >0) or
+      `{:random, n}` to generate an n-byte random serial number
     * `:validity` - override the validity period; can be specified as the
       number of days (integer) or a `X509.Certificate.Validity` value
     * `:extensions` - a keyword list of extensions to be merged into the
@@ -108,7 +110,7 @@ defmodule X509.Certificate.Template do
            [{1, 3, 6, 1, 5, 5, 7, 3, 3}]}
         ],
         hash: :sha256,
-        serial: nil,
+        serial: {:random, 8},
         validity: 395
       }
 

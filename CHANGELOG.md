@@ -19,6 +19,11 @@ The only exception is the `from_pem` function in X509, which returns a
   * The various `from_pem` and `from_pem!` functions are now more lenient: they
     scan for the first PEM entry of an appropriate type instead of requiring
     that it be the only entry
+  * [X509.Certificate] Add `serial/1` to extract a certificate's serial number
+  * [X509.Certificate.Template] The length of randomly generated serial numbers
+    can now be specified using a `{:random, n}` tuple in the `:serial` field,
+    where `n` is the length in bytes; the default is `{:random, 8}`, equivalent
+    to the previous default
 
 ### Fixes
 

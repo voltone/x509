@@ -37,9 +37,8 @@ defmodule X509.Certificate do
     a built-in template (default: `:server`)
   * `:hash` - the hashing algorithm to use when signing the certificate
     (default: from template)
-  * `:serial` - the certificate's serial number, `{:random, n}` to generate
-    an n-byte random value, or `nil`. (default: from template, where it will typically be
-    set to `nil`, resulting in an 8-byte random value)
+  * `:serial` - the certificate's serial number (an integer >0), `{:random, n}`
+    to generate an n-byte random value, or `nil`. (default: from template)
   * `:validity` - an integer specifying the certificate's validity in days,
     or an `X509.Certificate.Validity` record defining the 'not before' and
     'not after' timestamps (default: from template)
@@ -215,13 +214,15 @@ defmodule X509.Certificate do
   end
 
   @doc """
-  Return the serial number of the certificate.
+  Returns the serial number of the certificate.
   """
   @spec serial(t()) :: non_neg_integer()
-  def serial(cert) do
-    cert
-    |> otp_certificate(:tbsCertificate)
-    |> otp_tbs_certificate(:serialNumber)
+  def serial(certificate(tbsCertificate: tbs)) do
+    tbs_certificate(tbs, :serialNumber)
+  end
+
+  def serial(otp_certificate(tbsCertificate: tbs)) do
+    otp_tbs_certificate(tbs, :serialNumber)
   end
 
   @doc """
@@ -336,9 +337,8 @@ defmodule X509.Certificate do
       version: @version,
       serialNumber:
         case Map.get(template, :serial) do
-          nil -> random_serial(8)
           {:random, n} -> random_serial(n)
-          serial -> serial
+          serial when is_integer(serial) -> serial
         end,
       signature: algorithm,
       issuer:
