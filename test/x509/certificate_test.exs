@@ -40,10 +40,46 @@ defmodule X509.CertificateTest do
 
       assert match?(otp_certificate(), cert)
       refute :public_key.pkix_is_self_signed(cert)
+      assert :public_key.pkix_is_issuer(cert, context.selfsigned_rsa)
+      assert {:ok, _} = :public_key.pkix_path_validation(context.selfsigned_rsa, [cert], [])
 
       assert cert
              |> X509.Certificate.to_der()
              |> :public_key.pkix_verify(X509.PublicKey.derive(context.selfsigned_rsa_key))
+    end
+
+    test "intermediate", context do
+      root_key = X509.PrivateKey.new_rsa(512)
+
+      root =
+        root_key
+        |> X509.Certificate.self_signed(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Intermediate CA",
+          template: :root_ca
+        )
+
+      intermediata_key = X509.PrivateKey.new_rsa(512)
+
+      intermediate =
+        intermediata_key
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Intermediate CA",
+          root,
+          root_key,
+          template: :ca
+        )
+
+      cert =
+        context.rsa_key
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Example",
+          intermediate,
+          intermediata_key
+        )
+
+      assert {:ok, _} = :public_key.pkix_path_validation(root, [intermediate, cert], [])
     end
 
     test :self_signed, context do
@@ -73,10 +109,46 @@ defmodule X509.CertificateTest do
 
       assert match?(otp_certificate(), cert)
       refute :public_key.pkix_is_self_signed(cert)
+      assert :public_key.pkix_is_issuer(cert, context.selfsigned_ecdsa)
+      assert {:ok, _} = :public_key.pkix_path_validation(context.selfsigned_ecdsa, [cert], [])
 
       assert cert
              |> X509.Certificate.to_der()
              |> :public_key.pkix_verify(X509.PublicKey.derive(context.selfsigned_ecdsa_key))
+    end
+
+    test "intermediate", context do
+      root_key = X509.PrivateKey.new_ec(:secp256r1)
+
+      root =
+        root_key
+        |> X509.Certificate.self_signed(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Intermediate CA",
+          template: :root_ca
+        )
+
+      intermediata_key = X509.PrivateKey.new_ec(:secp256r1)
+
+      intermediate =
+        intermediata_key
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Intermediate CA",
+          root,
+          root_key,
+          template: :ca
+        )
+
+      cert =
+        context.ec_key
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new(
+          "/C=US/ST=NT/L=Springfield/O=ACME Inc./CN=Example",
+          intermediate,
+          intermediata_key
+        )
+
+      assert {:ok, _} = :public_key.pkix_path_validation(root, [intermediate, cert], [])
     end
 
     test :self_signed, context do
