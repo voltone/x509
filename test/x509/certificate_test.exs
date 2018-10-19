@@ -165,6 +165,34 @@ defmodule X509.CertificateTest do
     end
   end
 
+  test :subject, context do
+    subject = X509.Certificate.subject(context.selfsigned_rsa)
+    assert match?({:rdnSequence, _}, subject)
+    assert X509.RDNSequence.to_string(subject) == "/C=US/ST=NT/L=Springfield/O=ACME Inc."
+  end
+
+  test :issuer, context do
+    issuer = X509.Certificate.issuer(context.selfsigned_rsa)
+    assert match?({:rdnSequence, _}, issuer)
+    assert X509.RDNSequence.to_string(issuer) == "/C=US/ST=NT/L=Springfield/O=ACME Inc."
+  end
+
+  test :validity, context do
+    assert match?(validity(), X509.Certificate.validity(context.selfsigned_rsa))
+  end
+
+  test :extension, context do
+    assert {:Extension, oid(:"id-ce-subjectKeyIdentifier"), false, _} =
+             X509.Certificate.extension(context.selfsigned_rsa, :subject_key_identifier)
+
+    assert {:Extension, oid(:"id-ce-authorityKeyIdentifier"), false, _} =
+             X509.Certificate.extension(context.selfsigned_rsa, :authority_key_identifier)
+
+    assert {:Extension, oid(:"id-ce-basicConstraints"), false,
+            {:BasicConstraints, true, :asn1_NOVALUE}} =
+             X509.Certificate.extension(context.selfsigned_rsa, :basic_constraints)
+  end
+
   test :serial_number, context do
     serial = X509.Certificate.random_serial(8)
 
