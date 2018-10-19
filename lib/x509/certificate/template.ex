@@ -64,11 +64,12 @@ defmodule X509.Certificate.Template do
   ## Options:
 
     * `:hash` - the hash algorithm to use when signing the certificate
-    * `:serial` - the serial number of the certificate; if set to `nil`, a
-      random serial number will be assigned
+    * `:serial` - the serial number of the certificate, `{:random, n}` to
+      generate an n-byte random serial number, or `nil` for the default
+      which is an 8-byte random serial number
     * `:validity` - override the validity period; can be specified as the
       number of days (integer) or a `X509.Certificate.Validity` value
-    * `:extensions` - a keyword list of extentions to be merged into the
+    * `:extensions` - a keyword list of extensions to be merged into the
       template's defaults; set an extension value to `false` to exclude that
       extension from the certificate
 

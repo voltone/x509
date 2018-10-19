@@ -37,8 +37,9 @@ defmodule X509.Certificate do
     a built-in template (default: `:server`)
   * `:hash` - the hashing algorithm to use when signing the certificate
     (default: from template)
-  * `:serial` - the certificate's serial number (default: from template, where
-    it will typically be set to `nil`, resulting in a random value)
+  * `:serial` - the certificate's serial number, `{:random, n}` to generate
+    an n-byte random value, or `nil`. (default: from template, where it will typically be
+    set to `nil`, resulting in an 8-byte random value)
   * `:validity` - an integer specifying the certificate's validity in days,
     or an `X509.Certificate.Validity` record defining the 'not before' and
     'not after' timestamps (default: from template)
@@ -316,7 +317,12 @@ defmodule X509.Certificate do
   defp new_otp_tbs_certificate(public_key, subject_rdn, issuer_rdn, algorithm, template) do
     otp_tbs_certificate(
       version: @version,
-      serialNumber: Map.get(template, :serial) || random_serial(8),
+      serialNumber:
+        case Map.get(template, :serial) do
+          nil -> random_serial(8)
+          {:random, n} -> random_serial(n)
+          serial -> serial
+        end,
       signature: algorithm,
       issuer:
         case issuer_rdn do
