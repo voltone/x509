@@ -71,7 +71,7 @@ defmodule X509.PublicKey do
       algorithm:
         public_key_algorithm(
           algorithm: oid(:rsaEncryption),
-          parameters: :NULL
+          parameters: null()
         ),
       subjectPublicKey: public_key
     )
