@@ -1,5 +1,14 @@
 # Changes
 
+## v0.5.0
+
+### Fixes
+
+  * [X509.Certificate.Validity] The `days_from_now/2` function used to
+    calculate the `not_after` timestamp relative to the `not_before` value
+    (including the `backdate_seconds` shift); it is now set relative to the
+    current time
+
 ## v0.4.0
 
 ### Breaking changes

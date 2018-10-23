@@ -37,8 +37,8 @@ defmodule X509.Certificate.Validity do
   @spec new(DateTime.t(), DateTime.t()) :: t()
   def new(%DateTime{} = not_before, %DateTime{} = not_after) do
     validity(
-      notBefore: to_asn1(not_before),
-      notAfter: to_asn1(not_after)
+      notBefore: X509.DateTime.new(not_before),
+      notAfter: X509.DateTime.new(not_after)
     )
   end
 
@@ -54,33 +54,9 @@ defmodule X509.Certificate.Validity do
   """
   @spec days_from_now(pos_integer(), non_neg_integer()) :: t()
   def days_from_now(days, backdate_seconds \\ @default_backdate_seconds) do
-    not_before =
-      DateTime.utc_now()
-      |> shift(-backdate_seconds)
-
-    not_after = shift(not_before, days * @seconds_per_day)
-    new(not_before, not_after)
-  end
-
-  # Shifts a DateTime value by a number of seconds (positive or negative)
-  defp shift(datetime, seconds) do
-    datetime
-    |> DateTime.to_unix()
-    |> Kernel.+(seconds)
-    |> DateTime.from_unix!()
-  end
-
-  # Converts a DateTime value to ASN.1 UTCTime (for years prior to 2050) or
-  # GeneralizedTime (for years starting with 2050)
-  defp to_asn1(%DateTime{year: year} = datetime) when year < 2050 do
-    iso = DateTime.to_iso8601(datetime, :basic)
-    [_, date, time] = Regex.run(~r/^\d\d(\d{6})T(\d{6})Z$/, iso)
-    {:utcTime, '#{date}#{time}Z'}
-  end
-
-  defp to_asn1(datetime) do
-    iso = DateTime.to_iso8601(datetime, :basic)
-    [_, date, time] = Regex.run(~r/^(\d{8})T(\d{6})Z$/, iso)
-    {:generalizedTime, '#{date}#{time}Z'}
+    validity(
+      notBefore: X509.DateTime.new(-backdate_seconds),
+      notAfter: X509.DateTime.new(days * @seconds_per_day)
+    )
   end
 end
