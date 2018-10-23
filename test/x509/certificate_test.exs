@@ -94,6 +94,33 @@ defmodule X509.CertificateTest do
              |> X509.Certificate.to_der()
              |> :public_key.pkix_verify(X509.PublicKey.derive(context.rsa_key))
     end
+
+    test "RFC example" do
+      assert {:ok, cert1} =
+               "test/data/rfc5280_cert1.cer"
+               |> File.read!()
+               |> X509.Certificate.from_der()
+
+      assert {:BasicConstraints, true, :asn1_NOVALUE} =
+               cert1
+               |> X509.Certificate.extension(:basic_constraints)
+               |> extension(:extnValue)
+
+      assert {:ok, cert2} =
+               "test/data/rfc5280_cert2.cer"
+               |> File.read!()
+               |> X509.Certificate.from_der()
+
+      assert [:digitalSignature, :nonRepudiation] =
+               cert2
+               |> X509.Certificate.extension(:key_usage)
+               |> extension(:extnValue)
+
+      assert [rfc822Name: 'end.entity@example.com'] =
+               cert2
+               |> X509.Certificate.extension(:subject_alt_name)
+               |> extension(:extnValue)
+    end
   end
 
   describe "ECDSA" do
