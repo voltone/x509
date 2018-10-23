@@ -38,7 +38,8 @@ defmodule X509.CSR do
   def new(private_key, subject, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
 
-    algorithm = sign_type(hash, private_key)
+    algorithm =
+      X509.SignatureAlgorithm.new(hash, private_key, :CertificationRequest_signatureAlgorithm)
 
     # Convert subject to RDNSequence, if necessary
     subject_rdn_sequence =
@@ -186,86 +187,5 @@ defmodule X509.CSR do
       nil -> {:error, :not_found}
       {:CertificationRequest, der, :not_encrypted} -> from_der(der)
     end
-  end
-
-  # Returns a :CertificationRequest_signatureAlgorithm record for the given
-  # public key type and hash algorithm; this is essentially the reverse
-  # of `:public_key.pkix_sign_types/1`
-  defp sign_type(hash, rsa_private_key()) do
-    sign_type(hash, :rsa)
-  end
-
-  defp sign_type(hash, ec_private_key()) do
-    sign_type(hash, :ecdsa)
-  end
-
-  defp sign_type(:md5, :rsa) do
-    certification_request_signature_algorithm(
-      algorithm: oid(:md5WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha, :rsa) do
-    certification_request_signature_algorithm(
-      algorithm: oid(:sha1WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha224, :rsa) do
-    certification_request_signature_algorithm(
-      algorithm: oid(:sha224WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha256, :rsa) do
-    certification_request_signature_algorithm(
-      algorithm: oid(:sha256WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha384, :rsa) do
-    certification_request_signature_algorithm(
-      algorithm: oid(:sha384WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha512, :rsa) do
-    certification_request_signature_algorithm(
-      algorithm: oid(:sha512WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(hash, :rsa) do
-    raise ArgumentError, "Unsupported hashing algorithm for RSA signing: #{inspect(hash)}"
-  end
-
-  defp sign_type(:sha, :ecdsa) do
-    certification_request_signature_algorithm(algorithm: oid(:"ecdsa-with-SHA1"))
-  end
-
-  defp sign_type(:sha224, :ecdsa) do
-    certification_request_signature_algorithm(algorithm: oid(:"ecdsa-with-SHA224"))
-  end
-
-  defp sign_type(:sha256, :ecdsa) do
-    certification_request_signature_algorithm(algorithm: oid(:"ecdsa-with-SHA256"))
-  end
-
-  defp sign_type(:sha384, :ecdsa) do
-    certification_request_signature_algorithm(algorithm: oid(:"ecdsa-with-SHA384"))
-  end
-
-  defp sign_type(:sha512, :ecdsa) do
-    certification_request_signature_algorithm(algorithm: oid(:"ecdsa-with-SHA512"))
-  end
-
-  defp sign_type(hash, :ecdsa) do
-    raise ArgumentError, "Unsupported hashing algorithm for ECDSA signing: #{inspect(hash)}"
   end
 end

@@ -11,7 +11,7 @@ defmodule X509.Certificate do
 
   import X509.ASN1, except: [extension: 2]
 
-  alias X509.{PublicKey, RDNSequence}
+  alias X509.{PublicKey, RDNSequence, SignatureAlgorithm}
   alias X509.Certificate.{Template, Validity, Extension}
 
   @typedoc """
@@ -67,7 +67,7 @@ defmodule X509.Certificate do
     algorithm =
       template
       |> Map.get(:hash)
-      |> sign_type(issuer_key)
+      |> SignatureAlgorithm.new(issuer_key)
 
     issuer_rdn =
       case issuer do
@@ -131,7 +131,7 @@ defmodule X509.Certificate do
     algorithm =
       template
       |> Map.get(:hash)
-      |> sign_type(private_key)
+      |> SignatureAlgorithm.new(private_key)
 
     public_key
     |> new_otp_tbs_certificate(subject_rdn, subject_rdn, algorithm, template)
@@ -439,86 +439,5 @@ defmodule X509.Certificate do
         false -> false
       end)
     end)
-  end
-
-  # Returns a :SignatureAlgorithm record for the given public key type and hash
-  # algorithm; this is essentially the reverse of
-  # `:public_key.pkix_sign_types/1`
-  defp sign_type(hash, rsa_private_key()) do
-    sign_type(hash, :rsa)
-  end
-
-  defp sign_type(hash, ec_private_key()) do
-    sign_type(hash, :ecdsa)
-  end
-
-  defp sign_type(:md5, :rsa) do
-    signature_algorithm(
-      algorithm: oid(:md5WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha, :rsa) do
-    signature_algorithm(
-      algorithm: oid(:sha1WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha224, :rsa) do
-    signature_algorithm(
-      algorithm: oid(:sha224WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha256, :rsa) do
-    signature_algorithm(
-      algorithm: oid(:sha256WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha384, :rsa) do
-    signature_algorithm(
-      algorithm: oid(:sha384WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(:sha512, :rsa) do
-    signature_algorithm(
-      algorithm: oid(:sha512WithRSAEncryption),
-      parameters: null()
-    )
-  end
-
-  defp sign_type(hash, :rsa) do
-    raise ArgumentError, "Unsupported hashing algorithm for RSA signing: #{inspect(hash)}"
-  end
-
-  defp sign_type(:sha, :ecdsa) do
-    signature_algorithm(algorithm: oid(:"ecdsa-with-SHA1"))
-  end
-
-  defp sign_type(:sha224, :ecdsa) do
-    signature_algorithm(algorithm: oid(:"ecdsa-with-SHA224"))
-  end
-
-  defp sign_type(:sha256, :ecdsa) do
-    signature_algorithm(algorithm: oid(:"ecdsa-with-SHA256"))
-  end
-
-  defp sign_type(:sha384, :ecdsa) do
-    signature_algorithm(algorithm: oid(:"ecdsa-with-SHA384"))
-  end
-
-  defp sign_type(:sha512, :ecdsa) do
-    signature_algorithm(algorithm: oid(:"ecdsa-with-SHA512"))
-  end
-
-  defp sign_type(hash, :ecdsa) do
-    raise ArgumentError, "Unsupported hashing algorithm for ECDSA signing: #{inspect(hash)}"
   end
 end
