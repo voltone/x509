@@ -2,8 +2,11 @@ defmodule X509.Certificate do
   @moduledoc """
   Module for issuing and working with X.509 certificates.
 
-  For conversion to and from PEM or DER format, use the generic functions in
-  the `X509` module.
+  The primary data type for this module is the `:OTPCertificate` record, but
+  the PEM and DER import and export functions also support the `:Certificate`
+  record type. The former is more convenient to work with, since nested ASN.1
+  elements are further decoded, and some named elements are identified by
+  atoms rather than OID values.
   """
 
   import X509.ASN1, except: [extension: 2]
@@ -12,7 +15,7 @@ defmodule X509.Certificate do
   alias X509.Certificate.{Template, Validity, Extension}
 
   @typedoc """
-  `:Certificate` record , as used in Erlang's `:public_key` module
+  `:OTPCertificate` record , as used in Erlang's `:public_key` module
   """
   @opaque t :: X509.ASN1.record(:otp_certificate)
 
