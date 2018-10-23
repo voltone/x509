@@ -2,6 +2,11 @@
 
 ## v0.5.0
 
+### Enhancements
+
+  * [X509.Certificate.Extension] Add support for the CRL Distribution Point
+    extension
+
 ### Fixes
 
   * [X509.Certificate.Validity] The `days_from_now/2` function used to
