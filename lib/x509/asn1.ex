@@ -69,7 +69,7 @@ defmodule X509.ASN1 do
   end)
 
   # ASN.1 helpers
-  def open_type(asn1_type, entiry), do: open_type(:public_key.der_encode(asn1_type, entiry))
+  def open_type(asn1_type, entity), do: open_type(:public_key.der_encode(asn1_type, entity))
   def open_type(der), do: {:asn1_OPENTYPE, der}
   def null, do: open_type(<<5, 0>>)
 
