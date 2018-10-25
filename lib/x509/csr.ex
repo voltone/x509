@@ -2,9 +2,6 @@ defmodule X509.CSR do
   @moduledoc """
   Implements PKCS#10 Certificate Signing Requests (CSRs), formally known by
   their ASN.1 type CertificationRequest.
-
-  For conversion to and from PEM or DER format, use the generic functions in
-  the `X509` module.
   """
 
   import X509.ASN1
