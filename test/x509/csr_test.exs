@@ -4,17 +4,12 @@ defmodule X509.CSRTest do
 
   doctest X509.CSR
 
-  setup_all do
-    [
-      rsa_key: X509.PrivateKey.new_rsa(512),
-      ec_key: X509.PrivateKey.new_ec(:secp256r1)
-    ]
-  end
-
   describe "RSA" do
+    setup _context, do: [key: X509.PrivateKey.new_rsa(512)]
+
     test "new and valid?", context do
       csr =
-        context.rsa_key
+        context.key
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
 
       assert match?(certification_request(), csr)
@@ -23,15 +18,15 @@ defmodule X509.CSRTest do
 
     test :public_key, context do
       csr =
-        context.rsa_key
+        context.key
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
 
-      assert X509.CSR.public_key(csr) == X509.PublicKey.derive(context.rsa_key)
+      assert X509.CSR.public_key(csr) == X509.PublicKey.derive(context.key)
     end
 
     test :subject, context do
       csr =
-        context.rsa_key
+        context.key
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
 
       assert X509.CSR.subject(csr) ==
@@ -55,9 +50,11 @@ defmodule X509.CSRTest do
   end
 
   describe "ECDSA" do
+    setup _context, do: [key: X509.PrivateKey.new_ec(:secp256r1)]
+
     test "new and valid?", context do
       csr =
-        context.ec_key
+        context.key
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
 
       assert match?(certification_request(), csr)
@@ -66,10 +63,10 @@ defmodule X509.CSRTest do
 
     test :public_key, context do
       csr =
-        context.ec_key
+        context.key
         |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
 
-      assert X509.CSR.public_key(csr) == X509.PublicKey.derive(context.ec_key)
+      assert X509.CSR.public_key(csr) == X509.PublicKey.derive(context.key)
     end
 
     test "PEM decode and encode" do
