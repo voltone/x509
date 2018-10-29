@@ -1,9 +1,17 @@
 defmodule X509.CRL do
   @moduledoc """
-  Module for issuing and working with Certificate Revocation Lists (CRLs).
+  Module for generating and parsing Certificate Revocation Lists (CRLs).
 
   The corresponding ASN.1 data type, used in Erlang's `:public_key` module, is
   called `:CertificateList`.
+
+  Please note that maintaining a CRL typically requires keeping state: the list
+  of revoked certificates, along with their revocation date and expiry date
+  (when they can be removed from the CRL), as well as the CRLs sequence number
+  and the date/time of the next update. This module offers a purely functional
+  interface for generating CRLs based on state kept by the caller.
+
+  Delta CRLs are not currently supported.
   """
 
   import X509.ASN1, except: [extension: 2]
@@ -50,13 +58,20 @@ defmodule X509.CRL do
     hash = Keyword.get(opts, :hash, :sha256)
     algorithm = SignatureAlgorithm.new(hash, issuer_key, :AlgorithmIdentifier)
 
-    this_update = Keyword.get_lazy(opts, :this_update, fn -> X509.DateTime.new() end)
+    this_update =
+      opts
+      |> Keyword.get(:this_update, DateTime.utc_now())
+      |> X509.DateTime.new()
 
     next_update =
-      Keyword.get_lazy(opts, :next_update, fn ->
-        days = Keyword.get(opts, :next_update_in_days, @next_update_days)
-        X509.DateTime.new(days * @seconds_per_day)
-      end)
+      case Keyword.get(opts, :next_update) do
+        nil ->
+          days = Keyword.get(opts, :next_update_in_days, @next_update_days)
+          X509.DateTime.new(days * @seconds_per_day)
+
+        date ->
+          X509.DateTime.new(date)
+      end
 
     crl_extensions =
       opts
@@ -106,6 +121,35 @@ defmodule X509.CRL do
       :asn1_NOVALUE -> []
       list -> list
     end
+  end
+
+  @doc """
+  Returns the Issuer field of the CRL.
+  """
+  @spec issuer(t()) :: X509.RDNSequence.t()
+  def issuer(certificate_list(tbsCertList: tbs)) do
+    tbs
+    |> tbs_cert_list(:issuer)
+  end
+
+  @doc """
+  Returns the date and time when the CRL was issued.
+  """
+  @spec this_update(t()) :: DateTime.t()
+  def this_update(certificate_list(tbsCertList: tbs)) do
+    tbs
+    |> tbs_cert_list(:thisUpdate)
+    |> X509.DateTime.to_datetime()
+  end
+
+  @doc """
+  Returns the date and time when the next CRL update is expected.
+  """
+  @spec next_update(t()) :: DateTime.t()
+  def next_update(certificate_list(tbsCertList: tbs)) do
+    tbs
+    |> tbs_cert_list(:nextUpdate)
+    |> X509.DateTime.to_datetime()
   end
 
   @doc """
@@ -182,8 +226,7 @@ defmodule X509.CRL do
   end
 
   @doc """
-  Returns the list of extensions included in a CRL. Some Certificate extensions
-  are also applicable
+  Returns the list of extensions included in a CRL.
   """
   @spec extensions(t()) :: [X509.CRL.Extension.t()]
   def extensions(certificate_list(tbsCertList: tbs)) do

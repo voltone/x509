@@ -121,6 +121,78 @@ defmodule X509.OpenSSLTest do
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
       assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
     end
+
+    test "OpenSSL can read CRLs (RSA)" do
+      ca_key = X509.PrivateKey.new_rsa(512)
+      ca = X509.Certificate.self_signed(ca_key, "/CN=My Root CA", template: :root_ca)
+
+      cert =
+        X509.PrivateKey.new_rsa(512)
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new("/CN=Sample", ca, ca_key,
+          serial: 0xFF,
+          extensions: [
+            crl_distribution_points:
+              X509.Certificate.Extension.crl_distribution_points(["http://localhost/test.crl"])
+          ]
+        )
+
+      entry =
+        X509.CRL.Entry.new(cert, DateTime.utc_now(), [
+          X509.CRL.Extension.reason_code(:keyCompromise)
+        ])
+
+      file =
+        entry
+        |> List.wrap()
+        |> X509.CRL.new(ca, ca_key)
+        |> X509.CRL.to_pem()
+        |> write_tmp()
+
+      openssl_out = openssl(["crl", "-in", file, "-text", "-noout"])
+      assert openssl_out =~ "Certificate Revocation List (CRL)"
+      assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
+      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ "X509v3 Authority Key Identifier:"
+      assert openssl_out =~ "Serial Number: FF"
+      assert openssl_out =~ "Key Compromise"
+    end
+
+    test "OpenSSL can read CRLs (ECDSA)" do
+      ca_key = X509.PrivateKey.new_ec(:secp256r1)
+      ca = X509.Certificate.self_signed(ca_key, "/CN=My Root CA", template: :root_ca)
+
+      cert =
+        X509.PrivateKey.new_ec(:secp256r1)
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new("/CN=Sample", ca, ca_key,
+          serial: 0xFF,
+          extensions: [
+            crl_distribution_points:
+              X509.Certificate.Extension.crl_distribution_points(["http://localhost/test.crl"])
+          ]
+        )
+
+      entry =
+        X509.CRL.Entry.new(cert, DateTime.utc_now(), [
+          X509.CRL.Extension.reason_code(:keyCompromise)
+        ])
+
+      file =
+        entry
+        |> List.wrap()
+        |> X509.CRL.new(ca, ca_key)
+        |> X509.CRL.to_pem()
+        |> write_tmp()
+
+      openssl_out = openssl(["crl", "-in", file, "-text", "-noout"])
+      assert openssl_out =~ "Certificate Revocation List (CRL)"
+      assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
+      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ "X509v3 Authority Key Identifier:"
+      assert openssl_out =~ "Serial Number: FF"
+      assert openssl_out =~ "Key Compromise"
+    end
   end
 
   describe "DER encode" do
@@ -234,6 +306,78 @@ defmodule X509.OpenSSLTest do
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
       assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
+    end
+
+    test "OpenSSL can read CRLs (RSA)" do
+      ca_key = X509.PrivateKey.new_rsa(512)
+      ca = X509.Certificate.self_signed(ca_key, "/CN=My Root CA", template: :root_ca)
+
+      cert =
+        X509.PrivateKey.new_rsa(512)
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new("/CN=Sample", ca, ca_key,
+          serial: 0xFF,
+          extensions: [
+            crl_distribution_points:
+              X509.Certificate.Extension.crl_distribution_points(["http://localhost/test.crl"])
+          ]
+        )
+
+      entry =
+        X509.CRL.Entry.new(cert, DateTime.utc_now(), [
+          X509.CRL.Extension.reason_code(:keyCompromise)
+        ])
+
+      file =
+        entry
+        |> List.wrap()
+        |> X509.CRL.new(ca, ca_key)
+        |> X509.CRL.to_der()
+        |> write_tmp()
+
+      openssl_out = openssl(["crl", "-in", file, "-inform", "der", "-text", "-noout"])
+      assert openssl_out =~ "Certificate Revocation List (CRL)"
+      assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
+      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ "X509v3 Authority Key Identifier:"
+      assert openssl_out =~ "Serial Number: FF"
+      assert openssl_out =~ "Key Compromise"
+    end
+
+    test "OpenSSL can read CRLs (ECDSA)" do
+      ca_key = X509.PrivateKey.new_ec(:secp256r1)
+      ca = X509.Certificate.self_signed(ca_key, "/CN=My Root CA", template: :root_ca)
+
+      cert =
+        X509.PrivateKey.new_ec(:secp256r1)
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new("/CN=Sample", ca, ca_key,
+          serial: 0xFF,
+          extensions: [
+            crl_distribution_points:
+              X509.Certificate.Extension.crl_distribution_points(["http://localhost/test.crl"])
+          ]
+        )
+
+      entry =
+        X509.CRL.Entry.new(cert, DateTime.utc_now(), [
+          X509.CRL.Extension.reason_code(:keyCompromise)
+        ])
+
+      file =
+        entry
+        |> List.wrap()
+        |> X509.CRL.new(ca, ca_key)
+        |> X509.CRL.to_der()
+        |> write_tmp()
+
+      openssl_out = openssl(["crl", "-in", file, "-inform", "der", "-text", "-noout"])
+      assert openssl_out =~ "Certificate Revocation List (CRL)"
+      assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
+      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ "X509v3 Authority Key Identifier:"
+      assert openssl_out =~ "Serial Number: FF"
+      assert openssl_out =~ "Key Compromise"
     end
   end
 
