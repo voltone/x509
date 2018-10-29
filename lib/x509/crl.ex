@@ -53,6 +53,7 @@ defmodule X509.CRL do
     this extension, specify `authority_key_identifier: false`; other extension
     values will be included in the CRL as-is
   """
+  # @doc since: "0.5.0"
   @spec new([Entry.t()], Certificate.t(), X509.PrivateKey.t(), Keyword.t()) :: t()
   def new(revoked, issuer, issuer_key, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
@@ -107,6 +108,7 @@ defmodule X509.CRL do
   Verifies whether a CRL matches the given issuer certificate and has a valid
   signature.
   """
+  # @doc since: "0.5.0"
   @spec valid?(t(), X509.Certificate.t()) :: boolean()
   def valid?(crl, issuer) do
     :public_key.pkix_is_issuer(crl, issuer) and :public_key.pkix_crl_verify(crl, issuer)
@@ -115,6 +117,7 @@ defmodule X509.CRL do
   @doc """
   Returns the list of CRL entries included in a CRL.
   """
+  # @doc since: "0.5.0"
   @spec list(t()) :: [X509.CRL.Entry.t()]
   def list(certificate_list(tbsCertList: tbs)) do
     case tbs_cert_list(tbs, :revokedCertificates) do
@@ -126,6 +129,7 @@ defmodule X509.CRL do
   @doc """
   Returns the Issuer field of the CRL.
   """
+  # @doc since: "0.5.0"
   @spec issuer(t()) :: X509.RDNSequence.t()
   def issuer(certificate_list(tbsCertList: tbs)) do
     tbs
@@ -135,6 +139,7 @@ defmodule X509.CRL do
   @doc """
   Returns the date and time when the CRL was issued.
   """
+  # @doc since: "0.5.0"
   @spec this_update(t()) :: DateTime.t()
   def this_update(certificate_list(tbsCertList: tbs)) do
     tbs
@@ -145,6 +150,7 @@ defmodule X509.CRL do
   @doc """
   Returns the date and time when the next CRL update is expected.
   """
+  # @doc since: "0.5.0"
   @spec next_update(t()) :: DateTime.t()
   def next_update(certificate_list(tbsCertList: tbs)) do
     tbs
@@ -155,6 +161,7 @@ defmodule X509.CRL do
   @doc """
   Converts a CRL to DER (binary) format.
   """
+  # @doc since: "0.5.0"
   @spec to_der(t()) :: binary()
   def to_der(certificate_list() = crl) do
     :public_key.der_encode(:CertificateList, crl)
@@ -163,6 +170,7 @@ defmodule X509.CRL do
   @doc """
   Converts a CRL to PEM format.
   """
+  # @doc since: "0.5.0"
   @spec to_pem(t()) :: String.t()
   def to_pem(certificate_list() = crl) do
     :public_key.pem_entry_encode(:CertificateList, crl)
@@ -173,6 +181,7 @@ defmodule X509.CRL do
   @doc """
   Attempts to parse a CRL in DER (binary) format. Raises in case of failure.
   """
+  # @doc since: "0.5.0"
   @spec from_der!(binary()) :: t() | no_return()
   def from_der!(der) do
     :public_key.der_decode(:CertificateList, der)
@@ -186,6 +195,7 @@ defmodule X509.CRL do
 
     * `:malformed` - the data could not be decoded as a CRL
   """
+  # @doc since: "0.5.0"
   @spec from_der(binary()) :: {:ok, t()} | {:error, :malformed}
   def from_der(der) do
     {:ok, from_der!(der)}
@@ -198,6 +208,7 @@ defmodule X509.CRL do
 
   Processes the first PEM entry of type X509 CRL found in the input.
   """
+  # @doc since: "0.5.0"
   @spec from_pem!(String.t()) :: t() | no_return()
   def from_pem!(pem) do
     {:ok, csr} = from_pem(pem)
@@ -214,6 +225,7 @@ defmodule X509.CRL do
     * `:not_found` - no PEM entry of type X509 CRL was found
     * `:malformed` - the entry could not be decoded as a CRL
   """
+  # @doc since: "0.5.0"
   @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :not_found}
   def from_pem(pem) do
     pem
@@ -228,6 +240,7 @@ defmodule X509.CRL do
   @doc """
   Returns the list of extensions included in a CRL.
   """
+  # @doc since: "0.5.0"
   @spec extensions(t()) :: [X509.CRL.Extension.t()]
   def extensions(certificate_list(tbsCertList: tbs)) do
     tbs_cert_list(tbs, :crlExtensions)
@@ -239,6 +252,7 @@ defmodule X509.CRL do
   The desired extension can be specified as an atom or an OID value. Returns
   `nil` if the specified extension is not present in the CRL.
   """
+  # @doc since: "0.5.0"
   @spec extension(
           t(),
           X509.CRL.Extension.extension_id()
