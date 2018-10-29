@@ -8,7 +8,7 @@ defmodule X509 do
 
   An optional list of data types may be specified to filter the result down
   to entries of the given types. If an empty list is specified (the default),
-  the results are not filtered.
+  the result is not filtered.
   """
   @spec from_pem(String.t(), :public_key.pki_asn1_type() | [:public_key.pki_asn1_type()]) :: [
           tuple()
