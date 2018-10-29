@@ -4,6 +4,10 @@
 
 ### Enhancements
 
+  * [X509.CRL] New module for generating and parsing Certificate Revocation
+    Lists (CRLs)
+  * [X509.CRL.Entry] New module: CRL entries
+  * [X509.CRL.Extension] New module: CRL extensions
   * [X509.Certificate.Extension] Add support for the CRL Distribution Point
     extension
 
