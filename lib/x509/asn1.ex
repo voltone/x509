@@ -42,7 +42,12 @@ defmodule X509.ASN1 do
     validity: :Validity,
     extension: :Extension,
     basic_constraints: :BasicConstraints,
-    authority_key_identifier: :AuthorityKeyIdentifier
+    authority_key_identifier: :AuthorityKeyIdentifier,
+
+    # CRLs
+    certificate_list: :CertificateList,
+    tbs_cert_list: :TBSCertList,
+    tbs_cert_list_revoked_certificate: :TBSCertList_revokedCertificates_SEQOF
   ]
 
   # The :ECPoint record is the only ASN.1 record defined in public_key.hrl;

@@ -16,6 +16,7 @@ defmodule X509.Certificate.Extension do
           | :subject_key_identifier
           | :authority_key_identifier
           | :subject_alt_name
+          | :crl_distribution_point
 
   @typedoc "Supported values in the key usage extension"
   @type key_usage_value ::
@@ -260,6 +261,45 @@ defmodule X509.Certificate.Extension do
   defp san_entry({_type, _value} = entry), do: entry
 
   @doc """
+  The CRL distribution points extension identifies how CRL information
+  is obtained.
+
+  The list of distribution points must be specified as a list of strings
+  containing HTTP, FTP and/or LDAP URIs. Other types of distribution points are
+  defined in RFC 5280, but are not supported by this function at this time.
+
+  This extension is marked as non-critical.
+
+  Example:
+
+      iex> X509.Certificate.Extension.crl_distribution_points(["http://crl.example.org/root.crl"])
+      {:Extension, {2, 5, 29, 31}, false,
+       [
+         {:DistributionPoint,
+          {:fullName, [uniformResourceIdentifier: 'http://crl.example.org/root.crl']},
+          :asn1_NOVALUE, :asn1_NOVALUE}
+       ]}
+  """
+  # @doc since: "0.5.0"
+  @spec crl_distribution_points([String.t()]) :: t()
+  def crl_distribution_points(uri_list) do
+    extension(
+      extnID: oid(:"id-ce-cRLDistributionPoints"),
+      critical: false,
+      extnValue: Enum.map(uri_list, &crl_distribution_point/1)
+    )
+  end
+
+  defp crl_distribution_point(uri) when is_binary(uri) do
+    {
+      :DistributionPoint,
+      {:fullName, [uniformResourceIdentifier: to_charlist(uri)]},
+      :asn1_NOVALUE,
+      :asn1_NOVALUE
+    }
+  end
+
+  @doc """
   Looks up the value of a specific extension in a list.
 
   The desired extension can be specified as an atom or an OID value. Returns
@@ -272,6 +312,7 @@ defmodule X509.Certificate.Extension do
   def find(list, :subject_key_identifier), do: find(list, oid(:"id-ce-subjectKeyIdentifier"))
   def find(list, :authority_key_identifier), do: find(list, oid(:"id-ce-authorityKeyIdentifier"))
   def find(list, :subject_alt_name), do: find(list, oid(:"id-ce-subjectAltName"))
+  def find(list, :crl_distribution_points), do: find(list, oid(:"id-ce-cRLDistributionPoints"))
 
   def find(list, extension_oid) do
     Enum.find(list, &match?(extension(extnID: ^extension_oid), &1))
