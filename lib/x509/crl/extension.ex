@@ -42,6 +42,7 @@ defmodule X509.CRL.Extension do
       iex> X509.CRL.Extension.crl_number(12)
       {:Extension, {2, 5, 29, 20}, false, <<2, 1, 12>>}
   """
+  # @doc since: "0.5.0"
   @spec crl_number(non_neg_integer()) :: t()
   def crl_number(number) do
     extension(
@@ -65,6 +66,7 @@ defmodule X509.CRL.Extension do
       iex> X509.CRL.Extension.reason_code(:keyCompromise)
       {:Extension, {2, 5, 29, 21}, false, <<10, 1, 1>>}
   """
+  # @doc since: "0.5.0"
   @spec reason_code(reason_code_value()) :: t()
   def reason_code(reason) do
     extension(
@@ -80,6 +82,7 @@ defmodule X509.CRL.Extension do
   The desired extension can be specified as an atom or an OID value. Returns
   `nil` if the specified extension is not present in the certificate.
   """
+  # @doc since: "0.5.0"
   @spec find([t()], extension_id() | :public_key.oid()) :: t() | nil
   def find(list, :reason_code), do: find(list, oid(:"id-ce-cRLReasons"))
   def find(list, :crl_number), do: find(list, oid(:"id-ce-cRLNumber"))

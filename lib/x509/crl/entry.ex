@@ -17,6 +17,7 @@ defmodule X509.CRL.Entry do
   revocation date must be specified, and additional metadata may be specified
   as one or more `X509.CRL.Extension` entries.
   """
+  # @doc since: "0.5.0"
   @spec new(X509.Certificate.t() | pos_integer(), DateTime.t(), [X509.CRL.Extension.t()]) :: t()
   def new(certificate, date, extensions \\ [])
 
@@ -38,12 +39,14 @@ defmodule X509.CRL.Entry do
   @doc """
   Returns the certificate serial number for a CRL entry.
   """
+  # @doc since: "0.5.0"
   @spec serial(t()) :: pos_integer()
   def serial(tbs_cert_list_revoked_certificate(userCertificate: number)), do: number
 
   @doc """
   Returns the certificate recocation date for a CRL entry.
   """
+  # @doc since: "0.5.0"
   @spec revocation_date(t()) :: DateTime.t()
   def revocation_date(tbs_cert_list_revoked_certificate(revocationDate: date)) do
     X509.DateTime.to_datetime(date)
@@ -52,6 +55,7 @@ defmodule X509.CRL.Entry do
   @doc """
   Returns the list of extensions in a CRL entry.
   """
+  # @doc since: "0.5.0"
   @spec extensions(t()) :: [X509.CRL.Extension.t()]
   def extensions(tbs_cert_list_revoked_certificate(crlEntryExtensions: extensions)) do
     extensions
@@ -63,6 +67,7 @@ defmodule X509.CRL.Entry do
   The desired extension can be specified as an atom or an OID value. Returns
   `nil` if the specified extension is not present in the CRL entry.
   """
+  # @doc since: "0.5.0"
   @spec extension(
           t(),
           X509.CRL.Extension.extension_id()
