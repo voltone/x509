@@ -1,7 +1,7 @@
 defmodule X509.DateTime do
   @moduledoc false
 
-  # Builts an ASN.1 UTCTime (for years prior to 2050) or GeneralizedTime (for
+  # Builds an ASN.1 UTCTime (for years prior to 2050) or GeneralizedTime (for
   # years starting with 2050)
   def new() do
     DateTime.utc_now() |> new()
