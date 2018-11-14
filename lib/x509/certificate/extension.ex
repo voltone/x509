@@ -7,7 +7,7 @@ defmodule X509.Certificate.Extension do
   import X509.ASN1, except: [basic_constraints: 2, authority_key_identifier: 1]
 
   @typedoc "`:Extension` record, as used in Erlang's `:public_key` module"
-  @opaque t :: X509.ASN1.record(:extension)
+  @type t :: X509.ASN1.record(:extension)
 
   @type extension_id ::
           :basic_constraints

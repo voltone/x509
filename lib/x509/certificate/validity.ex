@@ -12,7 +12,7 @@ defmodule X509.Certificate.Validity do
   @type time :: {:utcTime | :generalizedTime, charlist()}
 
   @typedoc "`:Validity` record, as used in Erlang's `:public_key` module"
-  @opaque t :: X509.ASN1.record(:validity)
+  @type t :: X509.ASN1.record(:validity)
 
   @default_backdate_seconds 5 * 60
   @seconds_per_day 24 * 60 * 60
