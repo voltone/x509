@@ -17,7 +17,7 @@ defmodule X509.Certificate do
   @typedoc """
   `:OTPCertificate` record , as used in Erlang's `:public_key` module
   """
-  @opaque t :: X509.ASN1.record(:otp_certificate)
+  @type t :: X509.ASN1.record(:otp_certificate)
 
   @version :v3
 
