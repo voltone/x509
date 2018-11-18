@@ -10,6 +10,8 @@
   * [X509.CRL.Extension] New module: CRL extensions
   * [X509.Certificate.Extension] Add support for the CRL Distribution Point
     extension
+  * [X509.Test.Suite] New module for generating test suites for TLS client
+    testing
 
 ### Fixes
 
