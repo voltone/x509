@@ -22,3 +22,5 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 x509-*.tar
 
+# Ignore any Mix-task generated certificates/keys
+/priv/cert/

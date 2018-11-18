@@ -12,6 +12,7 @@
     extension
   * [X509.Test.Suite] New module for generating test suites for TLS client
     testing
+  * Add `x509.gen.suite` Mix task
 
 ### Fixes
 
