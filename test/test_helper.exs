@@ -22,7 +22,9 @@ defmodule TestHelper do
   def start(module, args \\ []) do
     {:ok, pid} =
       if version(:ex_unit) >= [1, 6] do
-        ExUnit.Callbacks.start_supervised({module, args})
+        # Assign a unique ID, to allow multiple servers to be running under
+        # the ExUnit supervisor at the same time
+        ExUnit.Callbacks.start_supervised({module, args}, id: make_ref())
       else
         module.start_link(args)
       end
