@@ -1,7 +1,7 @@
 defmodule X509.MixProject do
   use Mix.Project
 
-  @version "0.5.0-dev"
+  @version "0.5.0"
 
   def project do
     [
@@ -33,9 +33,8 @@ defmodule X509.MixProject do
   end
 
   defp description do
-    """
-    Package for working with certificates, CSRs and key pairs.
-    """
+    "Elixir package for working with X.509 certificates, Certificate Signing " <>
+      "Requests (CSRs), Certificate Revocation Lists (CRLs) and RSA/ECC key pairs"
   end
 
   defp package do
