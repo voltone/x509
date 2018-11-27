@@ -23,6 +23,7 @@ defmodule X509.Test.ServerTest do
   # documenting unexpected behaviour, interop issues or insecure defaults.
 
   use ExUnit.Case
+  import X509.TestHelper
   require Logger
 
   #
@@ -352,270 +353,275 @@ defmodule X509.Test.ServerTest do
     end
   end
 
-  describe "ECDSA, PEM" do
-    setup [:ecdsa_suite, :create_pem_files]
+  # ECDSA tests fail on older OTP releases, due to OTP-15203
+  if version(:ssl) >= [8, 2, 6, 2] and version(:ssl) != [9, 0, 0] do
+    describe "ECDSA, PEM" do
+      setup [:ecdsa_suite, :create_pem_files]
 
-    test "valid", context do
-      assert {:ok, _} =
-               request('https://valid.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
-
-    test "valid-missing-chain", context do
-      assert {:error, {:tls_alert, 'unknown ca'}} =
-               request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
-
-    test "valid-missing-chain with intermediate in cacerts", context do
-      # On OTP 21, `ssl` will fill in gaps in the server's chain using
-      # intermediate CAs from the provided trust store
-      if version(:ssl) >= [9, 0, 2] do
+      test "valid", context do
         assert {:ok, _} =
-                 request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
-                   cacertfile: context.cacertfile_with_chain
+                 request('https://valid.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
                  )
       end
-    end
 
-    test "valid-expired-chain", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
-               request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
+      test "valid-missing-chain", context do
+        assert {:error, {:tls_alert, 'unknown ca'}} =
+                 request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
 
-    test "valid-revoked-chain", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
-               request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
+      test "valid-missing-chain with intermediate in cacerts", context do
+        # On OTP 21, `ssl` will fill in gaps in the server's chain using
+        # intermediate CAs from the provided trust store
+        if version(:ssl) >= [9, 0, 2] do
+          assert {:ok, _} =
+                   request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                     cacertfile: context.cacertfile_with_chain
+                   )
+        end
+      end
 
-    test "valid-wrong-key", context do
-      assert {:error, {:tls_alert, 'decrypt error'}} =
-               request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
+      test "valid-expired-chain", context do
+        assert {:error, {:tls_alert, 'certificate expired'}} =
+                 request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
 
-    test "valid-wrong-host", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
-               request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
+      test "valid-revoked-chain", context do
+        assert {:error, {:tls_alert, 'certificate revoked'}} =
+                 request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
 
-    # ISSUE: this test case fails, because `public_key` does not explore
-    # alternate paths to complete the chain; instead, it only looks for CAs
-    # in its CA store that can complete the chain presented by the peer;
-    # it is possible to work around this using a `partial_chain` function,
-    # but this short-circuits other certificate verification features, such
-    # as revocation checks and path length constraint checking
-    @tag :known_to_fail
-    test "valid-cross-signed, cross-signed CA", context do
-      assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
+      test "valid-wrong-key", context do
+        assert {:error, {:tls_alert, 'decrypt error'}} =
+                 request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
 
-    test "valid-cross-signed, cross-signing CA", context do
-      # TODO: this only works with 'best effort' CRL checks; this may be an
-      # issue with the test suite
-      assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.alternate_cacertfile,
-                 crl_check: :best_effort
-               )
-    end
+      test "valid-wrong-host", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
 
-    test "valid.wildcard", context do
-      # OTP 21 supports wildcard certificates with the Subject Alternate Name
-      # extension, if configured properly (see `request/2` comments); on older
-      # versions this test would fail
-      if version(:public_key) >= [1, 6] do
+      # ISSUE: this test case fails, because `public_key` does not explore
+      # alternate paths to complete the chain; instead, it only looks for CAs
+      # in its CA store that can complete the chain presented by the peer;
+      # it is possible to work around this using a `partial_chain` function,
+      # but this short-circuits other certificate verification features, such
+      # as revocation checks and path length constraint checking
+      @tag :known_to_fail
+      test "valid-cross-signed, cross-signed CA", context do
         assert {:ok, _} =
-                 request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
+
+      test "valid-cross-signed, cross-signing CA", context do
+        # TODO: this only works with 'best effort' CRL checks; this may be an
+        # issue with the test suite
+        assert {:ok, _} =
+                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.alternate_cacertfile,
+                   crl_check: :best_effort
+                 )
+      end
+
+      test "valid.wildcard", context do
+        # OTP 21 supports wildcard certificates with the Subject Alternate Name
+        # extension, if configured properly (see `request/2` comments); on older
+        # versions this test would fail
+        if version(:public_key) >= [1, 6] do
+          assert {:ok, _} =
+                   request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                     cacertfile: context.cacertfile
+                   )
+        end
+      end
+
+      test "wildcard, bare domain", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request('https://wildcard.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
+
+      test "invalid.subdomain.wildcard", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request(
+                   'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
+
+      test "expired", context do
+        assert {:error, {:tls_alert, 'certificate expired'}} =
+                 request('https://expired.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
+
+      test "revoked", context do
+        assert {:error, {:tls_alert, 'certificate revoked'}} =
+                 request('https://revoked.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+      end
+
+      test "selfsigned", context do
+        assert {:error, {:tls_alert, 'bad certificate'}} =
+                 request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
       end
     end
 
-    test "wildcard, bare domain", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
-               request('https://wildcard.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
+    describe "ECDSA, DER" do
+      setup [:ecdsa_suite]
 
-    test "invalid.subdomain.wildcard", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
-               request(
-                 'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
-
-    test "expired", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
-               request('https://expired.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
-
-    test "revoked", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
-               request('https://revoked.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
-
-    test "selfsigned", context do
-      assert {:error, {:tls_alert, 'bad certificate'}} =
-               request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile
-               )
-    end
-  end
-
-  describe "ECDSA, DER" do
-    setup [:ecdsa_suite]
-
-    test "valid", context do
-      assert {:ok, _} =
-               request('https://valid.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
-
-    test "valid-missing-chain", context do
-      assert {:error, {:tls_alert, 'unknown ca'}} =
-               request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
-
-    test "valid-missing-chain with intermediate in cacerts", context do
-      # On OTP 21, `ssl` will fill in gaps in the server's chain using
-      # intermediate CAs from the provided trust store
-      if version(:ssl) >= [9, 0, 2] do
-        # ISSUE: `ssl` fails to perform CRL checks on certificates issued by
-        # certificates that were passed in via the `cacerts` option; since the
-        # issuer of the peer certificate in this case is taken from `cacerts`,
-        # no CRL checks can be performed
+      test "valid", context do
         assert {:ok, _} =
+                 request('https://valid.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      test "valid-missing-chain", context do
+        assert {:error, {:tls_alert, 'unknown ca'}} =
                  request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
-                   cacerts: context.suite.cacerts ++ context.suite.chain,
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      test "valid-missing-chain with intermediate in cacerts", context do
+        # On OTP 21, `ssl` will fill in gaps in the server's chain using
+        # intermediate CAs from the provided trust store
+        if version(:ssl) >= [9, 0, 2] do
+          # ISSUE: `ssl` fails to perform CRL checks on certificates issued by
+          # certificates that were passed in via the `cacerts` option; since the
+          # issuer of the peer certificate in this case is taken from `cacerts`,
+          # no CRL checks can be performed
+          assert {:ok, _} =
+                   request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                     cacerts: context.suite.cacerts ++ context.suite.chain,
+                     crl_check: false
+                   )
+        end
+      end
+
+      test "valid-expired-chain", context do
+        assert {:error, {:tls_alert, 'certificate expired'}} =
+                 request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      # ISSUE: this test case fails, because `ssl` does not handle CRL checks on
+      # certificates issued by CAs passed in through `cacerts`
+      @tag :known_to_fail
+      test "valid-revoked-chain", context do
+        assert {:error, {:tls_alert, 'certificate revoked'}} =
+                 request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      test "valid-wrong-key", context do
+        assert {:error, {:tls_alert, 'decrypt error'}} =
+                 request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      test "valid-wrong-host", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      # ISSUE: this test case fails, because `public_key` does not explore
+      # alternate paths to complete the chain; instead, it only looks for CAs
+      # in its CA store that can complete the chain presented by the peer;
+      # it is possible to work around this using a `partial_chain` function,
+      # but this short-circuits other certificate verification features, such
+      # as revocation checks and path length constraint checking
+      @tag :known_to_fail
+      test "valid-cross-signed, cross-signed CA", context do
+        assert {:ok, _} =
+                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
+
+      test "valid-cross-signed, cross-signing CA", context do
+        # TODO: this does not work with CRL checks at all, not even peer-only;
+        # this may be an issue with the test suite
+        assert {:ok, _} =
+                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.alternate_cacerts,
                    crl_check: false
                  )
       end
-    end
 
-    test "valid-expired-chain", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
-               request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
+      test "valid.wildcard", context do
+        # OTP 21 supports wildcard certificates with the Subject Alternate Name
+        # extension, if configured properly (see `request/2` comments); on older
+        # versions this test would fail
+        if version(:public_key) >= [1, 6] do
+          assert {:ok, _} =
+                   request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                     cacerts: context.suite.cacerts
+                   )
+        end
+      end
 
-    # ISSUE: this test case fails, because `ssl` does not handle CRL checks on
-    # certificates issued by CAs passed in through `cacerts`
-    @tag :known_to_fail
-    test "valid-revoked-chain", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
-               request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
+      test "wildcard, bare domain", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request('https://wildcard.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
 
-    test "valid-wrong-key", context do
-      assert {:error, {:tls_alert, 'decrypt error'}} =
-               request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
+      test "invalid.subdomain.wildcard", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request(
+                   'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
 
-    test "valid-wrong-host", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
-               request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
+      test "expired", context do
+        assert {:error, {:tls_alert, 'certificate expired'}} =
+                 request('https://expired.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
 
-    # ISSUE: this test case fails, because `public_key` does not explore
-    # alternate paths to complete the chain; instead, it only looks for CAs
-    # in its CA store that can complete the chain presented by the peer;
-    # it is possible to work around this using a `partial_chain` function,
-    # but this short-circuits other certificate verification features, such
-    # as revocation checks and path length constraint checking
-    @tag :known_to_fail
-    test "valid-cross-signed, cross-signed CA", context do
-      assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
+      test "revoked", context do
+        assert {:error, {:tls_alert, 'certificate revoked'}} =
+                 request('https://revoked.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+      end
 
-    test "valid-cross-signed, cross-signing CA", context do
-      # TODO: this does not work with CRL checks at all, not even peer-only;
-      # this may be an issue with the test suite
-      assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.alternate_cacerts,
-                 crl_check: false
-               )
-    end
-
-    test "valid.wildcard", context do
-      # OTP 21 supports wildcard certificates with the Subject Alternate Name
-      # extension, if configured properly (see `request/2` comments); on older
-      # versions this test would fail
-      if version(:public_key) >= [1, 6] do
-        assert {:ok, _} =
-                 request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+      test "selfsigned", context do
+        assert {:error, {:tls_alert, 'bad certificate'}} =
+                 request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
       end
     end
-
-    test "wildcard, bare domain", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
-               request('https://wildcard.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
-
-    test "invalid.subdomain.wildcard", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
-               request(
-                 'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
-
-    test "expired", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
-               request('https://expired.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
-
-    test "revoked", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
-               request('https://revoked.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
-
-    test "selfsigned", context do
-      assert {:error, {:tls_alert, 'bad certificate'}} =
-               request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
-                 cacerts: context.suite.cacerts
-               )
-    end
+  else
+    Logger.warn("ECDSA certificates can't be tested on the current OTP version")
   end
 
   #
@@ -710,16 +716,6 @@ defmodule X509.Test.ServerTest do
     |> Enum.map(&X509.Certificate.from_der!/1)
     |> Enum.map(&X509.Certificate.to_pem/1)
     |> Enum.join()
-  end
-
-  # Returns the version of the specified OTP application as a list of integers
-  defp version(application) do
-    application
-    |> Application.spec()
-    |> Keyword.get(:vsn)
-    |> to_string()
-    |> String.split(".")
-    |> Enum.map(&String.to_integer/1)
   end
 
   # Starts the GenServer in the specified module, using ExUnit's
