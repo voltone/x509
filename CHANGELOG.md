@@ -1,5 +1,11 @@
 # Changes
 
+## v0.6.0
+
+### Enhancements
+
+### Fixes
+
 ## v0.5.0
 
 ### Enhancements
