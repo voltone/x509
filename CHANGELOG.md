@@ -6,7 +6,7 @@
 
 * [X509.Certificate.Validity] The record type returned for GeneralizedTime,
   used for dates from 2050 forward, was not recognized by OTP, causing
-  certificate creating and encoding to fail (#24)
+  certificate creation and encoding to fail (#24)
 
 ## v0.5.0
 
