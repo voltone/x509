@@ -20,14 +20,14 @@ defmodule X509.DateTime do
   def new(datetime) do
     iso = DateTime.to_iso8601(datetime, :basic)
     [_, date, time] = Regex.run(~r/^(\d{8})T(\d{6})(?:\.\d+)?Z$/, iso)
-    {:generalizedTime, '#{date}#{time}Z'}
+    {:generalTime, '#{date}#{time}Z'}
   end
 
   def to_datetime({:utcTime, time}) do
     "20#{time}" |> to_datetime()
   end
 
-  def to_datetime({:generalizedTime, time}) do
+  def to_datetime({:generalTime, time}) do
     time |> to_string() |> to_datetime()
   end
 

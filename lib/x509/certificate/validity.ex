@@ -9,7 +9,7 @@ defmodule X509.Certificate.Validity do
   import X509.ASN1
 
   @typedoc "X.509 Time type (UTCTime or GeneralizedTime)"
-  @type time :: {:utcTime | :generalizedTime, charlist()}
+  @type time :: {:utcTime | :generalTime, charlist()}
 
   @typedoc "`:Validity` record, as used in Erlang's `:public_key` module"
   @type t :: X509.ASN1.record(:validity)
@@ -31,8 +31,8 @@ defmodule X509.Certificate.Validity do
       iex> {:ok, not_before, 0} = DateTime.from_iso8601("2051-01-01T00:00:00Z")
       iex> {:ok, not_after, 0} = DateTime.from_iso8601("2051-12-31T23:59:59Z")
       iex> X509.Certificate.Validity.new(not_before, not_after)
-      {:Validity, {:generalizedTime, '20510101000000Z'},
-        {:generalizedTime, '20511231235959Z'}}
+      {:Validity, {:generalTime, '20510101000000Z'},
+        {:generalTime, '20511231235959Z'}}
   """
   @spec new(DateTime.t(), DateTime.t()) :: t()
   def new(%DateTime{} = not_before, %DateTime{} = not_after) do
