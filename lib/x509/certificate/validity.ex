@@ -52,7 +52,7 @@ defmodule X509.Certificate.Validity do
   value that does not reveal the exact time when the keypair was generated.
   This minimizes information leakage about the state of the RNG.
   """
-  @spec days_from_now(pos_integer(), non_neg_integer()) :: t()
+  @spec days_from_now(integer(), non_neg_integer()) :: t()
   def days_from_now(days, backdate_seconds \\ @default_backdate_seconds) do
     validity(
       notBefore: X509.DateTime.new(-backdate_seconds),

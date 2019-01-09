@@ -124,7 +124,7 @@ defmodule X509.Certificate.Extension do
       {:Extension, {2, 5, 29, 37}, false,
        [{1, 3, 6, 1, 5, 5, 7, 3, 1}, {1, 3, 6, 1, 5, 5, 7, 3, 2}]}
   """
-  @spec ext_key_usage([:atom | :public_key.oid()]) :: t()
+  @spec ext_key_usage([atom() | :public_key.oid()]) :: t()
   def ext_key_usage(list) do
     extension(
       extnID: oid(:"id-ce-extKeyUsage"),

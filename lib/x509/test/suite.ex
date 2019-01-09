@@ -126,7 +126,7 @@ defmodule X509.Test.Suite do
     ECC keys based on the given curve (default:
     `#{inspect(@default_opts[:key_type])}`)
   """
-  @spec new([Keyword.t()]) :: t()
+  @spec new(Keyword.t()) :: t()
   def new(opts \\ []) do
     opts = Keyword.merge(@default_opts, opts)
     crl_server = Keyword.get(opts, :crl_server)
