@@ -161,7 +161,7 @@ defmodule X509.Test.Suite do
       |> X509.PublicKey.derive()
       |> X509.Certificate.new("/O=#{__MODULE__}/CN=Intermediate CA", root_ca, root_ca_key,
         template: :ca,
-        validity: X509.Certificate.Validity.days_from_now(-1, -30 * @seconds_per_day),
+        validity: X509.Certificate.Validity.days_from_now(-1, 30 * @seconds_per_day),
         extensions: crl_extensions(crl_server, "root_ca.crl")
       )
 
@@ -252,7 +252,7 @@ defmodule X509.Test.Suite do
         "/O=#{__MODULE__}/CN=Expired",
         intermediate_ca,
         intermediate_ca_key,
-        validity: X509.Certificate.Validity.days_from_now(-1, -30 * @seconds_per_day),
+        validity: X509.Certificate.Validity.days_from_now(-1, 30 * @seconds_per_day),
         extensions:
           [
             subject_alt_name:
