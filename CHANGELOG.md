@@ -1,5 +1,12 @@
 # Changes
 
+## v0.5.2
+
+### Enhancements
+
+* [X509.Certificate] Add `version/1`, `subject/2` and `issuer/2`
+* [X509.RDNSequence] Add `get_attr/2`
+
 ## v0.5.1
 
 ### Fixes
