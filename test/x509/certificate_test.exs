@@ -200,12 +200,17 @@ defmodule X509.CertificateTest do
     subject = X509.Certificate.subject(context.selfsigned_rsa)
     assert match?({:rdnSequence, _}, subject)
     assert X509.RDNSequence.to_string(subject) == "/C=US/ST=NT/L=Springfield/O=ACME Inc."
+    assert ["ACME Inc."] == X509.Certificate.subject(context.selfsigned_rsa, "O")
+
+    assert ["NT"] ==
+             X509.Certificate.subject(context.selfsigned_rsa, oid(:"id-at-stateOrProvinceName"))
   end
 
   test :issuer, context do
     issuer = X509.Certificate.issuer(context.selfsigned_rsa)
     assert match?({:rdnSequence, _}, issuer)
     assert X509.RDNSequence.to_string(issuer) == "/C=US/ST=NT/L=Springfield/O=ACME Inc."
+    assert ["US"] == X509.Certificate.subject(context.selfsigned_rsa, "countryName")
   end
 
   test :validity, context do

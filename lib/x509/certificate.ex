@@ -166,6 +166,18 @@ defmodule X509.Certificate do
   end
 
   @doc """
+  Returns attribute values of the Subject field of a certificate.
+
+  See also `X509.RDNSequence.get_attr/2`.
+  """
+  @spec subject(t(), binary() | :public_key.oid()) :: [String.t()]
+  def subject(cert, attr_type) do
+    cert
+    |> subject()
+    |> X509.RDNSequence.get_attr(attr_type)
+  end
+
+  @doc """
   Returns the Issuer field of a certificate.
   """
   @spec issuer(t()) :: X509.RDNSequence.t()
@@ -175,6 +187,18 @@ defmodule X509.Certificate do
 
   def issuer(otp_certificate(tbsCertificate: tbs)) do
     otp_tbs_certificate(tbs, :issuer)
+  end
+
+  @doc """
+  Returns attribute values of the Issuer field of a certificate.
+
+  See also `X509.RDNSequence.get_attr/2`.
+  """
+  @spec issuer(t(), binary() | :public_key.oid()) :: [String.t()]
+  def issuer(cert, attr_type) do
+    cert
+    |> issuer()
+    |> X509.RDNSequence.get_attr(attr_type)
   end
 
   @doc """

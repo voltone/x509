@@ -155,6 +155,92 @@ defmodule X509.RDNSequence do
        |> Enum.join("/"))
   end
 
+  @doc """
+  Extracts the values for the specified attributes from a `:rdnSquence` tuple.
+
+  The attribute type may be specified as an attribute name (long or short form,
+  as a string, or long from as an atom) or an OID tuple. Refer to the
+  documentation at the top of this module for a list of supported attributes.
+
+  Since an attribute may appear more than once in an RDN sequence the result is
+  a list of values.
+
+  ## Examples:
+
+      iex> X509.RDNSequence.new("/C=US/CN=Bob") |> X509.RDNSequence.get_attr(:countryName)
+      ["US"]
+      iex> X509.RDNSequence.new("/C=US/CN=Bob") |> X509.RDNSequence.get_attr("commonName")
+      ["Bob"]
+      iex> X509.RDNSequence.new("C=CN, givenName=麗") |> X509.RDNSequence.get_attr("GN")
+      ["麗"]
+  """
+  @spec get_attr(t(), binary() | atom() | :public_key.oid()) :: [String.t()]
+  def get_attr({:rdnSequence, sequence}, attr_type) do
+    oid = attr_type_to_oid(attr_type)
+
+    for {:AttributeTypeAndValue, ^oid, value} = attr <- List.flatten(sequence) do
+      if is_binary(value) do
+        # FIXME: avoid calls to undocumented functions in :public_key app
+        {_, _, value} = :pubkey_cert_records.transform(attr, :decode)
+        attr_value_to_string(value)
+      else
+        attr_value_to_string(value)
+      end
+    end
+  end
+
+  defp attr_type_to_oid(oid) when is_tuple(oid), do: oid
+
+  defp attr_type_to_oid(type) when type in ["countryName", "C", :countryName],
+    do: oid(:"id-at-countryName")
+
+  defp attr_type_to_oid(type) when type in ["organizationName", "O", :organizationName],
+    do: oid(:"id-at-organizationName")
+
+  defp attr_type_to_oid(type)
+       when type in ["organizationalUnitName", "OU", :organizationalUnitName],
+       do: oid(:"id-at-organizationalUnitName")
+
+  defp attr_type_to_oid(type) when type in ["dnQualifier", :dnQualifier],
+    do: oid(:"id-at-dnQualifier")
+
+  defp attr_type_to_oid(type)
+       when type in ["stateOrProvinceName", "ST", :stateOrProvinceName],
+       do: oid(:"id-at-stateOrProvinceName")
+
+  defp attr_type_to_oid(type) when type in ["commonName", "CN", :commonName],
+    do: oid(:"id-at-commonName")
+
+  defp attr_type_to_oid(type) when type in ["serialNumber", :serialNumber],
+    do: oid(:"id-at-serialNumber")
+
+  defp attr_type_to_oid(type) when type in ["localityName", "L", :localityName],
+    do: oid(:"id-at-localityName")
+
+  defp attr_type_to_oid(type) when type in ["title", :title], do: oid(:"id-at-title")
+  defp attr_type_to_oid(type) when type in ["name", :name], do: oid(:"id-at-name")
+
+  defp attr_type_to_oid(type) when type in ["surname", "SN", :surname],
+    do: oid(:"id-at-surname")
+
+  defp attr_type_to_oid(type) when type in ["givenName", "GN", :givenName],
+    do: oid(:"id-at-givenName")
+
+  defp attr_type_to_oid(type) when type in ["initials", :initials],
+    do: oid(:"id-at-initials")
+
+  defp attr_type_to_oid(type) when type in ["pseudonym", :pseudonym],
+    do: oid(:"id-at-pseudonym")
+
+  defp attr_type_to_oid(type) when type in ["generationQualifier", :generationQualifier],
+    do: oid(:"id-at-generationQualifier")
+
+  defp attr_type_to_oid(type) when type in ["domainComponent", "DC", :domainComponent],
+    do: oid(:"id-domainComponent")
+
+  defp attr_type_to_oid(type) when type in ["emailAddress", "E", :emailAddress],
+    do: oid(:"id-emailAddress")
+
   defp attr_to_string({:AttributeTypeAndValue, _, value} = attr) when is_binary(value) do
     # FIXME: avoid calls to undocumented functions in :public_key app
     attr
