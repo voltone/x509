@@ -140,6 +140,20 @@ defmodule X509.Certificate do
   end
 
   @doc """
+  Returns the Version field of a certificate.
+
+  Returns the X.509 certificate version as an atom, e.g. `:v3`.
+  """
+  @spec version(t()) :: atom()
+  def version(certificate(tbsCertificate: tbs)) do
+    tbs_certificate(tbs, :version)
+  end
+
+  def version(otp_certificate(tbsCertificate: tbs)) do
+    otp_tbs_certificate(tbs, :version)
+  end
+
+  @doc """
   Returns the Subject field of a certificate.
   """
   @spec subject(t()) :: X509.RDNSequence.t()

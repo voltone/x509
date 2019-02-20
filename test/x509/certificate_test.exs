@@ -192,6 +192,10 @@ defmodule X509.CertificateTest do
     end
   end
 
+  test :version, context do
+    assert :v3 == X509.Certificate.version(context.selfsigned_rsa)
+  end
+
   test :subject, context do
     subject = X509.Certificate.subject(context.selfsigned_rsa)
     assert match?({:rdnSequence, _}, subject)
