@@ -28,6 +28,7 @@ defmodule X509.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:e509, path: "../../Erlang/e509"},
       {:ex_doc, "~> 0.19", only: :dev}
     ]
   end

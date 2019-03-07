@@ -31,32 +31,28 @@ defmodule X509.PrivateKey do
   """
 
   @typedoc "RSA or EC private key"
-  @type t :: :public_key.rsa_private_key() | :public_key.ec_private_key()
+  @type t :: :e509_private_key.private_key()
 
   @private_key_records [:RSAPrivateKey, :ECPrivateKey, :PrivateKeyInfo]
-  @default_e 65537
 
   @doc """
   Generates a new private RSA private key. To derive the public key, use
   `X509.PublicKey.derive/1`.
 
   The key length in bits must be specified as an integer (minimum 256 bits).
-  The default exponent of #{@default_e} can be overridden using the `:exponent`
+  The default exponent of 65537 can be overridden using the `:exponent`
   option. Warning: the custom exponent value is not checked for safety!
 
   """
   @spec new_rsa(non_neg_integer(), Keyword.t()) :: :public_key.rsa_private_key()
-  def new_rsa(keysize, opts \\ []) when is_integer(keysize) and keysize >= 256 do
-    e = Keyword.get(opts, :exponent, @default_e)
-    :public_key.generate_key({:rsa, keysize, e})
-  end
+  defdelegate new_rsa(keysize), to: :e509_private_key
+  defdelegate new_rsa(keysize, opts), to: :e509_private_key
 
   @doc """
   Generates a new private EC private key. To derive the public key, use
   `X509.PublicKey.derive/1`.
 
-  The second parameter must specify a named curve. The curve can be specified
-  as an atom or an OID tuple.
+  The curve can be specified as an atom or an OID tuple.
 
   Note that this function uses Erlang/OTP's `:public_key` application, which
   does not support all curve names returned by the `:crypto.ec_curves/0`
@@ -66,57 +62,19 @@ defmodule X509.PrivateKey do
   for a mapping table.
   """
   @spec new_ec(:crypto.ec_named_curve() | :public_key.oid()) :: :public_key.ec_private_key()
-  def new_ec(curve) when is_atom(curve) or is_tuple(curve) do
-    :public_key.generate_key({:namedCurve, curve})
-  end
+  defdelegate new_ec(curve), to: :e509_private_key
 
   @doc """
   Wraps a private key in a PKCS#8 PrivateKeyInfo container.
   """
-  @spec wrap(t()) :: X509.ASN.record(:private_key_info)
-  def wrap(rsa_private_key() = private_key) do
-    private_key_info(
-      version: :v1,
-      privateKeyAlgorithm:
-        private_key_info_private_key_algorithm(
-          algorithm: oid(:rsaEncryption),
-          parameters: null()
-        ),
-      privateKey: to_der(private_key)
-    )
-  end
-
-  def wrap(ec_private_key(parameters: parameters) = private_key) do
-    private_key_info(
-      version: :v1,
-      privateKeyAlgorithm:
-        private_key_info_private_key_algorithm(
-          algorithm: oid(:"id-ecPublicKey"),
-          parameters: open_type(:EcpkParameters, parameters)
-        ),
-      privateKey: to_der(ec_private_key(private_key, parameters: :asn1_NOVALUE))
-    )
-  end
+  @spec wrap(t()) :: :e509_private_key.private_key_info()
+  defdelegate wrap(private_key), to: :e509_private_key
 
   @doc """
   Extracts a private key from a PKCS#8 PrivateKeyInfo container.
   """
-  @spec wrap(X509.ASN.record(:private_key_info)) :: t()
-  def unwrap(
-        private_key_info(version: :v1, privateKeyAlgorithm: algorithm, privateKey: private_key)
-      ) do
-    case algorithm do
-      private_key_info_private_key_algorithm(algorithm: oid(:rsaEncryption)) ->
-        :public_key.der_decode(:RSAPrivateKey, private_key)
-
-      private_key_info_private_key_algorithm(
-        algorithm: oid(:"id-ecPublicKey"),
-        parameters: {:asn1_OPENTYPE, parameters_der}
-      ) ->
-        :public_key.der_decode(:ECPrivateKey, private_key)
-        |> ec_private_key(parameters: :public_key.der_decode(:EcpkParameters, parameters_der))
-    end
-  end
+  @spec unwrap(:e509_private_key.private_key_info()) :: t()
+  defdelegate unwrap(private_key_info), to: :e509_private_key
 
   @doc """
   Converts a private key to DER (binary) format.
@@ -127,16 +85,8 @@ defmodule X509.PrivateKey do
       (default: `false`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
-  def to_der(private_key, opts \\ []) do
-    if Keyword.get(opts, :wrap, false) do
-      private_key
-      |> wrap()
-      |> der_encode()
-    else
-      private_key
-      |> der_encode()
-    end
-  end
+  defdelegate to_der(private_key), to: :e509_private_key
+  defdelegate to_der(private_key, opts), to: :e509_private_key
 
   @doc """
   Converts a private key to PEM format.
@@ -264,18 +214,6 @@ defmodule X509.PrivateKey do
   #
   # Helpers
   #
-
-  defp der_encode(rsa_private_key() = rsa_private_key) do
-    :public_key.der_encode(:RSAPrivateKey, rsa_private_key)
-  end
-
-  defp der_encode(ec_private_key() = ec_private_key) do
-    :public_key.der_encode(:ECPrivateKey, ec_private_key)
-  end
-
-  defp der_encode(private_key_info() = private_key_info) do
-    :public_key.der_encode(:PrivateKeyInfo, private_key_info)
-  end
 
   defp pem_entry_encode(rsa_private_key() = rsa_private_key) do
     :public_key.pem_entry_encode(:RSAPrivateKey, rsa_private_key)

@@ -15,29 +15,19 @@ defmodule X509 do
         ]
   def from_pem(pem, types \\ [])
 
-  def from_pem(pem, []) when is_binary(pem) do
-    pem
-    |> :public_key.pem_decode()
-    |> Enum.map(&:public_key.pem_entry_decode/1)
-  end
-
   def from_pem(pem, types) do
-    pem
-    |> :public_key.pem_decode()
-    |> Enum.filter(&(elem(&1, 0) in List.wrap(types)))
-    |> Enum.map(&:public_key.pem_entry_decode/1)
+    :e509.from_pem(types, pem)
   end
 
   # Try to decode a DER binary as one of the given record types, returning
   # `nil` if none of the types produced a valid result. Intended for internal
   # use only
+  # TODO: remove this once the migration to e509 is complete
   @doc false
-  def try_der_decode(_, []), do: nil
-
-  def try_der_decode(der, [type | more]) do
-    :public_key.der_decode(type, der)
-  rescue
-    MatchError ->
-      try_der_decode(der, more)
+  def try_der_decode(der, types) do
+    case :e509.try_der_decode(List.wrap(types), der) do
+      :undefined -> nil
+      entry -> entry
+    end
   end
 end

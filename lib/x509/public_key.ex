@@ -1,32 +1,19 @@
 defmodule X509.PublicKey do
-  import X509.ASN1
-
   @moduledoc """
   Functions for deriving, reading and writing RSA and EC public keys.
   """
 
   @typedoc "RSA or EC public key"
-  @type t :: :public_key.rsa_public_key() | :public_key.ec_public_key()
+  @type t :: :e509_public_key.public_key()
 
   @typedoc "SubjectPublicKeyInfo container"
-  @type spki ::
-          X509.ASN.record(:subject_public_key_info)
-          | X509.ASN.record(:otp_subject_public_key_info)
-          | X509.ASN.record(:certification_request_subject_pk_info)
-
-  @public_key_records [:RSAPublicKey, :SubjectPublicKeyInfo]
+  @type spki :: :e509_public_key.spki()
 
   @doc """
   Derives the public key from the given RSA or EC private key.
   """
   @spec derive(X509.PrivateKey.t()) :: t()
-  def derive(rsa_private_key(modulus: m, publicExponent: e)) do
-    rsa_public_key(modulus: m, publicExponent: e)
-  end
-
-  def derive(ec_private_key(parameters: params, publicKey: pub)) do
-    {ec_point(point: pub), params}
-  end
+  defdelegate derive(private_key), to: :e509_public_key
 
   @doc """
   Wraps a public key in a SubjectPublicKeyInfo (or similar) container.
@@ -41,73 +28,8 @@ defmodule X509.PublicKey do
       CertificationRequest (CSR)
   """
   @spec wrap(t()) :: spki()
-  def wrap(public_key, wrapper \\ :SubjectPublicKeyInfo)
-
-  def wrap(rsa_public_key() = public_key, :SubjectPublicKeyInfo) do
-    subject_public_key_info(
-      algorithm:
-        algorithm_identifier(
-          algorithm: oid(:rsaEncryption),
-          # NULL, DER encoded
-          parameters: <<5, 0>>
-        ),
-      subjectPublicKey: :public_key.der_encode(:RSAPublicKey, public_key)
-    )
-  end
-
-  def wrap({ec_point(point: public_key), parameters}, :SubjectPublicKeyInfo) do
-    subject_public_key_info(
-      algorithm:
-        algorithm_identifier(
-          algorithm: oid(:"id-ecPublicKey"),
-          parameters: :public_key.der_encode(:EcpkParameters, parameters)
-        ),
-      subjectPublicKey: public_key
-    )
-  end
-
-  def wrap(rsa_public_key() = public_key, :OTPSubjectPublicKeyInfo) do
-    otp_subject_public_key_info(
-      algorithm:
-        public_key_algorithm(
-          algorithm: oid(:rsaEncryption),
-          parameters: null()
-        ),
-      subjectPublicKey: public_key
-    )
-  end
-
-  def wrap({ec_point() = public_key, parameters}, :OTPSubjectPublicKeyInfo) do
-    otp_subject_public_key_info(
-      algorithm:
-        public_key_algorithm(
-          algorithm: oid(:"id-ecPublicKey"),
-          parameters: parameters
-        ),
-      subjectPublicKey: public_key
-    )
-  end
-
-  def wrap(rsa_public_key() = public_key, :CertificationRequestInfo_subjectPKInfo) do
-    certification_request_subject_pk_info(
-      algorithm:
-        certification_request_subject_pk_info_algorithm(
-          algorithm: oid(:rsaEncryption),
-          parameters: null()
-        ),
-      subjectPublicKey: :public_key.der_encode(:RSAPublicKey, public_key)
-    )
-  end
-
-  def wrap({ec_point(point: public_key), parameters}, :CertificationRequestInfo_subjectPKInfo) do
-    certification_request_subject_pk_info(
-      algorithm:
-        certification_request_subject_pk_info_algorithm(
-          algorithm: oid(:"id-ecPublicKey"),
-          parameters: open_type(:EcpkParameters, parameters)
-        ),
-      subjectPublicKey: public_key
-    )
+  def wrap(public_key, wrapper \\ :SubjectPublicKeyInfo) do
+    :e509_public_key.wrap(wrapper, public_key)
   end
 
   @doc """
@@ -116,40 +38,7 @@ defmodule X509.PublicKey do
   Supports the same container structures as `wrap/2`.
   """
   @spec unwrap(spki()) :: t()
-  def unwrap(subject_public_key_info(algorithm: algorithm, subjectPublicKey: public_key)) do
-    case algorithm do
-      algorithm_identifier(algorithm: oid(:rsaEncryption)) ->
-        :public_key.der_decode(:RSAPublicKey, public_key)
-
-      algorithm_identifier(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
-        {ec_point(point: public_key), :public_key.der_decode(:EcpkParameters, parameters)}
-    end
-  end
-
-  def unwrap(otp_subject_public_key_info(algorithm: algorithm, subjectPublicKey: public_key)) do
-    case algorithm do
-      public_key_algorithm(algorithm: oid(:rsaEncryption)) ->
-        public_key
-
-      public_key_algorithm(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
-        {public_key, parameters}
-    end
-  end
-
-  def unwrap(
-        certification_request_subject_pk_info(algorithm: algorithm, subjectPublicKey: public_key)
-      ) do
-    case algorithm do
-      certification_request_subject_pk_info_algorithm(algorithm: oid(:rsaEncryption)) ->
-        :public_key.der_decode(:RSAPublicKey, public_key)
-
-      certification_request_subject_pk_info_algorithm(
-        algorithm: oid(:"id-ecPublicKey"),
-        parameters: {:asn1_OPENTYPE, parameters}
-      ) ->
-        {ec_point(point: public_key), :public_key.der_decode(:EcpkParameters, parameters)}
-    end
-  end
+  defdelegate unwrap(spki), to: :e509_public_key
 
   @doc """
   Converts a public key to DER (binary) format.
@@ -160,16 +49,8 @@ defmodule X509.PublicKey do
       (default: `true`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
-  def to_der(public_key, opts \\ []) do
-    if Keyword.get(opts, :wrap, true) do
-      public_key
-      |> wrap()
-      |> der_encode()
-    else
-      public_key
-      |> der_encode()
-    end
-  end
+  defdelegate to_der(public_key), to: :e509_public_key
+  defdelegate to_der(public_key, opts), to: :e509_public_key
 
   @doc """
   Converts a public key to PEM format.
@@ -182,17 +63,8 @@ defmodule X509.PublicKey do
       format
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
-  def to_pem(public_key, opts \\ []) do
-    if Keyword.get(opts, :wrap, true) or match?({ec_point(), _}, public_key) do
-      public_key
-      |> wrap()
-    else
-      public_key
-    end
-    |> pem_entry_encode()
-    |> List.wrap()
-    |> :public_key.pem_encode()
-  end
+  defdelegate to_pem(public_key), to: :e509_public_key
+  defdelegate to_pem(public_key, opts), to: :e509_public_key
 
   @doc """
   Attempts to parse a public key in DER (binary) format. Raises in case of failure.
@@ -217,18 +89,7 @@ defmodule X509.PublicKey do
     * `:malformed` - the data could not be decoded as a public key
   """
   @spec from_der(binary()) :: {:ok, t()} | {:error, :malformed}
-  def from_der(der) do
-    case X509.try_der_decode(der, @public_key_records) do
-      nil ->
-        {:error, :malformed}
-
-      subject_public_key_info() = spki ->
-        {:ok, unwrap(spki)}
-
-      result ->
-        {:ok, result}
-    end
-  end
+  defdelegate from_der(der), to: :e509_public_key
 
   @doc """
   Attempts to parse a public key in PEM format. Raises in case of failure.
@@ -256,48 +117,5 @@ defmodule X509.PublicKey do
     * `:malformed` - the entry could not be decoded as a public key
   """
   @spec from_pem(String.t()) :: {:ok, t()} | {:error, :malformed | :not_found}
-  def from_pem(pem) do
-    pem
-    |> :public_key.pem_decode()
-    |> Enum.find(&(elem(&1, 0) in @public_key_records))
-    |> case do
-      nil ->
-        {:error, :not_found}
-
-      entry ->
-        try do
-          :public_key.pem_entry_decode(entry)
-        rescue
-          MatchError ->
-            {:error, :malformed}
-        else
-          public_key ->
-            {:ok, public_key}
-        end
-    end
-  end
-
-  #
-  # Helpers
-  #
-
-  defp der_encode(rsa_public_key() = rsa_public_key) do
-    :public_key.der_encode(:RSAPublicKey, rsa_public_key)
-  end
-
-  defp der_encode(ec_point() = ec_point) do
-    :public_key.der_encode(:ECPoint, ec_point)
-  end
-
-  defp der_encode(subject_public_key_info() = subject_public_key_info) do
-    :public_key.der_encode(:SubjectPublicKeyInfo, subject_public_key_info)
-  end
-
-  defp pem_entry_encode(rsa_public_key() = rsa_public_key) do
-    :public_key.pem_entry_encode(:RSAPublicKey, rsa_public_key)
-  end
-
-  defp pem_entry_encode(subject_public_key_info() = subject_public_key_info) do
-    :public_key.pem_entry_encode(:SubjectPublicKeyInfo, subject_public_key_info)
-  end
+  defdelegate from_pem(pem), to: :e509_public_key
 end
