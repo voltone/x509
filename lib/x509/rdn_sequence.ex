@@ -278,6 +278,8 @@ defmodule X509.RDNSequence do
   end
 
   defp attr_value_to_string({:utf8String, value}), do: value
+  defp attr_value_to_string({:printableString, value}), do: List.to_string(value)
+  defp attr_value_to_string({:ia5String, value}), do: List.to_string(value)
   defp attr_value_to_string(value), do: List.to_string(value)
 
   # Splits an attribute in the form of "type=value" into a {type, value} tuple
