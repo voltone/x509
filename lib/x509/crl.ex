@@ -16,7 +16,7 @@ defmodule X509.CRL do
 
   import X509.ASN1, except: [extension: 2]
 
-  alias X509.{Certificate, SignatureAlgorithm}
+  alias X509.Certificate
   alias X509.CRL.{Entry, Extension}
 
   @typedoc """
@@ -57,7 +57,7 @@ defmodule X509.CRL do
   @spec new([Entry.t()], Certificate.t(), X509.PrivateKey.t(), Keyword.t()) :: t()
   def new(revoked, issuer, issuer_key, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
-    algorithm = SignatureAlgorithm.new(hash, issuer_key, :AlgorithmIdentifier)
+    algorithm = :e509_signature_algorithm.new(hash, issuer_key, :AlgorithmIdentifier)
 
     this_update =
       opts

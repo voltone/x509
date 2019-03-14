@@ -36,7 +36,7 @@ defmodule X509.CSR do
     hash = Keyword.get(opts, :hash, :sha256)
 
     algorithm =
-      X509.SignatureAlgorithm.new(hash, private_key, :CertificationRequest_signatureAlgorithm)
+      :e509_signature_algorithm.new(hash, private_key, :CertificationRequest_signatureAlgorithm)
 
     # Convert subject to RDNSequence, if necessary
     subject_rdn_sequence =

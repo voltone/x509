@@ -11,7 +11,7 @@ defmodule X509.Certificate do
 
   import X509.ASN1, except: [extension: 2]
 
-  alias X509.{PublicKey, RDNSequence, SignatureAlgorithm}
+  alias X509.{PublicKey, RDNSequence}
   alias X509.Certificate.{Template, Validity, Extension}
 
   @typedoc """
@@ -67,7 +67,7 @@ defmodule X509.Certificate do
     algorithm =
       template
       |> Map.get(:hash)
-      |> SignatureAlgorithm.new(issuer_key)
+      |> :e509_signature_algorithm.new(issuer_key)
 
     issuer_rdn =
       case issuer do
@@ -131,7 +131,7 @@ defmodule X509.Certificate do
     algorithm =
       template
       |> Map.get(:hash)
-      |> SignatureAlgorithm.new(private_key)
+      |> :e509_signature_algorithm.new(private_key)
 
     public_key
     |> new_otp_tbs_certificate(subject_rdn, subject_rdn, algorithm, template)
