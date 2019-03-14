@@ -1,5 +1,11 @@
 # Changes
 
+## v0.5.3
+
+### Fixes
+
+* [X509.RDNSequence] Support more attribute types in `to_string/1`
+
 ## v0.5.2
 
 ### Enhancements
