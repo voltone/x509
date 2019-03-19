@@ -32,8 +32,6 @@ defmodule X509.RDNSequence do
   PrintableString/IA5String where required.
   """
 
-  import X509.ASN1
-
   @typedoc "RDN sequence for use in OTP certificate and CSR records"
   @type t :: :public_key.issuer_name()
 
@@ -103,38 +101,23 @@ defmodule X509.RDNSequence do
        ]}
 
       iex> X509.RDNSequence.new(language: "Elixir")
-      ** (FunctionClauseError) no function clause matching in X509.RDNSequence.new_attr/1
+      ** (FunctionClauseError) no function clause matching in :e509_rdn_sequence.new_attr/1
 
       iex> X509.RDNSequence.new("C=!!")
-      ** (ArgumentError) unsupported character(s) in `PrintableString` attribute
+      ** (ArgumentError) argument error
 
   """
   @spec new(String.t() | attr_list(), :plain | :otp) :: t()
   def new(rdn, type \\ :plain)
 
-  def new("/" <> string, type) do
-    string
-    |> String.split("/")
-    |> Enum.map(&split_attr/1)
-    |> new(type)
-  end
-
   def new(string, type) when is_binary(string) do
     string
-    |> String.split(~r/,\s*/)
-    |> Enum.map(&split_attr/1)
-    |> new(type)
+    |> to_charlist()
+    |> :e509_rdn_sequence.from_string(type)
   end
 
-  def new(list, :plain) do
-    # FIXME: avoid calls to undocumented functions in :public_key app
-    list
-    |> new(:otp)
-    |> :pubkey_cert_records.transform(:encode)
-  end
-
-  def new(list, :otp) do
-    {:rdnSequence, Enum.map(list, &[new_attr(&1)])}
+  def new(list, type) when is_list(list) do
+    :e509_rdn_sequence.from_attr_list(list, type)
   end
 
   @doc """
@@ -147,12 +130,8 @@ defmodule X509.RDNSequence do
       "/C=CN/GN=麗"
   """
   @spec to_string(t()) :: String.t()
-  def to_string({:rdnSequence, sequence}) do
-    "/" <>
-      (sequence
-       |> List.flatten()
-       |> Enum.map(&attr_to_string/1)
-       |> Enum.join("/"))
+  def to_string(rdn_sequence) do
+    rdn_sequence |> :e509_rdn_sequence.to_string() |> Kernel.to_string()
   end
 
   @doc """
@@ -175,282 +154,13 @@ defmodule X509.RDNSequence do
       ["麗"]
   """
   @spec get_attr(t(), binary() | atom() | :public_key.oid()) :: [String.t()]
-  def get_attr({:rdnSequence, sequence}, attr_type) do
-    oid = attr_type_to_oid(attr_type)
-
-    for {:AttributeTypeAndValue, ^oid, value} = attr <- List.flatten(sequence) do
-      if is_binary(value) do
-        # FIXME: avoid calls to undocumented functions in :public_key app
-        {_, _, value} = :pubkey_cert_records.transform(attr, :decode)
-        attr_value_to_string(value)
-      else
-        attr_value_to_string(value)
-      end
-    end
+  def get_attr(rdn_sequence, attr_type) when is_binary(attr_type) do
+    get_attr(rdn_sequence, to_charlist(attr_type))
   end
 
-  defp attr_type_to_oid(oid) when is_tuple(oid), do: oid
-
-  defp attr_type_to_oid(type) when type in ["countryName", "C", :countryName],
-    do: oid(:"id-at-countryName")
-
-  defp attr_type_to_oid(type) when type in ["organizationName", "O", :organizationName],
-    do: oid(:"id-at-organizationName")
-
-  defp attr_type_to_oid(type)
-       when type in ["organizationalUnitName", "OU", :organizationalUnitName],
-       do: oid(:"id-at-organizationalUnitName")
-
-  defp attr_type_to_oid(type) when type in ["dnQualifier", :dnQualifier],
-    do: oid(:"id-at-dnQualifier")
-
-  defp attr_type_to_oid(type)
-       when type in ["stateOrProvinceName", "ST", :stateOrProvinceName],
-       do: oid(:"id-at-stateOrProvinceName")
-
-  defp attr_type_to_oid(type) when type in ["commonName", "CN", :commonName],
-    do: oid(:"id-at-commonName")
-
-  defp attr_type_to_oid(type) when type in ["serialNumber", :serialNumber],
-    do: oid(:"id-at-serialNumber")
-
-  defp attr_type_to_oid(type) when type in ["localityName", "L", :localityName],
-    do: oid(:"id-at-localityName")
-
-  defp attr_type_to_oid(type) when type in ["title", :title], do: oid(:"id-at-title")
-  defp attr_type_to_oid(type) when type in ["name", :name], do: oid(:"id-at-name")
-
-  defp attr_type_to_oid(type) when type in ["surname", "SN", :surname],
-    do: oid(:"id-at-surname")
-
-  defp attr_type_to_oid(type) when type in ["givenName", "GN", :givenName],
-    do: oid(:"id-at-givenName")
-
-  defp attr_type_to_oid(type) when type in ["initials", :initials],
-    do: oid(:"id-at-initials")
-
-  defp attr_type_to_oid(type) when type in ["pseudonym", :pseudonym],
-    do: oid(:"id-at-pseudonym")
-
-  defp attr_type_to_oid(type) when type in ["generationQualifier", :generationQualifier],
-    do: oid(:"id-at-generationQualifier")
-
-  defp attr_type_to_oid(type) when type in ["domainComponent", "DC", :domainComponent],
-    do: oid(:"id-domainComponent")
-
-  defp attr_type_to_oid(type) when type in ["emailAddress", "E", :emailAddress],
-    do: oid(:"id-emailAddress")
-
-  defp attr_to_string({:AttributeTypeAndValue, _, value} = attr) when is_binary(value) do
-    # FIXME: avoid calls to undocumented functions in :public_key app
-    attr
-    |> :pubkey_cert_records.transform(:decode)
-    |> attr_to_string()
-  end
-
-  defp attr_to_string({:AttributeTypeAndValue, oid, value}) do
-    attr_oid_to_string(oid) <> "=" <> attr_value_to_string(value)
-  end
-
-  defp attr_oid_to_string(oid(:"id-at-countryName")), do: "C"
-  defp attr_oid_to_string(oid(:"id-at-organizationName")), do: "O"
-  defp attr_oid_to_string(oid(:"id-at-organizationalUnitName")), do: "OU"
-  defp attr_oid_to_string(oid(:"id-at-dnQualifier")), do: "dnQualifier"
-  defp attr_oid_to_string(oid(:"id-at-stateOrProvinceName")), do: "ST"
-  defp attr_oid_to_string(oid(:"id-at-commonName")), do: "CN"
-  defp attr_oid_to_string(oid(:"id-at-serialNumber")), do: "serialNumber"
-  defp attr_oid_to_string(oid(:"id-at-localityName")), do: "L"
-  defp attr_oid_to_string(oid(:"id-at-title")), do: "title"
-  defp attr_oid_to_string(oid(:"id-at-name")), do: "name"
-  defp attr_oid_to_string(oid(:"id-at-surname")), do: "SN"
-  defp attr_oid_to_string(oid(:"id-at-givenName")), do: "GN"
-  defp attr_oid_to_string(oid(:"id-at-initials")), do: "initials"
-  defp attr_oid_to_string(oid(:"id-at-pseudonym")), do: "pseudonym"
-  defp attr_oid_to_string(oid(:"id-at-generationQualifier")), do: "generationQualifier"
-  defp attr_oid_to_string(oid(:"id-domainComponent")), do: "DC"
-  defp attr_oid_to_string(oid(:"id-emailAddress")), do: "E"
-
-  defp attr_oid_to_string(oid) do
-    oid
-    |> Tuple.to_list()
-    |> Enum.map(&Integer.to_string/1)
-    |> Enum.join(".")
-  end
-
-  defp attr_value_to_string({:utf8String, value}), do: value
-  defp attr_value_to_string(value), do: List.to_string(value)
-
-  # Splits an attribute in the form of "type=value" into a {type, value} tuple
-  defp split_attr(string) do
-    string
-    |> String.split("=", parts: 2)
-    |> List.to_tuple()
-  end
-
-  # From RFC5280, Annex A.1
-  @x520name_ub 131_072
-
-  # Short name string mapping
-  defp new_attr({"C", value}), do: new_attr({:countryName, value})
-  defp new_attr({"O", value}), do: new_attr({:organizationName, value})
-  defp new_attr({"OU", value}), do: new_attr({:organizationalUnitName, value})
-  defp new_attr({"ST", value}), do: new_attr({:stateOrProvinceName, value})
-  defp new_attr({"CN", value}), do: new_attr({:commonName, value})
-  defp new_attr({"L", value}), do: new_attr({:localityName, value})
-  defp new_attr({"SN", value}), do: new_attr({:surName, value})
-  defp new_attr({"GN", value}), do: new_attr({:givenName, value})
-  defp new_attr({"DC", value}), do: new_attr({:domainComponent, value})
-  defp new_attr({"E", value}), do: new_attr({:emailAddress, value})
-
-  # Full name string mapping
-  defp new_attr({"countryName", value}), do: new_attr({:countryName, value})
-  defp new_attr({"organizationName", value}), do: new_attr({:organizationName, value})
-  defp new_attr({"organizationalUnitName", value}), do: new_attr({:organizationalUnitName, value})
-  defp new_attr({"dnQualifier", value}), do: new_attr({:dnQualifier, value})
-  defp new_attr({"stateOrProvinceName", value}), do: new_attr({:stateOrProvinceName, value})
-  defp new_attr({"commonName", value}), do: new_attr({:commonName, value})
-  defp new_attr({"serialNumber", value}), do: new_attr({:serialNumber, value})
-  defp new_attr({"localityName", value}), do: new_attr({:localityName, value})
-  defp new_attr({"title", value}), do: new_attr({:title, value})
-  defp new_attr({"name", value}), do: new_attr({:name, value})
-  defp new_attr({"surname", value}), do: new_attr({:surname, value})
-  defp new_attr({"givenName", value}), do: new_attr({:givenName, value})
-  defp new_attr({"initials", value}), do: new_attr({:initials, value})
-  defp new_attr({"pseudonym", value}), do: new_attr({:pseudonym, value})
-  defp new_attr({"generationQualifier", value}), do: new_attr({:generationQualifier, value})
-  defp new_attr({"domainComponent", value}), do: new_attr({:domainComponent, value})
-  defp new_attr({"emailAddress", value}), do: new_attr({:emailAddress, value})
-
-  defp new_attr({:name, value}) when byte_size(value) <= @x520name_ub do
-    attribute_type_and_value(type: oid(:"id-at-name"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:surname, value}) when byte_size(value) <= @x520name_ub do
-    attribute_type_and_value(type: oid(:"id-at-surname"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:givenName, value}) when byte_size(value) <= @x520name_ub do
-    attribute_type_and_value(type: oid(:"id-at-givenName"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:initials, value}) when byte_size(value) <= @x520name_ub do
-    attribute_type_and_value(type: oid(:"id-at-initials"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:generationQualifier, value}) when byte_size(value) <= @x520name_ub do
-    attribute_type_and_value(type: oid(:"id-at-generationQualifier"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:dnQualifier, value}) do
-    attribute_type_and_value(type: oid(:"id-at-dnQualifier"), value: printableString(value))
-  end
-
-  defp new_attr({:countryName, value}) do
-    attribute_type_and_value(type: oid(:"id-at-countryName"), value: printableString(value, 2))
-  end
-
-  defp new_attr({:serialNumber, value}) do
-    attribute_type_and_value(type: oid(:"id-at-serialNumber"), value: printableString(value, 64))
-  end
-
-  defp new_attr({:commonName, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(type: oid(:"id-at-commonName"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:localityName, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(type: oid(:"id-at-localityName"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:stateOrProvinceName, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(type: oid(:"id-at-stateOrProvinceName"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:organizationName, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(type: oid(:"id-at-organizationName"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:organizationalUnitName, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(
-      type: oid(:"id-at-organizationalUnitName"),
-      value: {:utf8String, value}
-    )
-  end
-
-  defp new_attr({:title, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(type: oid(:"id-at-title"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:pseudonym, value}) when byte_size(value) <= 256 do
-    attribute_type_and_value(type: oid(:"id-at-pseudonym"), value: {:utf8String, value})
-  end
-
-  defp new_attr({:domainComponent, value}) when byte_size(value) <= 63 do
-    attribute_type_and_value(type: oid(:"id-domainComponent"), value: ia5String(value))
-  end
-
-  defp new_attr({:emailAddress, value}) when byte_size(value) <= 255 do
-    attribute_type_and_value(type: oid(:"id-emailAddress"), value: ia5String(value))
-  end
-
-  # Opaque values can be specified by OID; the value is not interpreted
-  defp new_attr({oid, value}) when is_tuple(oid) do
-    attribute_type_and_value(type: oid, value: value)
-  end
-
-  @printableString [
-                     ?A..?Z |> Enum.into([]),
-                     ?a..?z |> Enum.into([]),
-                     ?0..?9 |> Enum.into([]),
-                     ' \'()+,-./:=?'
-                   ]
-                   |> List.flatten()
-
-  # Concert a string (or character list) to ASN.1 PrintableString format.
-  # Raises ArgumentError if the string contains unsupported characters or
-  # exceeds the given maximum length
-  defp printableString(string, ub \\ nil)
-
-  defp printableString(string, ub) when is_binary(string) do
-    string
-    |> String.to_charlist()
-    |> printableString(ub)
-  end
-
-  defp printableString(charlist, ub) do
-    if Enum.all?(charlist, &(&1 in @printableString)) do
-      if is_nil(ub) or length(charlist) <= ub do
-        charlist
-      else
-        raise ArgumentError, "attribute value exceeds maximum length"
-      end
-    else
-      raise ArgumentError, "unsupported character(s) in `PrintableString` attribute"
-    end
-  end
-
-  # Only allow printable IA5 characters
-  @ia5String 32..125 |> Enum.into([])
-
-  # Concert a string (or character list) to ASN.1 IA5String format.
-  # Raises ArgumentError if the string contains unsupported characters or
-  # exceeds the given maximum length
-  defp ia5String(string, ub \\ nil)
-
-  defp ia5String(string, ub) when is_binary(string) do
-    string
-    |> String.to_charlist()
-    |> ia5String(ub)
-  end
-
-  defp ia5String(charlist, ub) do
-    if Enum.all?(charlist, &(&1 in @ia5String)) do
-      if is_nil(ub) or length(charlist) <= ub do
-        charlist
-      else
-        raise ArgumentError, "attribute value exceeds maximum length"
-      end
-    else
-      raise ArgumentError, "unsupported character(s) in `IA5String` attribute"
-    end
+  def get_attr(rdn_sequence, attr_type) do
+    rdn_sequence
+    |> :e509_rdn_sequence.get_attr(attr_type)
+    |> Enum.map(&Kernel.to_string/1)
   end
 end
