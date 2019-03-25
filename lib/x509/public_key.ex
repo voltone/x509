@@ -28,9 +28,10 @@ defmodule X509.PublicKey do
       CertificationRequest (CSR)
   """
   @spec wrap(t()) :: spki()
-  def wrap(public_key, wrapper \\ :SubjectPublicKeyInfo) do
-    :e509_public_key.wrap(wrapper, public_key)
-  end
+  defdelegate wrap(public_key), to: :e509_public_key
+
+  @spec wrap(t(), atom()) :: spki()
+  defdelegate wrap(public_key, wrapper), to: :e509_public_key
 
   @doc """
   Extracts a public key from a SubjectPublicKeyInfo style container.
