@@ -1,6 +1,4 @@
 defmodule X509.PrivateKey do
-  import X509.ASN1
-
   @moduledoc """
   Functions for generating, reading and writing RSA and EC private keys.
 
@@ -32,8 +30,6 @@ defmodule X509.PrivateKey do
 
   @typedoc "RSA or EC private key"
   @type t :: :e509_private_key.private_key()
-
-  @private_key_records [:RSAPrivateKey, :ECPrivateKey, :PrivateKeyInfo]
 
   @doc """
   Generates a new private RSA private key. To derive the public key, use
@@ -97,17 +93,8 @@ defmodule X509.PrivateKey do
       (default: `false`)
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
-  def to_pem(private_key, opts \\ []) do
-    if Keyword.get(opts, :wrap, false) do
-      private_key
-      |> wrap()
-    else
-      private_key
-    end
-    |> pem_entry_encode()
-    |> List.wrap()
-    |> :public_key.pem_encode()
-  end
+  defdelegate to_pem(private_key), to: :e509_private_key
+  defdelegate to_pem(private_key, opts), to: :e509_private_key
 
   @doc """
   Attempts to parse a private key in DER (binary) format. Raises in case of failure.
@@ -132,19 +119,7 @@ defmodule X509.PrivateKey do
     * `:malformed` - the data could not be decoded as a private key
   """
   @spec from_der(binary()) :: {:ok, t()} | {:error, :malformed}
-  def from_der(der) do
-    case X509.try_der_decode(der, @private_key_records) do
-      nil ->
-        {:error, :malformed}
-
-      private_key_info() = pki ->
-        # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
-        {:ok, unwrap(pki)}
-
-      result ->
-        {:ok, result}
-    end
-  end
+  defdelegate from_der(der), to: :e509_private_key
 
   @doc """
   Attempts to parse a private key in PEM format. Raises in case of failure.
@@ -182,48 +157,6 @@ defmodule X509.PrivateKey do
       be specified as a string or a charlist
   """
   @spec from_pem(String.t(), Keyword.t()) :: {:ok, t()} | {:error, :malformed | :not_found}
-  def from_pem(pem, opts \\ []) do
-    password =
-      opts
-      |> Keyword.get(:password, '')
-      |> to_charlist()
-
-    pem
-    |> :public_key.pem_decode()
-    |> Enum.find(&(elem(&1, 0) in @private_key_records))
-    |> case do
-      nil ->
-        {:error, :not_found}
-
-      entry ->
-        try do
-          :public_key.pem_entry_decode(entry, password)
-        rescue
-          MatchError -> {:error, :malformed}
-        else
-          # In OTP 21, :public_key unwraps PrivateKeyInfo, but older versions do not
-          private_key_info() = pki ->
-            {:ok, unwrap(pki)}
-
-          private_key ->
-            {:ok, private_key}
-        end
-    end
-  end
-
-  #
-  # Helpers
-  #
-
-  defp pem_entry_encode(rsa_private_key() = rsa_private_key) do
-    :public_key.pem_entry_encode(:RSAPrivateKey, rsa_private_key)
-  end
-
-  defp pem_entry_encode(ec_private_key() = ec_private_key) do
-    :public_key.pem_entry_encode(:ECPrivateKey, ec_private_key)
-  end
-
-  defp pem_entry_encode(private_key_info() = private_key_info) do
-    :public_key.pem_entry_encode(:PrivateKeyInfo, private_key_info)
-  end
+  defdelegate from_pem(pem), to: :e509_private_key
+  defdelegate from_pem(pem, opts), to: :e509_private_key
 end
