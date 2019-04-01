@@ -11,10 +11,8 @@ defmodule X509 do
   the result is not filtered.
   """
   @spec from_pem(String.t()) :: [tuple()]
-  defdelegate from_pem(pem), to: :e509
-
   @spec from_pem(String.t(), :public_key.pki_asn1_type() | [:public_key.pki_asn1_type()]) :: [
           tuple()
         ]
-  defdelegate from_pem(pem, types), to: :e509
+  defdelegate from_pem(pem, types \\ []), to: :e509
 end

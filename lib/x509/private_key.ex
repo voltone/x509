@@ -41,8 +41,7 @@ defmodule X509.PrivateKey do
 
   """
   @spec new_rsa(non_neg_integer(), Keyword.t()) :: :public_key.rsa_private_key()
-  defdelegate new_rsa(keysize), to: :e509_private_key
-  defdelegate new_rsa(keysize, opts), to: :e509_private_key
+  defdelegate new_rsa(keysize, opts \\ []), to: :e509_private_key
 
   @doc """
   Generates a new private EC private key. To derive the public key, use
@@ -81,8 +80,7 @@ defmodule X509.PrivateKey do
       (default: `false`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
-  defdelegate to_der(private_key), to: :e509_private_key
-  defdelegate to_der(private_key, opts), to: :e509_private_key
+  defdelegate to_der(private_key, opts \\ []), to: :e509_private_key
 
   @doc """
   Converts a private key to PEM format.
@@ -93,8 +91,7 @@ defmodule X509.PrivateKey do
       (default: `false`)
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
-  defdelegate to_pem(private_key), to: :e509_private_key
-  defdelegate to_pem(private_key, opts), to: :e509_private_key
+  defdelegate to_pem(private_key, opts \\ []), to: :e509_private_key
 
   @doc """
   Attempts to parse a private key in DER (binary) format. Raises in case of failure.
@@ -157,6 +154,5 @@ defmodule X509.PrivateKey do
       be specified as a string or a charlist
   """
   @spec from_pem(String.t(), Keyword.t()) :: {:ok, t()} | {:error, :malformed | :not_found}
-  defdelegate from_pem(pem), to: :e509_private_key
-  defdelegate from_pem(pem, opts), to: :e509_private_key
+  defdelegate from_pem(pem, opts \\ []), to: :e509_private_key
 end

@@ -28,10 +28,7 @@ defmodule X509.PublicKey do
       CertificationRequest (CSR)
   """
   @spec wrap(t()) :: spki()
-  defdelegate wrap(public_key), to: :e509_public_key
-
-  @spec wrap(t(), atom()) :: spki()
-  defdelegate wrap(public_key, wrapper), to: :e509_public_key
+  defdelegate wrap(public_key, wrapper \\ :SubjectPublicKeyInfo), to: :e509_public_key
 
   @doc """
   Extracts a public key from a SubjectPublicKeyInfo style container.
@@ -50,8 +47,7 @@ defmodule X509.PublicKey do
       (default: `true`)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
-  defdelegate to_der(public_key), to: :e509_public_key
-  defdelegate to_der(public_key, opts), to: :e509_public_key
+  defdelegate to_der(public_key, opts \\ []), to: :e509_public_key
 
   @doc """
   Converts a public key to PEM format.
@@ -64,8 +60,7 @@ defmodule X509.PublicKey do
       format
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
-  defdelegate to_pem(public_key), to: :e509_public_key
-  defdelegate to_pem(public_key, opts), to: :e509_public_key
+  defdelegate to_pem(public_key, opts \\ []), to: :e509_public_key
 
   @doc """
   Attempts to parse a public key in DER (binary) format. Raises in case of failure.
