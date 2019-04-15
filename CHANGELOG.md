@@ -1,5 +1,11 @@
 # Changes
 
+## v0.5.4
+
+### Enhancements
+
+* [X509.RDNSequence] Relax length restriction on `countryName` attribute
+
 ## v0.5.3
 
 ### Fixes

@@ -348,7 +348,7 @@ defmodule X509.RDNSequence do
   end
 
   defp new_attr({:countryName, value}) do
-    attribute_type_and_value(type: oid(:"id-at-countryName"), value: printableString(value, 2))
+    attribute_type_and_value(type: oid(:"id-at-countryName"), value: printableString(value))
   end
 
   defp new_attr({:serialNumber, value}) do
