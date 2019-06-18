@@ -1,7 +1,7 @@
 defmodule X509.MixProject do
   use Mix.Project
 
-  @version "0.5.5"
+  @version "0.6.0"
 
   def project do
     [

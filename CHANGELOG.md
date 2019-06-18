@@ -1,5 +1,19 @@
 # Changes
 
+## v0.6.0
+
+### Enhancements
+
+* [X509.PrivateKey] Allow encryption of PEM output
+* [X509.Test.Suite] Include 'localhost' in all certifictes
+* [X509.Test.Suite] Generate client certificate and associated key
+* [X509.Test.Server] Add 'client-cert' endpoint for testing with client
+  certificate
+* [`x509.gen.suite` Mix task] Add --force option
+* [`x509.gen.suite` Mix task] Add --password option
+* [`x509.gen.suite` Mix task] Generate 'ca_and_chain.pem' file
+* [`x509.gen.selfsigned` Mix task] Add --force option
+
 ## v0.5.4
 
 ### Enhancements
