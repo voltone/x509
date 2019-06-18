@@ -59,6 +59,8 @@ defmodule X509.Test.Suite do
   * `selfsigned-wrong-host` - presenting a self-signed server certificate with
     a SAN hostname that does not match; should be rejected unless peer
     verification is disabled
+
+  * `client-cert` - requires that the client present a valid certificate
   """
 
   require Logger
@@ -79,6 +81,8 @@ defmodule X509.Test.Suite do
     :expired,
     :revoked,
     :selfsigned,
+    :client,
+    :client_key,
     :crls
   ]
 
@@ -88,6 +92,7 @@ defmodule X509.Test.Suite do
             {:rsa, non_neg_integer()} | {:ec, :crypto.ec_named_curve() | :public_key.oid()},
           server_key: X509.PrivateKey.t(),
           other_key: X509.PrivateKey.t(),
+          client_key: X509.PrivateKey.t(),
           cacerts: [binary()],
           alternate_cacerts: [binary()],
           chain: [binary()],
@@ -99,6 +104,7 @@ defmodule X509.Test.Suite do
           expired: X509.Certificate.t(),
           revoked: X509.Certificate.t(),
           selfsigned: X509.Certificate.t(),
+          client: X509.Certificate.t(),
           crls: %{String.t() => X509.CRL.t()}
         }
 
@@ -139,6 +145,7 @@ defmodule X509.Test.Suite do
     server_key = new_key(key_type)
     other_key = new_key(key_type)
     cross_signer_root_ca_key = new_key(key_type)
+    client_key = new_key(key_type)
 
     # CA certificates
     root_ca =
@@ -225,7 +232,8 @@ defmodule X509.Test.Suite do
                 "valid-missing-chain.#{domain}",
                 "valid-revoked-chain.#{domain}",
                 "valid-wrong-key.#{domain}",
-                "valid-cross-signed.#{domain}"
+                "valid-cross-signed.#{domain}",
+                "client-cert.#{domain}"
               ])
           ] ++ crl_extensions(crl_server, "intermediate_ca.crl")
       )
@@ -298,6 +306,15 @@ defmodule X509.Test.Suite do
         ]
       )
 
+    client =
+      client_key
+      |> X509.PublicKey.derive()
+      |> X509.Certificate.new(
+        "/O=#{__MODULE__}/CN=Client",
+        intermediate_ca,
+        intermediate_ca_key
+      )
+
     # CRLs
 
     crls =
@@ -341,6 +358,7 @@ defmodule X509.Test.Suite do
       key_type: key_type,
       server_key: server_key,
       other_key: other_key,
+      client_key: client_key,
       cacerts: [X509.Certificate.to_der(root_ca)],
       alternate_cacerts: [X509.Certificate.to_der(cross_signer_root_ca)],
       chain: [X509.Certificate.to_der(intermediate_ca)],
@@ -355,6 +373,7 @@ defmodule X509.Test.Suite do
       expired: expired,
       revoked: revoked,
       selfsigned: selfsigned,
+      client: client,
       crls: crls
     }
   end
@@ -543,6 +562,19 @@ defmodule X509.Test.Suite do
     [
       cert: X509.Certificate.to_der(selfsigned),
       key: {:PrivateKeyInfo, X509.PrivateKey.to_der(server_key, wrap: true)}
+    ]
+  end
+
+  def sni_handler(
+        %__MODULE__{valid: valid, chain: chain, server_key: server_key, cacerts: cacerts},
+        "client-cert"
+      ) do
+    [
+      cert: X509.Certificate.to_der(valid),
+      cacerts: chain ++ cacerts,
+      key: {:PrivateKeyInfo, X509.PrivateKey.to_der(server_key, wrap: true)},
+      verify: :verify_peer,
+      fail_if_no_peer_cert: true
     ]
   end
 

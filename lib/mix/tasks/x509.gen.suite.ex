@@ -69,6 +69,9 @@ defmodule Mix.Tasks.X509.Gen.Suite do
     other_key_pem = X509.PrivateKey.to_pem(suite.other_key)
     create_file(Path.join(path, "other_key.pem"), other_key_pem, force: force)
 
+    client_key_pem = X509.PrivateKey.to_pem(suite.client_key)
+    create_file(Path.join(path, "client_key.pem"), client_key_pem, force: force)
+
     cacerts_pem =
       suite.cacerts
       |> Enum.map(&X509.Certificate.from_der!/1)
@@ -131,6 +134,9 @@ defmodule Mix.Tasks.X509.Gen.Suite do
 
     selfsigned_pem = X509.Certificate.to_pem(suite.selfsigned)
     create_file(Path.join(path, "selfsigned.pem"), selfsigned_pem, force: force)
+
+    client_pem = X509.Certificate.to_pem(suite.client)
+    create_file(Path.join(path, "client.pem"), client_pem, force: force)
 
     for {name, crl} <- suite.crls do
       crl_der = X509.CRL.to_der(crl)

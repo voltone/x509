@@ -214,6 +214,20 @@ defmodule X509.Test.ServerTest do
                  cacertfile: context.cacertfile
                )
     end
+
+    test "client-cert", context do
+      assert {:error, {:tls_alert, 'handshake failure'}} =
+               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 cacertfile: context.cacertfile
+               )
+
+      assert {:ok, _} =
+               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 cacertfile: context.cacertfile,
+                 cert: X509.Certificate.to_der(context.suite.client),
+                 key: {:RSAPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
+               )
+    end
   end
 
   describe "RSA, DER" do
@@ -351,6 +365,20 @@ defmodule X509.Test.ServerTest do
                  cacerts: context.suite.cacerts
                )
     end
+
+    test "client-cert", context do
+      assert {:error, {:tls_alert, 'handshake failure'}} =
+               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 cacerts: context.suite.cacerts
+               )
+
+      assert {:ok, _} =
+               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 cacerts: context.suite.cacerts,
+                 cert: X509.Certificate.to_der(context.suite.client),
+                 key: {:RSAPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
+               )
+    end
   end
 
   # ECDSA tests fail on older OTP releases, due to OTP-15203
@@ -480,6 +508,20 @@ defmodule X509.Test.ServerTest do
         assert {:error, {:tls_alert, 'bad certificate'}} =
                  request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
+                 )
+      end
+
+      test "client-cert", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile
+                 )
+
+        assert {:ok, _} =
+                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                   cacertfile: context.cacertfile,
+                   cert: X509.Certificate.to_der(context.suite.client),
+                   key: {:ECPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
                  )
       end
     end
@@ -617,6 +659,20 @@ defmodule X509.Test.ServerTest do
         assert {:error, {:tls_alert, 'bad certificate'}} =
                  request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
+                 )
+      end
+
+      test "client-cert", context do
+        assert {:error, {:tls_alert, 'handshake failure'}} =
+                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts
+                 )
+
+        assert {:ok, _} =
+                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                   cacerts: context.suite.cacerts,
+                   cert: X509.Certificate.to_der(context.suite.client),
+                   key: {:ECPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
                  )
       end
     end

@@ -43,6 +43,10 @@ defmodule Mix.Tasks.X509.TestServer do
     alternate_cacertfile = write_cacerts!("alternate_cacerts.pem", suite.alternate_cacerts)
     Mix.shell().info("Secondary CA certificate store: #{alternate_cacertfile}")
 
+    client_certfile = write_cert!("client.pem", suite.client)
+    write_key!("client_key.pem", suite.client_key)
+    Mix.shell().info("Client certificate and key: #{client_certfile} / [...]/client_key.pem")
+
     # Update the CRL server with the generated CRLs
     suite.crls
     |> Enum.each(fn {path, crl} ->
@@ -75,6 +79,18 @@ defmodule Mix.Tasks.X509.TestServer do
 
     path = Path.join(System.tmp_dir!(), filename)
     File.write!(path, pem)
+    path
+  end
+
+  defp write_cert!(filename, cert) do
+    path = Path.join(System.tmp_dir!(), filename)
+    File.write!(path, X509.Certificate.to_pem(cert))
+    path
+  end
+
+  defp write_key!(filename, key) do
+    path = Path.join(System.tmp_dir!(), filename)
+    File.write!(path, X509.PrivateKey.to_pem(key))
     path
   end
 
