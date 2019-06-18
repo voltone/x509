@@ -220,6 +220,7 @@ defmodule X509.Test.Suite do
           [
             subject_alt_name:
               X509.Certificate.Extension.subject_alt_name([
+                "localhost",
                 "valid.#{domain}",
                 "valid-missing-chain.#{domain}",
                 "valid-revoked-chain.#{domain}",
@@ -240,6 +241,7 @@ defmodule X509.Test.Suite do
           [
             subject_alt_name:
               X509.Certificate.Extension.subject_alt_name([
+                "*.localhost",
                 "*.wildcard.#{domain}"
               ])
           ] ++ crl_extensions(crl_server, "intermediate_ca.crl")
@@ -257,6 +259,7 @@ defmodule X509.Test.Suite do
           [
             subject_alt_name:
               X509.Certificate.Extension.subject_alt_name([
+                "localhost",
                 "expired.#{domain}"
               ])
           ] ++ crl_extensions(crl_server, "intermediate_ca.crl")
@@ -273,6 +276,7 @@ defmodule X509.Test.Suite do
           [
             subject_alt_name:
               X509.Certificate.Extension.subject_alt_name([
+                "localhost",
                 "revoked.#{domain}"
               ])
           ] ++ crl_extensions(crl_server, "intermediate_ca.crl")
@@ -287,6 +291,7 @@ defmodule X509.Test.Suite do
         extensions: [
           subject_alt_name:
             X509.Certificate.Extension.subject_alt_name([
+              "localhost",
               "selfsigned.#{domain}",
               "selfsigned-wrong-key.#{domain}"
             ])
