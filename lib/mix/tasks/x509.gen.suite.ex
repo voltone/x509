@@ -29,6 +29,8 @@ defmodule Mix.Tasks.X509.Gen.Suite do
 
   Other (optional) arguments:
 
+    * '--password' ('-p'): if set, an encrypted, password protected version of
+      each private key will be created
     * `--crlserver` (`-c`): the base URL for the CRL server to be used for
       CRL distribution points
     * `--output` (`-o`): the path where the certificates and keys should be
@@ -64,14 +66,29 @@ defmodule Mix.Tasks.X509.Gen.Suite do
 
     suite = X509.Test.Suite.new(suite_opts)
 
-    server_key_pem = X509.PrivateKey.to_pem(suite.server_key, password: password)
+    server_key_pem = X509.PrivateKey.to_pem(suite.server_key)
     create_file(Path.join(path, "server_key.pem"), server_key_pem, force: force)
 
-    other_key_pem = X509.PrivateKey.to_pem(suite.other_key, password: password)
+    if password do
+      server_key_enc_pem = X509.PrivateKey.to_pem(suite.server_key, password: password)
+      create_file(Path.join(path, "server_key_enc.pem"), server_key_enc_pem, force: force)
+    end
+
+    other_key_pem = X509.PrivateKey.to_pem(suite.other_key)
     create_file(Path.join(path, "other_key.pem"), other_key_pem, force: force)
 
-    client_key_pem = X509.PrivateKey.to_pem(suite.client_key, password: password)
+    if password do
+      other_key_enc_pem = X509.PrivateKey.to_pem(suite.other_key, password: password)
+      create_file(Path.join(path, "other_key_enc.pem"), other_key_enc_pem, force: force)
+    end
+
+    client_key_pem = X509.PrivateKey.to_pem(suite.client_key)
     create_file(Path.join(path, "client_key.pem"), client_key_pem, force: force)
+
+    if password do
+      client_key_enc_pem = X509.PrivateKey.to_pem(suite.client_key, password: password)
+      create_file(Path.join(path, "client_key_enc.pem"), client_key_enc_pem, force: force)
+    end
 
     cacerts_pem =
       suite.cacerts
