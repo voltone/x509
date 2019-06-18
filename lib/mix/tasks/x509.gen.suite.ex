@@ -96,6 +96,14 @@ defmodule Mix.Tasks.X509.Gen.Suite do
 
     create_file(Path.join(path, "chain.pem"), chain_pem, force: force)
 
+    ca_and_chain_pem =
+      (suite.cacerts ++ suite.chain)
+      |> Enum.map(&X509.Certificate.from_der!/1)
+      |> Enum.map(&X509.Certificate.to_pem/1)
+      |> Enum.join()
+
+    create_file(Path.join(path, "ca_and_chain.pem"), ca_and_chain_pem, force: force)
+
     expired_chain_pem =
       suite.expired_chain
       |> Enum.map(&X509.Certificate.from_der!/1)
