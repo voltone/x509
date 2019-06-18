@@ -145,6 +145,8 @@ defmodule X509.PrivateKey do
 
     * `:wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
       (default: `false`)
+    * `:password` - If a password is specified, the private key is encrypted
+      using 3DES; to password will be required to decode the PEM entry
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
   def to_pem(private_key, opts \\ []) do
@@ -154,7 +156,7 @@ defmodule X509.PrivateKey do
     else
       private_key
     end
-    |> pem_entry_encode()
+    |> pem_entry_encode(Keyword.get(opts, :password))
     |> List.wrap()
     |> :public_key.pem_encode()
   end
@@ -277,15 +279,35 @@ defmodule X509.PrivateKey do
     :public_key.der_encode(:PrivateKeyInfo, private_key_info)
   end
 
-  defp pem_entry_encode(rsa_private_key() = rsa_private_key) do
+  defp pem_entry_encode(rsa_private_key() = rsa_private_key, nil) do
     :public_key.pem_entry_encode(:RSAPrivateKey, rsa_private_key)
   end
 
-  defp pem_entry_encode(ec_private_key() = ec_private_key) do
+  defp pem_entry_encode(ec_private_key() = ec_private_key, nil) do
     :public_key.pem_entry_encode(:ECPrivateKey, ec_private_key)
   end
 
-  defp pem_entry_encode(private_key_info() = private_key_info) do
+  defp pem_entry_encode(private_key_info() = private_key_info, nil) do
     :public_key.pem_entry_encode(:PrivateKeyInfo, private_key_info)
+  end
+
+  defp pem_entry_encode(private_key, password) when is_binary(password) do
+    pem_entry_encode(private_key, to_charlist(password))
+  end
+
+  defp pem_entry_encode(rsa_private_key() = rsa_private_key, password) do
+    :public_key.pem_entry_encode(:RSAPrivateKey, rsa_private_key, {cipher_info(), password})
+  end
+
+  defp pem_entry_encode(ec_private_key() = ec_private_key, password) do
+    :public_key.pem_entry_encode(:ECPrivateKey, ec_private_key, {cipher_info(), password})
+  end
+
+  defp pem_entry_encode(private_key_info() = private_key_info, password) do
+    :public_key.pem_entry_encode(:PrivateKeyInfo, private_key_info, {cipher_info(), password})
+  end
+
+  defp cipher_info() do
+    {'DES-EDE3-CBC', :crypto.strong_rand_bytes(8)}
   end
 end

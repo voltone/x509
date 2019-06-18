@@ -47,11 +47,12 @@ defmodule Mix.Tasks.X509.Gen.Suite do
     {opts, args} =
       OptionParser.parse!(
         all_args,
-        aliases: [c: :crlserver, o: :output, f: :force],
-        strict: [crlserver: :string, output: :string, force: :boolean]
+        aliases: [p: :password, c: :crlserver, o: :output, f: :force],
+        strict: [password: :string, crlserver: :string, output: :string, force: :boolean]
       )
 
     path = opts[:output] || @default_path
+    password = opts[:password]
     crl_opts = [crl_server: opts[:crlserver]]
     force = opts[:force] || false
 
@@ -63,13 +64,13 @@ defmodule Mix.Tasks.X509.Gen.Suite do
 
     suite = X509.Test.Suite.new(suite_opts)
 
-    server_key_pem = X509.PrivateKey.to_pem(suite.server_key)
+    server_key_pem = X509.PrivateKey.to_pem(suite.server_key, password: password)
     create_file(Path.join(path, "server_key.pem"), server_key_pem, force: force)
 
-    other_key_pem = X509.PrivateKey.to_pem(suite.other_key)
+    other_key_pem = X509.PrivateKey.to_pem(suite.other_key, password: password)
     create_file(Path.join(path, "other_key.pem"), other_key_pem, force: force)
 
-    client_key_pem = X509.PrivateKey.to_pem(suite.client_key)
+    client_key_pem = X509.PrivateKey.to_pem(suite.client_key, password: password)
     create_file(Path.join(path, "client_key.pem"), client_key_pem, force: force)
 
     cacerts_pem =
