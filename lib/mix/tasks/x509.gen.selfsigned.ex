@@ -39,6 +39,8 @@ defmodule Mix.Tasks.X509.Gen.Selfsigned do
       key (default: #{@default_path})
     * `--name` (`-n`): the Common Name value in certificate's subject
       (default: "#{@default_name}")
+      * `--force` (`-f`): overwite existing files without prompting for
+        confirmation
 
   Requires OTP 20 or later.
   """
@@ -51,12 +53,13 @@ defmodule Mix.Tasks.X509.Gen.Selfsigned do
     {opts, args} =
       OptionParser.parse!(
         all_args,
-        aliases: [n: :name, o: :output],
-        strict: [name: :string, output: :string]
+        aliases: [n: :name, o: :output, f: :force],
+        strict: [name: :string, output: :string, force: :boolean]
       )
 
     path = opts[:output] || @default_path
     name = opts[:name] || @default_name
+    force = opts[:force] || false
 
     hostnames =
       case args do
@@ -69,8 +72,8 @@ defmodule Mix.Tasks.X509.Gen.Selfsigned do
     keyfile = path <> "_key.pem"
     certfile = path <> ".pem"
 
-    create_file(keyfile, X509.PrivateKey.to_pem(private_key))
-    create_file(certfile, X509.Certificate.to_pem(certificate))
+    create_file(keyfile, X509.PrivateKey.to_pem(private_key), force: force)
+    create_file(certfile, X509.Certificate.to_pem(certificate), force: force)
 
     print_shell_instructions(keyfile, certfile)
   end

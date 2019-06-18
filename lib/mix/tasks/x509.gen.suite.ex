@@ -33,6 +33,8 @@ defmodule Mix.Tasks.X509.Gen.Suite do
       CRL distribution points
     * `--output` (`-o`): the path where the certificates and keys should be
       stored (default: #{@default_path})
+    * `--force` (`-f`): overwite existing files without prompting for
+      confirmation
 
   Requires OTP 20 or later.
   """
@@ -45,12 +47,13 @@ defmodule Mix.Tasks.X509.Gen.Suite do
     {opts, args} =
       OptionParser.parse!(
         all_args,
-        aliases: [c: :crlserver, o: :output],
-        strict: [crlserver: :string, output: :string]
+        aliases: [c: :crlserver, o: :output, f: :force],
+        strict: [crlserver: :string, output: :string, force: :boolean]
       )
 
     path = opts[:output] || @default_path
     crl_opts = [crl_server: opts[:crlserver]]
+    force = opts[:force] || false
 
     suite_opts =
       case args do
@@ -60,65 +63,78 @@ defmodule Mix.Tasks.X509.Gen.Suite do
 
     suite = X509.Test.Suite.new(suite_opts)
 
-    create_file(Path.join(path, "server_key.pem"), X509.PrivateKey.to_pem(suite.server_key))
-    create_file(Path.join(path, "other_key.pem"), X509.PrivateKey.to_pem(suite.other_key))
+    server_key_pem = X509.PrivateKey.to_pem(suite.server_key)
+    create_file(Path.join(path, "server_key.pem"), server_key_pem, force: force)
 
-    create_file(
-      Path.join(path, "cacerts.pem"),
+    other_key_pem = X509.PrivateKey.to_pem(suite.other_key)
+    create_file(Path.join(path, "other_key.pem"), other_key_pem, force: force)
+
+    cacerts_pem =
       suite.cacerts
       |> Enum.map(&X509.Certificate.from_der!/1)
       |> Enum.map(&X509.Certificate.to_pem/1)
       |> Enum.join()
-    )
 
-    create_file(
-      Path.join(path, "alternate_cacerts.pem"),
+    create_file(Path.join(path, "cacerts.pem"), cacerts_pem, force: force)
+
+    alternate_cacerts_pem =
       suite.alternate_cacerts
       |> Enum.map(&X509.Certificate.from_der!/1)
       |> Enum.map(&X509.Certificate.to_pem/1)
       |> Enum.join()
-    )
 
-    create_file(
-      Path.join(path, "chain.pem"),
+    create_file(Path.join(path, "alternate_cacerts.pem"), alternate_cacerts_pem, force: force)
+
+    chain_pem =
       suite.chain
       |> Enum.map(&X509.Certificate.from_der!/1)
       |> Enum.map(&X509.Certificate.to_pem/1)
       |> Enum.join()
-    )
 
-    create_file(
-      Path.join(path, "expired_chain.pem"),
+    create_file(Path.join(path, "chain.pem"), chain_pem, force: force)
+
+    expired_chain_pem =
       suite.expired_chain
       |> Enum.map(&X509.Certificate.from_der!/1)
       |> Enum.map(&X509.Certificate.to_pem/1)
       |> Enum.join()
-    )
 
-    create_file(
-      Path.join(path, "revoked_chain.pem"),
+    create_file(Path.join(path, "expired_chain.pem"), expired_chain_pem, force: force)
+
+    revoked_chain_pem =
       suite.revoked_chain
       |> Enum.map(&X509.Certificate.from_der!/1)
       |> Enum.map(&X509.Certificate.to_pem/1)
       |> Enum.join()
-    )
 
-    create_file(
-      Path.join(path, "alternate_chain.pem"),
+    create_file(Path.join(path, "revoked_chain.pem"), revoked_chain_pem, force: force)
+
+    alternate_chain_pem =
       suite.alternate_chain
       |> Enum.map(&X509.Certificate.from_der!/1)
       |> Enum.map(&X509.Certificate.to_pem/1)
       |> Enum.join()
-    )
 
-    create_file(Path.join(path, "valid.pem"), X509.Certificate.to_pem(suite.valid))
-    create_file(Path.join(path, "wildcard.pem"), X509.Certificate.to_pem(suite.wildcard))
-    create_file(Path.join(path, "expired.pem"), X509.Certificate.to_pem(suite.expired))
-    create_file(Path.join(path, "revoked.pem"), X509.Certificate.to_pem(suite.revoked))
-    create_file(Path.join(path, "selfsigned.pem"), X509.Certificate.to_pem(suite.selfsigned))
+    create_file(Path.join(path, "alternate_chain.pem"), alternate_chain_pem, force: force)
+
+    valid_pem = X509.Certificate.to_pem(suite.valid)
+    create_file(Path.join(path, "valid.pem"), valid_pem, force: force)
+
+    wildcard_pem = X509.Certificate.to_pem(suite.wildcard)
+    create_file(Path.join(path, "wildcard.pem"), wildcard_pem, force: force)
+
+    expired_pem = X509.Certificate.to_pem(suite.expired)
+    create_file(Path.join(path, "expired.pem"), expired_pem, force: force)
+
+    revoked_pem = X509.Certificate.to_pem(suite.revoked)
+    create_file(Path.join(path, "revoked.pem"), revoked_pem, force: force)
+
+    selfsigned_pem = X509.Certificate.to_pem(suite.selfsigned)
+    create_file(Path.join(path, "selfsigned.pem"), selfsigned_pem, force: force)
 
     for {name, crl} <- suite.crls do
-      create_file(Path.join(path, name), X509.CRL.to_der(crl))
+      crl_der = X509.CRL.to_der(crl)
+      create_file(Path.join(path, name), crl_der, force: force)
     end
 
     print_shell_instructions(path)
