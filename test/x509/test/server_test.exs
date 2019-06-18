@@ -223,7 +223,7 @@ defmodule X509.Test.ServerTest do
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
-                 cacertfile: context.cacertfile,
+                 cacerts: context.suite.chain ++ context.suite.cacerts,
                  cert: X509.Certificate.to_der(context.suite.client),
                  key: {:RSAPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
                )
@@ -519,7 +519,7 @@ defmodule X509.Test.ServerTest do
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
-                   cacertfile: context.cacertfile,
+                   cacerts: context.suite.chain ++ context.suite.cacerts,
                    cert: X509.Certificate.to_der(context.suite.client),
                    key: {:ECPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
                  )
@@ -670,7 +670,7 @@ defmodule X509.Test.ServerTest do
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
-                   cacerts: context.suite.cacerts,
+                   cacerts: context.suite.chain ++ context.suite.cacerts,
                    cert: X509.Certificate.to_der(context.suite.client),
                    key: {:ECPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
                  )
