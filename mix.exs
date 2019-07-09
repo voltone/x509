@@ -14,7 +14,8 @@ defmodule X509.MixProject do
       description: description(),
       package: package(),
       docs: docs(),
-      source_url: "https://github.com/voltone/x509"
+      source_url: "https://github.com/voltone/x509",
+      dialyzer: [plt_add_apps: [:mix, :syntax_tools]]
     ]
   end
 
@@ -28,7 +29,8 @@ defmodule X509.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.19", only: :dev}
+      {:ex_doc, "~> 0.19", only: :dev},
+      {:dialyxir, "1.0.0-rc.4", only: :dev, runtime: false}
     ]
   end
 
