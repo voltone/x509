@@ -55,7 +55,7 @@ defmodule X509.PrivateKey do
   Generates a new private EC private key. To derive the public key, use
   `X509.PublicKey.derive/1`.
 
-  The second parameter must specify a named curve. The curve can be specified
+  The first parameter must specify a named curve. The curve can be specified
   as an atom or an OID tuple.
 
   Note that this function uses Erlang/OTP's `:public_key` application, which
