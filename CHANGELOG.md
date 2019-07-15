@@ -1,5 +1,18 @@
 # Changes
 
+## v0.7.0
+
+### Enhancements
+
+* [X509.Certificate.Template] Add OCSP responder template
+* [X509.Certificate.Extension] Add support for Authority Information Access
+  and OCSP Nocheck extensions
+
+### Fixes
+
+* [X509.RDNSequence] Handle `teletexString` encoding (7-bit only, for now)
+* [X509.PrivateKey] Documentation fixes
+
 ## v0.6.0
 
 ### Enhancements
