@@ -98,10 +98,12 @@ defmodule X509.Test.ServerTest do
     end
 
     test "valid-missing-chain", context do
-      assert {:error, {:tls_alert, 'unknown ca'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "unknown"
     end
 
     test "valid-missing-chain with intermediate in cacerts", context do
@@ -116,31 +118,39 @@ defmodule X509.Test.ServerTest do
     end
 
     test "valid-expired-chain", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "expired"
     end
 
     test "valid-revoked-chain", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "revoked"
     end
 
     test "valid-wrong-key", context do
-      assert {:error, {:tls_alert, 'decrypt error'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "decrypt"
     end
 
     test "valid-wrong-host", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "handshake"
     end
 
     # ISSUE: this test case fails, because `public_key` does not explore
@@ -180,46 +190,58 @@ defmodule X509.Test.ServerTest do
     end
 
     test "wildcard, bare domain", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://wildcard.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "handshake"
     end
 
     test "invalid.subdomain.wildcard", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request(
                  'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "handshake"
     end
 
     test "expired", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://expired.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "expired"
     end
 
     test "revoked", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://revoked.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "revoked"
     end
 
     test "selfsigned", context do
-      assert {:error, {:tls_alert, 'bad certificate'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "bad"
     end
 
     test "client-cert", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+
+      assert inspect(reason) =~ "handshake"
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -241,10 +263,12 @@ defmodule X509.Test.ServerTest do
     end
 
     test "valid-missing-chain", context do
-      assert {:error, {:tls_alert, 'unknown ca'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "unknown"
     end
 
     test "valid-missing-chain with intermediate in cacerts", context do
@@ -264,34 +288,42 @@ defmodule X509.Test.ServerTest do
     end
 
     test "valid-expired-chain", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "expired"
     end
 
     # ISSUE: this test case fails, because `ssl` does not handle CRL checks on
     # certificates issued by CAs passed in through `cacerts`
     @tag :known_to_fail
     test "valid-revoked-chain", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "revoked"
     end
 
     test "valid-wrong-key", context do
-      assert {:error, {:tls_alert, 'decrypt error'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "decrypt"
     end
 
     test "valid-wrong-host", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "handshake"
     end
 
     # ISSUE: this test case fails, because `public_key` does not explore
@@ -331,46 +363,58 @@ defmodule X509.Test.ServerTest do
     end
 
     test "wildcard, bare domain", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://wildcard.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "handshake"
     end
 
     test "invalid.subdomain.wildcard", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request(
                  'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "handshake"
     end
 
     test "expired", context do
-      assert {:error, {:tls_alert, 'certificate expired'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://expired.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "expired"
     end
 
     test "revoked", context do
-      assert {:error, {:tls_alert, 'certificate revoked'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://revoked.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "revoked"
     end
 
     test "selfsigned", context do
-      assert {:error, {:tls_alert, 'bad certificate'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "bad"
     end
 
     test "client-cert", context do
-      assert {:error, {:tls_alert, 'handshake failure'}} =
+      assert {:error, {:tls_alert, reason}} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
+
+      assert inspect(reason) =~ "handshake"
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -394,10 +438,12 @@ defmodule X509.Test.ServerTest do
       end
 
       test "valid-missing-chain", context do
-        assert {:error, {:tls_alert, 'unknown ca'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "unknown"
       end
 
       test "valid-missing-chain with intermediate in cacerts", context do
@@ -412,31 +458,39 @@ defmodule X509.Test.ServerTest do
       end
 
       test "valid-expired-chain", context do
-        assert {:error, {:tls_alert, 'certificate expired'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "expired"
       end
 
       test "valid-revoked-chain", context do
-        assert {:error, {:tls_alert, 'certificate revoked'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "revoked"
       end
 
       test "valid-wrong-key", context do
-        assert {:error, {:tls_alert, 'decrypt error'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "decrypt"
       end
 
       test "valid-wrong-host", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "handshake"
       end
 
       # ISSUE: this test case fails, because `public_key` does not explore
@@ -476,46 +530,58 @@ defmodule X509.Test.ServerTest do
       end
 
       test "wildcard, bare domain", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://wildcard.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "handshake"
       end
 
       test "invalid.subdomain.wildcard", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request(
                    'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "handshake"
       end
 
       test "expired", context do
-        assert {:error, {:tls_alert, 'certificate expired'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://expired.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "expired"
       end
 
       test "revoked", context do
-        assert {:error, {:tls_alert, 'certificate revoked'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://revoked.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "revoked"
       end
 
       test "selfsigned", context do
-        assert {:error, {:tls_alert, 'bad certificate'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "bad"
       end
 
       test "client-cert", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
+
+        assert inspect(reason) =~ "handshake"
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -537,10 +603,12 @@ defmodule X509.Test.ServerTest do
       end
 
       test "valid-missing-chain", context do
-        assert {:error, {:tls_alert, 'unknown ca'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "unknown"
       end
 
       test "valid-missing-chain with intermediate in cacerts", context do
@@ -560,34 +628,42 @@ defmodule X509.Test.ServerTest do
       end
 
       test "valid-expired-chain", context do
-        assert {:error, {:tls_alert, 'certificate expired'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "expired"
       end
 
       # ISSUE: this test case fails, because `ssl` does not handle CRL checks on
       # certificates issued by CAs passed in through `cacerts`
       @tag :known_to_fail
       test "valid-revoked-chain", context do
-        assert {:error, {:tls_alert, 'certificate revoked'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "revoked"
       end
 
       test "valid-wrong-key", context do
-        assert {:error, {:tls_alert, 'decrypt error'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "decrypt"
       end
 
       test "valid-wrong-host", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "handshake"
       end
 
       # ISSUE: this test case fails, because `public_key` does not explore
@@ -627,46 +703,58 @@ defmodule X509.Test.ServerTest do
       end
 
       test "wildcard, bare domain", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://wildcard.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "handshake"
       end
 
       test "invalid.subdomain.wildcard", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request(
                    'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "handshake"
       end
 
       test "expired", context do
-        assert {:error, {:tls_alert, 'certificate expired'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://expired.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "expired"
       end
 
       test "revoked", context do
-        assert {:error, {:tls_alert, 'certificate revoked'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://revoked.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "revoked"
       end
 
       test "selfsigned", context do
-        assert {:error, {:tls_alert, 'bad certificate'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "bad"
       end
 
       test "client-cert", context do
-        assert {:error, {:tls_alert, 'handshake failure'}} =
+        assert {:error, {:tls_alert, reason}} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
+
+        assert inspect(reason) =~ "handshake"
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
