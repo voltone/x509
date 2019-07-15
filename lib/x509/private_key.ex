@@ -37,7 +37,7 @@ defmodule X509.PrivateKey do
   @default_e 65537
 
   @doc """
-  Generates a new private RSA private key. To derive the public key, use
+  Generates a new RSA private key. To derive the public key, use
   `X509.PublicKey.derive/1`.
 
   The key length in bits must be specified as an integer (minimum 256 bits).
@@ -52,7 +52,7 @@ defmodule X509.PrivateKey do
   end
 
   @doc """
-  Generates a new private EC private key. To derive the public key, use
+  Generates a new EC private key. To derive the public key, use
   `X509.PublicKey.derive/1`.
 
   The first parameter must specify a named curve. The curve can be specified

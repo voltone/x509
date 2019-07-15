@@ -55,6 +55,20 @@ defmodule X509.Certificate.Template do
 
       The default validity is 1 year, plus a 30 day grace period.
 
+    * `:ocsp_responder` - designated responder to sign OCSP responses on behalf
+      of the issuing CA.
+
+      The Extended Key Usage extension is set to allow OCSP signing only. Must
+      be issued directly from the CA certificate for which OCSP responses will
+      be signed.
+
+      The OCSP Nocheck extension is included, to disable revocation checks for
+      the OCSP responder certificate. To exclude this extension override it
+      with a value of `false` (e.g. `extensions: [ocsp_nocheck: false]`)
+
+      The default validity is just 30 days, due to the fact that revocation
+      is not possible when OCSP Nocheck is set.
+
   All of the above templates generate a random 8 byte (64 bit) serial number,
   which can be overriden through the `:serial` option (see below).
 
@@ -160,6 +174,23 @@ defmodule X509.Certificate.Template do
         ext_key_usage: ext_key_usage([:serverAuth, :clientAuth]),
         subject_key_identifier: true,
         authority_key_identifier: true
+      ]
+    }
+    |> new(opts)
+  end
+
+  def new(:ocsp_responder, opts) do
+    %__MODULE__{
+      # 30 days
+      validity: 30,
+      hash: :sha256,
+      extensions: [
+        basic_constraints: basic_constraints(false),
+        key_usage: key_usage([:digitalSignature]),
+        ext_key_usage: ext_key_usage([:OCSPSigning]),
+        subject_key_identifier: true,
+        authority_key_identifier: true,
+        ocsp_nocheck: ocsp_nocheck()
       ]
     }
     |> new(opts)

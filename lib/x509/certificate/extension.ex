@@ -17,6 +17,8 @@ defmodule X509.Certificate.Extension do
           | :authority_key_identifier
           | :subject_alt_name
           | :crl_distribution_point
+          | :authority_information_access
+          | :ocsp_nocheck
 
   @typedoc "Supported values in the key usage extension"
   @type key_usage_value ::
@@ -36,6 +38,12 @@ defmodule X509.Certificate.Extension do
   `:public_key` module
   """
   @type san_value :: String.t() | {atom(), charlist()}
+
+  @type aia_access_method ::
+          :ocsp
+          | :ca_issuers
+          | :time_stamping
+          | :ca_repository
 
   @doc """
   The basic constraints extension identifies whether the subject of the
@@ -300,6 +308,90 @@ defmodule X509.Certificate.Extension do
   end
 
   @doc """
+  The authority information access extension indicates how to access
+  information and services for the issuer of the certificate in which the
+  extension appears.
+
+  Information and services may include on-line validation services and CA
+  policy data. This extension may be included in end entity or CA certificates.
+
+  This extension is marked as non-critical.
+
+  Example:
+
+      iex> X509.Certificate.Extension.authority_info_access(
+      ...>   ocsp: "http://ocsp.example.net/"
+      ...> )
+      {:Extension, {1, 3, 6, 1, 5, 5, 7, 1, 1}, false,
+       [
+         {:AccessDescription, {1, 3, 6, 1, 5, 5, 7, 48, 1},
+          {:uniformResourceIdentifier, "http://ocsp.example.net/"}}
+       ]}
+  """
+  # @doc since: "0.7.0"
+  @spec authority_info_access([{aia_access_method(), String.t()}]) :: t()
+  def authority_info_access(access_methods) do
+    extension(
+      extnID: oid(:"id-pe-authorityInfoAccess"),
+      critical: false,
+      extnValue: Enum.map(access_methods, &aia_access_method/1)
+    )
+  end
+
+  defp aia_access_method({:ocsp, uri}) do
+    access_description(
+      accessMethod: oid(:"id-ad-ocsp"),
+      accessLocation: {:uniformResourceIdentifier, uri}
+    )
+  end
+
+  defp aia_access_method({:ca_issuers, uri}) do
+    access_description(
+      accessMethod: oid(:"id-ad-caIssuers"),
+      accessLocation: {:uniformResourceIdentifier, uri}
+    )
+  end
+
+  defp aia_access_method({:time_stamping, uri}) do
+    access_description(
+      accessMethod: oid(:"id-ad-timeStamping"),
+      accessLocation: {:uniformResourceIdentifier, uri}
+    )
+  end
+
+  defp aia_access_method({:ca_repository, uri}) do
+    access_description(
+      accessMethod: oid(:"id-ad-caRepository"),
+      accessLocation: {:uniformResourceIdentifier, uri}
+    )
+  end
+
+  @doc """
+  The OCSP Nocheck extension indicates that the OCSP client can trust this
+  OCSP responder certificate for the lifetime of the certificate, and no
+  revocation checks are needed.
+
+  This extension has no value, it acts as a flag simply by being present in a
+  certificate's extension list.
+
+  This extension is marked as non-critical.
+
+  Example:
+
+      iex> X509.Certificate.Extension.ocsp_nocheck()
+      {:Extension, {1, 3, 6, 1, 5, 5, 7, 48, 1, 5}, false, <<5, 0>>}
+  """
+  # @doc since: "0.7.0"
+  @spec ocsp_nocheck() :: t()
+  def ocsp_nocheck() do
+    extension(
+      extnID: {1, 3, 6, 1, 5, 5, 7, 48, 1, 5},
+      critical: false,
+      extnValue: <<5, 0>>
+    )
+  end
+
+  @doc """
   Looks up the value of a specific extension in a list.
 
   The desired extension can be specified as an atom or an OID value. Returns
@@ -313,6 +405,8 @@ defmodule X509.Certificate.Extension do
   def find(list, :authority_key_identifier), do: find(list, oid(:"id-ce-authorityKeyIdentifier"))
   def find(list, :subject_alt_name), do: find(list, oid(:"id-ce-subjectAltName"))
   def find(list, :crl_distribution_points), do: find(list, oid(:"id-ce-cRLDistributionPoints"))
+  def find(list, :authority_info_access), do: find(list, oid(:"id-pe-authorityInfoAccess"))
+  def find(list, :ocsp_nocheck), do: find(list, {1, 3, 6, 1, 5, 5, 7, 48, 1, 5})
 
   def find(list, extension_oid) do
     Enum.find(list, &match?(extension(extnID: ^extension_oid), &1))

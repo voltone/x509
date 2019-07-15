@@ -43,6 +43,7 @@ defmodule X509.ASN1 do
     extension: :Extension,
     basic_constraints: :BasicConstraints,
     authority_key_identifier: :AuthorityKeyIdentifier,
+    access_description: :AccessDescription,
 
     # CRLs
     certificate_list: :CertificateList,
