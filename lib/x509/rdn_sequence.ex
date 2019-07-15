@@ -280,6 +280,8 @@ defmodule X509.RDNSequence do
   defp attr_value_to_string({:utf8String, value}), do: value
   defp attr_value_to_string({:printableString, value}), do: List.to_string(value)
   defp attr_value_to_string({:ia5String, value}), do: List.to_string(value)
+  # FIXME: for 8-bit teletexString this requires mapping (see RFC1345)
+  defp attr_value_to_string({:teletexString, value}), do: List.to_string(value)
   defp attr_value_to_string(value), do: List.to_string(value)
 
   # Splits an attribute in the form of "type=value" into a {type, value} tuple
