@@ -28,7 +28,7 @@ defmodule X509.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.20", only: :dev}
+      {:ex_doc, "~> 0.21", only: :dev}
     ]
   end
 
