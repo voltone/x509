@@ -32,6 +32,7 @@ defmodule X509.ASN1 do
     certification_request_subject_pk_info_algorithm:
       :CertificationRequestInfo_subjectPKInfo_algorithm,
     certification_request_signature_algorithm: :CertificationRequest_signatureAlgorithm,
+    certification_request_attribute: :"AttributePKCS-10",
 
     # Certificates
     certificate: :Certificate,

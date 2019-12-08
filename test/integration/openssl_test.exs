@@ -241,7 +241,11 @@ defmodule X509.OpenSSLTest do
     test "OpenSSL can read CSRs (RSA)" do
       file =
         X509.PrivateKey.new_rsa(2048)
-        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+          extension_request: [
+            X509.Certificate.Extension.subject_alt_name(["www.example.net"])
+          ]
+        )
         |> X509.CSR.to_der()
         |> write_tmp()
 
@@ -250,6 +254,8 @@ defmodule X509.OpenSSLTest do
       assert openssl_out =~ "verify OK"
       assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
+      assert openssl_out =~ "X509v3 Subject Alternative Name"
+      assert openssl_out =~ "DNS:www.example.net"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
     end
 

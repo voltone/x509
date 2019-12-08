@@ -7,6 +7,7 @@ defmodule X509.CSR do
   import X509.ASN1
 
   alias X509.RDNSequence
+  alias X509.Certificate.Extension
 
   @typedoc """
   `:CertificationRequest` record , as used in Erlang's `:public_key` module
@@ -30,10 +31,31 @@ defmodule X509.CSR do
   Older hash algorithms, supported for compatibility with older software only,
   include `:md5` (RSA only) and `:sha`. The use of these algorithms is
   discouraged.
+
+  ## Options:
+
+  * `:hash` - the hashing algorithm to use when signing the CSR (default:
+    `:sha256`)
+  * `:extension_request` - a list of certificate extensions to be included as
+    an `extensionRequest` attribute (see `X509.Certificate.Extension`)
+
+  ## Example:
+
+    ```
+    iex> priv = X509.PrivateKey.new_ec(:secp256r1)
+    iex> csr = X509.CSR.new(priv, "/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+    ...>   extension_request: [
+    ...>     X509.Certificate.Extension.subject_alt_name(["www.example.net"])
+    ...>   ]
+    ...> )
+    iex> X509.CSR.valid?(csr)
+    true
+
   """
   @spec new(X509.PrivateKey.t(), String.t() | X509.RDNSequence.t(), Keyword.t()) :: t()
   def new(private_key, subject, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
+    extensions = Keyword.get(opts, :extension_request, [])
 
     algorithm =
       X509.SignatureAlgorithm.new(hash, private_key, :CertificationRequest_signatureAlgorithm)
@@ -45,6 +67,26 @@ defmodule X509.CSR do
         rdn -> RDNSequence.new(rdn)
       end
 
+    attributes =
+      case extensions do
+        [] ->
+          []
+
+        extensions ->
+          value =
+            extensions
+            |> Extension.to_der()
+            |> open_type()
+
+          ext_req =
+            certification_request_attribute(
+              type: oid(:"pkcs-9-at-extensionRequest"),
+              values: [value]
+            )
+
+          [ext_req]
+      end
+
     # CertificationRequestInfo to be signed
     info =
       certification_request_info(
@@ -54,7 +96,7 @@ defmodule X509.CSR do
           private_key
           |> X509.PublicKey.derive()
           |> X509.PublicKey.wrap(:CertificationRequestInfo_subjectPKInfo),
-        attributes: []
+        attributes: attributes
       )
 
     info_der = :public_key.der_encode(:CertificationRequestInfo, info)
@@ -84,6 +126,27 @@ defmodule X509.CSR do
   def subject(certification_request(certificationRequestInfo: info)) do
     info
     |> certification_request_info(:subject)
+  end
+
+  @doc """
+  Returns the certificate extensions from the `extensionRequest` attribute.
+  """
+  @spec extension_request(t()) :: X509.RDNSequence.t()
+  def extension_request(certification_request(certificationRequestInfo: info)) do
+    attribute =
+      info
+      |> certification_request_info(:attributes)
+      |> Enum.find(
+        &match?(certification_request_attribute(type: oid(:"pkcs-9-at-extensionRequest")), &1)
+      )
+
+    case attribute do
+      certification_request_attribute(values: [asn1_OPENTYPE: der]) ->
+        Extension.from_der!(der, :OTPExtensions)
+
+      _ ->
+        []
+    end
   end
 
   @doc """
