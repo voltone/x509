@@ -90,7 +90,7 @@ Add `x509` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:x509, "~> 0.7.0"}
+    {:x509, "~> 0.8.0"}
   ]
 end
 ```

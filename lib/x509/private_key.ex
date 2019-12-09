@@ -25,8 +25,7 @@ defmodule X509.PrivateKey do
       true
 
   Note that in practice it is not a good idea to directly encrypt a message
-  with asymmetrical cryptography, and signatures should be calculated over
-  message hashes rather than raw messages. The examples above are deliberate
+  with asymmetrical cryptography. The examples above are deliberate
   over-simpliciations intended to highlight the `:crypto` API calls.
   """
 
