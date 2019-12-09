@@ -33,6 +33,23 @@ defmodule X509.CSRTest do
                X509.RDNSequence.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
     end
 
+    test :extension_request, context do
+      csr_without_ext =
+        context.key
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.")
+
+      san = X509.Certificate.Extension.subject_alt_name(["www.example.net"])
+
+      csr_with_ext =
+        context.key
+        |> X509.CSR.new("/C=US/ST=NT/L=Springfield/O=ACME Inc.",
+          extension_request: [san]
+        )
+
+      assert X509.CSR.extension_request(csr_without_ext) == []
+      assert X509.CSR.extension_request(csr_with_ext) == [san]
+    end
+
     test "PEM decode and encode" do
       pem = File.read!("test/data/csr_rsa.pem")
       csr = X509.CSR.from_pem!(pem)

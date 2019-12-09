@@ -45,6 +45,9 @@ defmodule X509.Certificate.Extension do
           | :time_stamping
           | :ca_repository
 
+  # This OID is not defined in the :public_key ASN.1 headers
+  @ocsp_nocheck_oid {1, 3, 6, 1, 5, 5, 7, 48, 1, 5}
+
   @doc """
   The basic constraints extension identifies whether the subject of the
   certificate is a CA and the maximum depth of valid certification
@@ -385,7 +388,7 @@ defmodule X509.Certificate.Extension do
   @spec ocsp_nocheck() :: t()
   def ocsp_nocheck() do
     extension(
-      extnID: {1, 3, 6, 1, 5, 5, 7, 48, 1, 5},
+      extnID: @ocsp_nocheck_oid,
       critical: false,
       extnValue: <<5, 0>>
     )
@@ -406,9 +409,105 @@ defmodule X509.Certificate.Extension do
   def find(list, :subject_alt_name), do: find(list, oid(:"id-ce-subjectAltName"))
   def find(list, :crl_distribution_points), do: find(list, oid(:"id-ce-cRLDistributionPoints"))
   def find(list, :authority_info_access), do: find(list, oid(:"id-pe-authorityInfoAccess"))
-  def find(list, :ocsp_nocheck), do: find(list, {1, 3, 6, 1, 5, 5, 7, 48, 1, 5})
+  def find(list, :ocsp_nocheck), do: find(list, @ocsp_nocheck_oid)
 
   def find(list, extension_oid) do
     Enum.find(list, &match?(extension(extnID: ^extension_oid), &1))
+  end
+
+  @doc false
+  # Intended for internal use only
+  def to_der(list) when is_list(list) do
+    :public_key.der_encode(:OTPExtensions, Enum.map(list, &encode/1))
+  end
+
+  def to_der(extension() = ext) do
+    :public_key.der_encode(:Extension, encode(ext))
+  end
+
+  @doc false
+  # Intended for internal use only
+  def from_der!(der, type \\ :Extension)
+
+  def from_der!(der, :OTPExtensions) do
+    :public_key.der_decode(:OTPExtensions, der)
+    |> Enum.map(&decode/1)
+  end
+
+  def from_der!(der, :Extension) do
+    :public_key.der_decode(:Extension, der)
+    |> decode()
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-basicConstraints"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:BasicConstraints, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-keyUsage"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:KeyUsage, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-extKeyUsage"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:ExtKeyUsageSyntax, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-subjectKeyIdentifier"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:SubjectKeyIdentifier, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-authorityKeyIdentifier"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:AuthorityKeyIdentifier, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-subjectAltName"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:SubjectAltName, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-ce-cRLDistributionPoints"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:CRLDistributionPoints, value))
+  end
+
+  defp encode(extension(extnID: oid(:"id-pe-authorityInfoAccess"), extnValue: value) = ext) do
+    extension(ext, extnValue: :public_key.der_encode(:AuthorityInfoAccessSyntax, value))
+  end
+
+  defp encode(extension(extnID: @ocsp_nocheck_oid) = ext) do
+    ext
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-basicConstraints"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:BasicConstraints, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-keyUsage"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:KeyUsage, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-extKeyUsage"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:ExtKeyUsageSyntax, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-subjectKeyIdentifier"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:SubjectKeyIdentifier, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-authorityKeyIdentifier"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:AuthorityKeyIdentifier, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-subjectAltName"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:SubjectAltName, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-ce-cRLDistributionPoints"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:CRLDistributionPoints, der))
+  end
+
+  defp decode(extension(extnID: oid(:"id-pe-authorityInfoAccess"), extnValue: der) = ext) do
+    extension(ext, extnValue: :public_key.der_decode(:AuthorityInfoAccessSyntax, der))
+  end
+
+  defp decode(extension(extnID: @ocsp_nocheck_oid) = ext) do
+    ext
   end
 end
