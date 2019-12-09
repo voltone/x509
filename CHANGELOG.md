@@ -1,5 +1,11 @@
 # Changes
 
+## v0.8.0
+
+### Enhancements
+
+* [X509.CSR] Add support for extension requests
+
 ## v0.7.0
 
 ### Enhancements
