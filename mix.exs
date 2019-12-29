@@ -40,7 +40,7 @@ defmodule X509.MixProject do
   defp package do
     [
       maintainers: ["Bram Verburg"],
-      licenses: ["BSD 3-Clause"],
+      licenses: ["BSD-3-Clause"],
       links: %{"GitHub" => "https://github.com/voltone/x509"}
     ]
   end
