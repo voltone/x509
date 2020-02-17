@@ -26,7 +26,7 @@ defmodule X509.PrivateKey do
 
   Note that in practice it is not a good idea to directly encrypt a message
   with asymmetrical cryptography. The examples above are deliberate
-  over-simpliciations intended to highlight the `:crypto` API calls.
+  over-simpliciations intended to highlight the `:public_key` API calls.
   """
 
   @typedoc "RSA or EC private key"

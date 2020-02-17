@@ -9,7 +9,7 @@ Elixir package for working with X.509 certificates, Certificate Signing Requests
 Requires Erlang/OTP 20.1 or later.
 
 Development and public release of this package were made possible by
-[Bluecode](https://bluecode.com/en/).
+[Bluecode](https://bluecode.com/).
 
 ## Usage
 
