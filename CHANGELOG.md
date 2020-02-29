@@ -1,5 +1,12 @@
 # Changes
 
+## v0.8.1
+
+### Fixes
+
+* [X509.Certificate] Support both 'plain' and 'otp' `rdnSequence` records
+* [X509.CSR] Support both 'plain' and 'otp' `rdnSequence` records
+
 ## v0.8.0
 
 ### Enhancements
