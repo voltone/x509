@@ -397,8 +397,15 @@ defmodule X509.Certificate do
         end,
       subject:
         case subject_rdn do
-          {:rdnSequence, _} -> subject_rdn
-          name when is_binary(name) -> RDNSequence.new(name, :otp)
+          {:rdnSequence, [[{:AttributeTypeAndValue, _oid, value} | _] | _]}
+          when is_binary(value) ->
+            :pubkey_cert_records.transform(subject_rdn, :decode)
+
+          {:rdnSequence, _} ->
+            subject_rdn
+
+          name when is_binary(name) ->
+            RDNSequence.new(name, :otp)
         end,
       subjectPublicKeyInfo: PublicKey.wrap(public_key, :OTPSubjectPublicKeyInfo),
       extensions:
