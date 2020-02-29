@@ -63,8 +63,15 @@ defmodule X509.CSR do
     # Convert subject to RDNSequence, if necessary
     subject_rdn_sequence =
       case subject do
-        {:rdnSequence, _} -> subject
-        rdn -> RDNSequence.new(rdn)
+        {:rdnSequence, [[{:AttributeTypeAndValue, _oid, value} | _] | _]}
+        when is_binary(value) ->
+          subject
+
+        {:rdnSequence, _} ->
+          :pubkey_cert_records.transform(subject, :encode)
+
+        rdn ->
+          RDNSequence.new(rdn)
       end
 
     attributes =
