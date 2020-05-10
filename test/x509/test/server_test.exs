@@ -48,6 +48,7 @@ defmodule X509.Test.ServerTest do
     # without warning when using the default settings!
     ssl_defaults = [
       log_alert: false,
+      log_level: :emergency,
       verify: :verify_peer,
       depth: 2,
       crl_check: crl_check,

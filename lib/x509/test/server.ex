@@ -84,7 +84,8 @@ defmodule X509.Test.Server do
              active: false,
              sni_fun: X509.Test.Suite.sni_fun(suite),
              reuse_sessions: false,
-             log_alert: false
+             log_alert: false,
+             log_level: :emergency
            ],
            1000
          ) do
