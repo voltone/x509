@@ -4,18 +4,29 @@ defmodule X509.PrivateKey do
   @moduledoc """
   Functions for generating, reading and writing RSA and EC private keys.
 
+  Note that this module uses Erlang/OTP's `:public_key` application, which
+  does not support all curve names returned by the `:crypto.ec_curves/0`
+  function. In particular, the NIST Prime curves must be selected by their
+  SECG id, e.g. NIST P-256 is `:secp256r1` rather than `:prime256v1`. Please
+  refer to [RFC4492 appendix A](https://tools.ietf.org/search/rfc4492#appendix-A)
+  for a mapping table.
+
   ## Example use with `:public_key`
 
-  Encryption and decryption:
+  ### Encryption and decryption
 
-      iex> private_key = X509.PrivateKey.new_rsa(2048)
+      iex> private_key = X509.PrivateKey.new_rsa(4096)
       iex> public_key = X509.PublicKey.derive(private_key)
       iex> plaintext = "Hello, world!"
       iex> ciphertext = :public_key.encrypt_public(plaintext, public_key)
       iex> :public_key.decrypt_private(ciphertext, private_key)
       "Hello, world!"
 
-  Signing and signature verification:
+  Note that in practice it is not a good idea to directly encrypt a message
+  with asymmetrical cryptography. The examples above are deliberate
+  over-simpliciations intended to highlight the `:public_key` API calls.
+
+  ### Signing and signature verification
 
       iex> private_key = X509.PrivateKey.new_ec(:secp256r1)
       iex> public_key = X509.PublicKey.derive(private_key)
@@ -24,9 +35,20 @@ defmodule X509.PrivateKey do
       iex> :public_key.verify(message, :sha256, signature, public_key)
       true
 
-  Note that in practice it is not a good idea to directly encrypt a message
-  with asymmetrical cryptography. The examples above are deliberate
-  over-simpliciations intended to highlight the `:public_key` API calls.
+  ### Key exchange
+
+      iex> private_key1 = X509.PrivateKey.new_ec(:x25519)
+      iex> {public_key1, _} = X509.PublicKey.derive(private_key1)
+      iex> private_key2 = X509.PrivateKey.new_ec(:x25519)
+      iex> {public_key2, _} = X509.PublicKey.derive(private_key2)
+      iex> shared_secret1 = :public_key.compute_key(public_key2, private_key1)
+      iex> shared_secret2 = :public_key.compute_key(public_key1, private_key2)
+      iex> shared_secret1 == shared_secret2
+      true
+
+  Since `:public_key.compute_key/2.3` takes an EC point as its first parameter,
+  we extract the point from the return value of `X509.PublicKey.derive/1` using
+  pattern matching.
   """
 
   @typedoc "RSA or EC private key"
@@ -54,19 +76,82 @@ defmodule X509.PrivateKey do
   Generates a new EC private key. To derive the public key, use
   `X509.PublicKey.derive/1`.
 
-  The first parameter must specify a named curve. The curve can be specified
-  as an atom or an OID tuple.
-
-  Note that this function uses Erlang/OTP's `:public_key` application, which
-  does not support all curve names returned by the `:crypto.ec_curves/0`
-  function. In particular, the NIST Prime curves must be selected by their
-  SECG id, e.g. NIST P-256 is `:secp256r1` rather than `:prime256v1`. Please
-  refer to [RFC4492 appendix A](https://tools.ietf.org/search/rfc4492#appendix-A)
-  for a mapping table.
+  The curve can be specified as an atom or an OID tuple.
   """
   @spec new_ec(:crypto.ec_named_curve() | :public_key.oid()) :: :public_key.ec_private_key()
   def new_ec(curve) when is_atom(curve) or is_tuple(curve) do
     :public_key.generate_key({:namedCurve, curve})
+  end
+
+  @doc """
+  Deterministically generates an EC private key from a (pseudo)random seed. To
+  derive the public key, use `X509.PublicKey.derive/1`.
+
+  The first parameter must specify a named curve. The curve can be specified
+  as an atom or an OID tuple.
+
+  The second parameter is the seed value, which is typically the output of a
+  secure KDF:
+
+    * If the selected curve is defined over a prime field or characteristic 2
+      field the procedure in NIST FIPS-186-4 B.4.1 "Key Pair Generation Using
+      Extra Random Bits" is used. The `returned_bits` argument must be a binary
+      that is at least 64 bits (8 bytes) longer than the length of the order of
+      the curve.
+
+    * For the `:x22519` and `:x448` curves, the `returned_bits` argument must
+      match the bit-size of the curve (i.e. 256 or 448 bits). The value is
+      clamped according to the curve requirements and wrapped into an EC
+      private key record.
+  """
+  @spec new_ec(:crypto.ec_named_curve() | :public_key.oid(), binary()) :: :public_key.ec_private_key()
+  def new_ec(curve, returned_bits) when is_tuple(curve) do
+    # FIXME: avoid calls to undocumented functions in :public_key app
+    new_ec(:pubkey_cert_records.namedCurves(curve), returned_bits)
+  end
+
+  def new_ec(:x25519 = curve, <<returned_bits::little-size(256)>>) do
+    import Bitwise
+
+    clamped =
+      returned_bits
+      |> band(~~~7)
+      |> band(~~~(128 <<< (8 * 31)))
+      |> bor(64 <<< (8 * 31))
+
+    priv = <<clamped::little-size(256)>>
+    pub = :crypto.compute_key(:ecdh, <<9::integer-little-size(256)>>, priv, curve)
+    ec_private_key(version: 1, privateKey: priv, parameters: {:namedCurve, curve}, publicKey: pub)
+  end
+
+  def new_ec(:x448 = curve, <<returned_bits::little-size(448)>>) do
+    import Bitwise
+
+    clamped =
+      returned_bits
+      |> band(~~~3)
+      |> bor(128 <<< (8 * 55))
+
+    priv = <<clamped::little-size(448)>>
+    pub = :crypto.compute_key(:ecdh, <<5::integer-little-size(448)>>, priv, curve)
+    ec_private_key(version: 1, privateKey: priv, parameters: {:namedCurve, curve}, publicKey: pub)
+  end
+
+  def new_ec(curve, returned_bits) when is_atom(curve) and is_binary(returned_bits) do
+    {_field, _curve, _g, n, _h} = :crypto.ec_curve(curve)
+
+    # NIST FIPS-186-4 B.4.1
+    if byte_size(returned_bits) < byte_size(n) + 8, do:
+      raise ArgumentError, "`returned_bits` must be at least #{ byte_size(n) + 8} bytes"
+
+    d =
+      returned_bits
+      |> :binary.decode_unsigned()
+      |> rem(:binary.decode_unsigned(n) - 1)
+      |> Kernel.+(1)
+
+    {pub, priv} = :crypto.generate_key(:ecdh, curve, d)
+    ec_private_key(version: 1, privateKey: priv, parameters: {:namedCurve, curve}, publicKey: pub)
   end
 
   @doc """

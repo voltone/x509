@@ -17,15 +17,77 @@ defmodule X509.PublicKey do
   @public_key_records [:RSAPublicKey, :SubjectPublicKeyInfo]
 
   @doc """
-  Derives the public key from the given RSA or EC private key.
+  Extracts or calculates the public key from the given RSA or EC private key.
   """
   @spec derive(X509.PrivateKey.t()) :: t()
   def derive(rsa_private_key(modulus: m, publicExponent: e)) do
     rsa_public_key(modulus: m, publicExponent: e)
   end
 
+  # If the public key is not available we have to calculate it ourselves
+  def derive(ec_private_key(privateKey: priv, parameters: {:namedCurve, curve}, publicKey: :asn1_NOVALUE)) do
+    derive(priv, curve)
+  end
+
   def derive(ec_private_key(parameters: params, publicKey: pub)) do
     {ec_point(point: pub), params}
+  end
+
+  @doc """
+  Extracts or calculates the public key from a raw EC private key.
+
+  The private key may be specified as an integer or a binary. The curve can be
+  specified as an atom or an OID tuple.
+  """
+  @spec derive(binary(), :crypto.ec_named_curve() | :public_key.oid()) :: t()
+  def derive(priv, curve) when is_tuple(curve) do
+    # FIXME: avoid calls to undocumented functions in :public_key app
+    derive(priv, :pubkey_cert_records.namedCurves(curve))
+  end
+
+  def derive(<<priv::integer-little-size(256)>>, :x25519 = curve) do
+    pub = :crypto.compute_key(:ecdh, <<9::integer-little-size(256)>>, priv, curve)
+    {ec_point(point: pub), {:namedCurve, curve}}
+  end
+
+  def derive(<<priv::integer-little-size(448)>>, :x448 = curve) do
+    pub = :crypto.compute_key(:ecdh, <<5::integer-little-size(448)>>, priv, curve)
+    {ec_point(point: pub), {:namedCurve, curve}}
+  end
+
+  def derive(priv, curve) when is_binary(priv) and is_atom(curve) do
+    {pub, _} = :crypto.generate_key(:ecdh, curve, priv)
+    {ec_point(point: pub), {:namedCurve, curve}}
+  end
+
+  @doc """
+  Performs point multiplication on an elliptic curve.
+
+  The point may be specified as a public key tuple, an ECPoint record or a
+  binary. These last two require the curve to be specified as an atom or OID.
+  The multiplier may be specified as an integer or a binary.
+
+  Returns a public key tuple containing the new ECPoint and the curve
+  parameters.
+  """
+  @spec mul(t(), integer() | binary()) :: t()
+  def mul({ec_point, {:namedCurve, curve}}, multiplier) do
+    mul(ec_point, multiplier, curve)
+  end
+
+  @spec mul(binary(), integer() | binary(), :crypto.ec_named_curve() | :public_key.oid()) :: t()
+  def mul(point, multiplier, curve) when is_tuple(curve) do
+    # FIXME: avoid calls to undocumented functions in :public_key app
+    mul(point, multiplier, :pubkey_cert_records.namedCurves(curve))
+  end
+  def mul(ec_point(point: point), multiplier, curve) do
+    mul(point, multiplier, curve)
+  end
+  def mul(point, multiplier, curve) do
+    # TODO: this doesn't work for x25519 and x448
+    {f, c, _g, n, h} = :crypto.ec_curve(curve)
+    {pub, _} = :crypto.generate_key(:ecdh, {f, c, point, n, h}, multiplier)
+    {ec_point(point: pub), {:namedCurve, curve}}
   end
 
   @doc """

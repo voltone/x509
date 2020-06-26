@@ -66,6 +66,12 @@ defmodule X509.PrivateKeyTest do
       assert match?(ec_private_key(), new_ec(oid(:secp256r1)))
 
       assert_raise(FunctionClauseError, fn -> new_ec(:no_such_curve) end)
+
+      ec1 = new_ec(:secp256r1, "1234567890123456789012345678901234567890")
+      ec2 = new_ec(oid(:secp256r1), "1234567890123456789012345678901234567890")
+      assert ec1 == ec2
+
+      assert_raise(ArgumentError, fn -> new_ec(:secp256r1, "12345678901234567890123456789012") end)
     end
 
     test "wrap and unwrap", context do
