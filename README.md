@@ -1,6 +1,6 @@
 # X509
 
-[![Build Status](https://travis-ci.com/voltone/x509.svg?branch=master)](https://travis-ci.com/voltone/x509)
+![](https://github.com/voltone/x509/workflows/CI/badge.svg)
 [![Hex.pm](https://img.shields.io/hexpm/v/x509.svg)](https://hex.pm/packages/x509)
 [![Hex.pm](https://img.shields.io/hexpm/dt/x509.svg)](https://hex.pm/packages/x509)
 
