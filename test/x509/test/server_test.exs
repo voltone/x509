@@ -9,13 +9,14 @@ defmodule X509.Test.ServerTest do
   # client, `httpc`. To adapt for other clients, update the `request/2`
   # function, as described in the comments.
   #
-  # Add `log_alert: true` to the call to request/2 to get more information on
-  # a failing scenario, e.g.:
+  # Add `log_level: :debug` (OTP >=22) or `log_alert: true` (older OTP
+  # versions)to the call to request/2 to get more information on a failing
+  # scenario, e.g.:
   #
   #   ```
   #   request('https://valid.#{context.suite.domain}:#{context.port}/',
   #     cacertfile: context.cacertfile,
-  #     log_alert: true
+  #     log_level: :debug
   #   )
   #   ```
   #
@@ -47,13 +48,11 @@ defmodule X509.Test.ServerTest do
     # with HTTPS connections to misconfigured or malicious servers succeeding
     # without warning when using the default settings!
     ssl_defaults = [
-      log_alert: false,
-      log_level: :emergency,
       verify: :verify_peer,
       depth: 2,
       crl_check: crl_check,
       crl_cache: {:ssl_crl_cache, {:internal, [http: 30_000]}}
-    ]
+    ] ++ X509.Test.Server.log_opts()
 
     ssl_opts =
       cond do

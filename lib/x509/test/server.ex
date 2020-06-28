@@ -84,9 +84,7 @@ defmodule X509.Test.Server do
              active: false,
              sni_fun: X509.Test.Suite.sni_fun(suite),
              reuse_sessions: false,
-             log_alert: false,
-             log_level: :emergency
-           ],
+           ] ++ log_opts(),
            1000
          ) do
       {:ok, ssl_socket} ->
@@ -107,5 +105,25 @@ defmodule X509.Test.Server do
       _done ->
         :done
     end
+  end
+
+  def log_opts do
+    case version(:ssl) do
+      [major | _] when major > 9 ->
+        [log_level: :emergency]
+      [9, minor | _] when minor >=3 ->
+        [log_level: :emergency]
+      _older ->
+        [log_alert: false]
+    end
+  end
+
+  defp version(application) do
+    application
+    |> Application.spec()
+    |> Keyword.get(:vsn)
+    |> to_string()
+    |> String.split(".")
+    |> Enum.map(&String.to_integer/1)
   end
 end
