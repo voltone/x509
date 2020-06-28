@@ -21,7 +21,7 @@ defmodule X509.OpenSSLTest do
         |> X509.PrivateKey.to_pem()
         |> write_tmp()
 
-      assert openssl(["rsa", "-in", file, "-text", "-noout"]) =~ "Private-Key: (2048 bit)"
+      assert openssl(["rsa", "-in", file, "-text", "-noout"]) =~ "Private-Key: (2048 bit"
     end
 
     test "OpenSSL can read RSA public keys" do
@@ -63,7 +63,7 @@ defmodule X509.OpenSSLTest do
 
       openssl_out = openssl(["req", "-verify", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "verify OK"
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
     end
@@ -77,7 +77,7 @@ defmodule X509.OpenSSLTest do
 
       openssl_out = openssl(["req", "-verify", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "verify OK"
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
     end
@@ -96,7 +96,7 @@ defmodule X509.OpenSSLTest do
         |> write_tmp()
 
       openssl_out = openssl(["x509", "-in", file, "-text", "-noout"])
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
       assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
@@ -116,7 +116,7 @@ defmodule X509.OpenSSLTest do
         |> write_tmp()
 
       openssl_out = openssl(["x509", "-in", file, "-text", "-noout"])
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
       assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
@@ -152,7 +152,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
-      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
@@ -188,7 +188,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
-      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
@@ -203,7 +203,7 @@ defmodule X509.OpenSSLTest do
         |> write_tmp()
 
       assert openssl(["rsa", "-in", file, "-inform", "der", "-text", "-noout"]) =~
-               "Private-Key: (2048 bit)"
+               "Private-Key: (2048 bit"
     end
 
     test "OpenSSL can read RSA public keys" do
@@ -252,7 +252,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["req", "-verify", "-in", file, "-inform", "der", "-text", "-noout"])
 
       assert openssl_out =~ "verify OK"
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "X509v3 Subject Alternative Name"
       assert openssl_out =~ "DNS:www.example.net"
@@ -269,7 +269,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["req", "-verify", "-in", file, "-inform", "der", "-text", "-noout"])
 
       assert openssl_out =~ "verify OK"
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
     end
@@ -288,7 +288,7 @@ defmodule X509.OpenSSLTest do
         |> write_tmp()
 
       openssl_out = openssl(["x509", "-in", file, "-inform", "der", "-text", "-noout"])
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
       assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
@@ -308,7 +308,7 @@ defmodule X509.OpenSSLTest do
         |> write_tmp()
 
       openssl_out = openssl(["x509", "-in", file, "-inform", "der", "-text", "-noout"])
-      assert openssl_out =~ "Subject: C=US, ST=NT, L=Springfield, O=ACME Inc."
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: id-ecPublicKey"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
       assert openssl_out =~ "DNS:acme.com, DNS:www.acme.com"
@@ -344,7 +344,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-inform", "der", "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
-      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
@@ -380,7 +380,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-inform", "der", "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
-      assert openssl_out =~ "Issuer: /CN=My Root CA"
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
