@@ -63,7 +63,7 @@ defmodule X509.OpenSSLTest do
 
       openssl_out = openssl(["req", "-verify", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "verify OK"
-      assert openssl_out =~ ~r(Subject: C ?= ?US, ST=NT, L=Springfield, O=ACME Inc.)
+      assert openssl_out =~ ~r(Subject: C ?= ?US, ST ?= ?NT, L ?= ?Springfield, O ?= ?ACME Inc.)
       assert openssl_out =~ "Public Key Algorithm: rsaEncryption"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
     end
@@ -152,7 +152,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
-      assert openssl_out =~ ~r(Issuer: /CN ?= ?My Root CA)
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
@@ -188,7 +188,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
-      assert openssl_out =~ ~r(Issuer: /CN ?= ?My Root CA)
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
@@ -344,7 +344,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-inform", "der", "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: sha256WithRSAEncryption"
-      assert openssl_out =~ ~r(Issuer: /CN ?= ?My Root CA)
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
@@ -380,7 +380,7 @@ defmodule X509.OpenSSLTest do
       openssl_out = openssl(["crl", "-in", file, "-inform", "der", "-text", "-noout"])
       assert openssl_out =~ "Certificate Revocation List (CRL)"
       assert openssl_out =~ "Signature Algorithm: ecdsa-with-SHA256"
-      assert openssl_out =~ ~r(Issuer: /CN ?= ?My Root CA)
+      assert openssl_out =~ ~r(Issuer: /?CN ?= ?My Root CA)
       assert openssl_out =~ "X509v3 Authority Key Identifier:"
       assert openssl_out =~ "Serial Number: FF"
       assert openssl_out =~ "Key Compromise"
