@@ -37,9 +37,9 @@ defmodule X509.PrivateKey do
 
   ### Key exchange
 
-      iex> private_key1 = X509.PrivateKey.new_ec(:x25519)
+      iex> private_key1 = X509.PrivateKey.new_ec(:secp256r1)
       iex> {public_key1, _} = X509.PublicKey.derive(private_key1)
-      iex> private_key2 = X509.PrivateKey.new_ec(:x25519)
+      iex> private_key2 = X509.PrivateKey.new_ec(:secp256r1)
       iex> {public_key2, _} = X509.PublicKey.derive(private_key2)
       iex> shared_secret1 = :public_key.compute_key(public_key2, private_key1)
       iex> shared_secret2 = :public_key.compute_key(public_key1, private_key2)
