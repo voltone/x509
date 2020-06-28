@@ -83,7 +83,7 @@ defmodule X509.Test.Server do
            [
              active: false,
              sni_fun: X509.Test.Suite.sni_fun(suite),
-             reuse_sessions: false,
+             reuse_sessions: false
            ] ++ log_opts(),
            1000
          ) do
@@ -111,8 +111,10 @@ defmodule X509.Test.Server do
     case version(:ssl) do
       [major | _] when major > 9 ->
         [log_level: :emergency]
-      [9, minor | _] when minor >=3 ->
+
+      [9, minor | _] when minor >= 3 ->
         [log_level: :emergency]
+
       _older ->
         [log_alert: false]
     end

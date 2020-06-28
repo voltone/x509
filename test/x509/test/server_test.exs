@@ -47,12 +47,13 @@ defmodule X509.Test.ServerTest do
     # ISSUE: `httpc` requires explicit opt-in to peer certificate verification,
     # with HTTPS connections to misconfigured or malicious servers succeeding
     # without warning when using the default settings!
-    ssl_defaults = [
-      verify: :verify_peer,
-      depth: 2,
-      crl_check: crl_check,
-      crl_cache: {:ssl_crl_cache, {:internal, [http: 30_000]}}
-    ] ++ X509.Test.Server.log_opts()
+    ssl_defaults =
+      [
+        verify: :verify_peer,
+        depth: 2,
+        crl_check: crl_check,
+        crl_cache: {:ssl_crl_cache, {:internal, [http: 30_000]}}
+      ] ++ X509.Test.Server.log_opts()
 
     ssl_opts =
       cond do
