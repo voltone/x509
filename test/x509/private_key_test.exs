@@ -1,10 +1,9 @@
 defmodule X509.PrivateKeyTest do
   use ExUnit.Case
+  import X509.TestHelper
   import X509.{ASN1, PrivateKey}
 
   doctest X509.PrivateKey
-
-  @otp_release :erlang.system_info(:otp_release) |> List.to_integer()
 
   setup_all do
     [rsa_key: new_rsa(512), ec_key: new_ec(:secp256r1)]
@@ -43,8 +42,7 @@ defmodule X509.PrivateKeyTest do
       # pem_enc = File.read!("test/data/rsa_pkcs8_enc.pem")
       # assert match?(rsa_private_key(), from_pem(pem_enc, password: "secret"))
 
-      if @otp_release >= 21 do
-        # PEM encoding of PKCS8 PrivateKeyInfo requires OTP 21 or later
+      if version(:public_key) >= [1, 6] do
         assert context.rsa_key == context.rsa_key |> to_pem(wrap: true) |> from_pem!()
       end
     end
@@ -92,7 +90,7 @@ defmodule X509.PrivateKeyTest do
       pem = File.read!("test/data/prime256v1_pkcs8.pem")
       assert match?({:ok, ec_private_key()}, from_pem(pem))
 
-      if @otp_release >= 21 do
+      if version(:public_key) >= [1, 6] do
         # PEM encoding of PKCS8 PrivateKeyInfo requires OTP 21 or later
         assert context.ec_key == context.ec_key |> to_pem(wrap: true) |> from_pem!()
       end
