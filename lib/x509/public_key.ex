@@ -25,7 +25,13 @@ defmodule X509.PublicKey do
   end
 
   # If the public key is not available we have to calculate it ourselves
-  def derive(ec_private_key(privateKey: priv, parameters: {:namedCurve, curve}, publicKey: :asn1_NOVALUE)) do
+  def derive(
+        ec_private_key(
+          privateKey: priv,
+          parameters: {:namedCurve, curve},
+          publicKey: :asn1_NOVALUE
+        )
+      ) do
     derive(priv, curve)
   end
 
@@ -80,9 +86,11 @@ defmodule X509.PublicKey do
     # FIXME: avoid calls to undocumented functions in :public_key app
     mul(point, multiplier, :pubkey_cert_records.namedCurves(curve))
   end
+
   def mul(ec_point(point: point), multiplier, curve) do
     mul(point, multiplier, curve)
   end
+
   def mul(point, multiplier, curve) do
     # TODO: this doesn't work for x25519 and x448
     {f, c, _g, n, h} = :crypto.ec_curve(curve)

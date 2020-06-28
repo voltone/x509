@@ -104,7 +104,8 @@ defmodule X509.PrivateKey do
       clamped according to the curve requirements and wrapped into an EC
       private key record.
   """
-  @spec new_ec(:crypto.ec_named_curve() | :public_key.oid(), binary()) :: :public_key.ec_private_key()
+  @spec new_ec(:crypto.ec_named_curve() | :public_key.oid(), binary()) ::
+          :public_key.ec_private_key()
   def new_ec(curve, returned_bits) when is_tuple(curve) do
     # FIXME: avoid calls to undocumented functions in :public_key app
     new_ec(:pubkey_cert_records.namedCurves(curve), returned_bits)
@@ -141,8 +142,8 @@ defmodule X509.PrivateKey do
     {_field, _curve, _g, n, _h} = :crypto.ec_curve(curve)
 
     # NIST FIPS-186-4 B.4.1
-    if byte_size(returned_bits) < byte_size(n) + 8, do:
-      raise ArgumentError, "`returned_bits` must be at least #{ byte_size(n) + 8} bytes"
+    if byte_size(returned_bits) < byte_size(n) + 8,
+      do: raise(ArgumentError, "`returned_bits` must be at least #{byte_size(n) + 8} bytes")
 
     d =
       returned_bits
