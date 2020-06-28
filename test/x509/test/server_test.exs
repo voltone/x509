@@ -797,9 +797,11 @@ defmodule X509.Test.ServerTest do
     new_suite(context, {:rsa, 1024}, "rsa")
   end
 
-  # Setup for ECSA testing
-  defp ecdsa_suite(context) do
-    new_suite(context, {:ec, :secp256r1}, "ecdsa")
+  # Setup for ECDSA testing
+  if version(:ssl) >= [8, 2, 6, 2] and version(:ssl) != [9, 0, 0] do
+    defp ecdsa_suite(context) do
+      new_suite(context, {:ec, :secp256r1}, "ecdsa")
+    end
   end
 
   # Generate a test suite, update the CRL responder and start a test server

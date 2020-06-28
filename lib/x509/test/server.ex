@@ -108,15 +108,10 @@ defmodule X509.Test.Server do
   end
 
   def log_opts do
-    case version(:ssl) do
-      [major | _] when major > 9 ->
-        [log_level: :emergency]
-
-      [9, minor | _] when minor >= 3 ->
-        [log_level: :emergency]
-
-      _older ->
-        [log_alert: false]
+    if version(:ssl) >= [9, 3] do
+      [log_level: :emergency]
+    else
+      [log_alert: false]
     end
   end
 
