@@ -21,7 +21,7 @@ defmodule X509.OpenSSLTest do
         |> X509.PrivateKey.to_pem()
         |> write_tmp()
 
-      assert openssl(["rsa", "-in", file, "-text", "-noout"]) =~ "Private-Key: (2048 bit)"
+      assert openssl(["rsa", "-in", file, "-text", "-noout"]) =~ "Private-Key: (2048 bit"
     end
 
     test "OpenSSL can read RSA public keys" do
@@ -203,7 +203,7 @@ defmodule X509.OpenSSLTest do
         |> write_tmp()
 
       assert openssl(["rsa", "-in", file, "-inform", "der", "-text", "-noout"]) =~
-               "Private-Key: (2048 bit)"
+               "Private-Key: (2048 bit"
     end
 
     test "OpenSSL can read RSA public keys" do
