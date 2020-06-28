@@ -1,5 +1,12 @@
 # Changes
 
+## v0.9.0
+
+* [X509.PrivateKey] Generate an EC private key from pseudo-random (e.g. KDF)
+  data (`new_ec/2`)
+* [X509.PublicKey] Calculate the public key from a raw EC private key; add EC
+  point multiplication (`mul/2,3`)
+
 ## v0.8.1
 
 ### Fixes
