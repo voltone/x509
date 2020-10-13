@@ -14,21 +14,22 @@ defmodule X509.MixProject do
       description: description(),
       package: package(),
       docs: docs(),
-      source_url: "https://github.com/voltone/x509"
+      source_url: "https://github.com/voltone/x509",
+      xref: [exclude: [IEx, :epp_dodger]]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:crypto, :public_key]
+      extra_applications: [:crypto, :public_key, :logger, :ssl]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.21", only: :dev}
+      {:ex_doc, "~> 0.22", only: :dev}
     ]
   end
 
