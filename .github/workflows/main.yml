@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         pair:
-          - erlang: "23.0"
+          - erlang: "23.1"
             elixir: "1.11.0"
           - erlang: "23.0"
             elixir: "1.10.3"
