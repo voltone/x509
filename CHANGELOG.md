@@ -1,5 +1,11 @@
 # Changes
 
+## v0.8.2
+
+### Fixes
+
+* Support for Elixir v1.11
+
 ## v0.8.1
 
 ### Fixes
