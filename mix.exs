@@ -1,6 +1,7 @@
 defmodule X509.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/voltone/x509"
   @version "0.8.2"
 
   def project do
@@ -14,19 +15,16 @@ defmodule X509.MixProject do
       description: description(),
       package: package(),
       docs: docs(),
-      source_url: "https://github.com/voltone/x509",
       xref: [exclude: [IEx, :epp_dodger]]
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:crypto, :public_key, :logger, :ssl]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:ex_doc, "~> 0.22", only: :dev}
@@ -42,15 +40,19 @@ defmodule X509.MixProject do
     [
       maintainers: ["Bram Verburg"],
       licenses: ["BSD-3-Clause"],
-      links: %{"GitHub" => "https://github.com/voltone/x509"}
+      links: %{
+        "Changelog" => "#{@source_url}/blob/master/CHANGELOG.md",
+        "GitHub" => @source_url
+      }
     ]
   end
 
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"],
-      source_ref: "v#{@version}"
+      extras: ["README.md", "CHANGELOG.md"],
+      source_ref: "v#{@version}",
+      source_url: @source_url
     ]
   end
 end
