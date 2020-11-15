@@ -1,8 +1,12 @@
 # X509
 
-![](https://github.com/voltone/x509/workflows/CI/badge.svg)
+[![Github.com](https://github.com/voltone/x509/workflows/CI/badge.svg)](https://github.com/voltone/x509/actions)
 [![Hex.pm](https://img.shields.io/hexpm/v/x509.svg)](https://hex.pm/packages/x509)
+[![Hexdocs.pm](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/x509/)
 [![Hex.pm](https://img.shields.io/hexpm/dt/x509.svg)](https://hex.pm/packages/x509)
+[![Hex.pm](https://img.shields.io/hexpm/l/x509.svg)](https://hex.pm/packages/x509)
+[![Github.com](https://img.shields.io/github/last-commit/voltone/x509.svg)](https://github.com/voltone/x509/commits/master)
+
 
 Elixir package for working with X.509 certificates, Certificate Signing Requests (CSRs), Certificate Revocation Lists (CRLs) and RSA/ECC key pairs.
 
