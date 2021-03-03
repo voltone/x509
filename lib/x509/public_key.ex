@@ -19,7 +19,11 @@ defmodule X509.PublicKey do
   @doc """
   Derives the public key from the given RSA or EC private key.
   """
-  @spec derive(X509.PrivateKey.t()) :: t()
+  @spec derive(X509.PrivateKey.t() | :crypto.engine_key_ref()) :: t()
+  def derive(%{algorithm: algorithm, engine: _} = private_key) do
+    :crypto.privkey_to_pubkey(algorithm, private_key)
+  end
+
   def derive(rsa_private_key(modulus: m, publicExponent: e)) do
     rsa_public_key(modulus: m, publicExponent: e)
   end

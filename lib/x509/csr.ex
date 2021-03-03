@@ -52,7 +52,7 @@ defmodule X509.CSR do
     true
 
   """
-  @spec new(X509.PrivateKey.t(), String.t() | X509.RDNSequence.t(), Keyword.t()) :: t()
+  @spec new(X509.PrivateKey.t() | :crypto.engine_key_ref(), String.t() | X509.RDNSequence.t(), Keyword.t()) :: t()
   def new(private_key, subject, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
     extensions = Keyword.get(opts, :extension_request, [])
@@ -107,7 +107,14 @@ defmodule X509.CSR do
       )
 
     info_der = :public_key.der_encode(:CertificationRequestInfo, info)
-    signature = :public_key.sign(info_der, hash, private_key)
+    signature =
+      case private_key do
+        %{algorithm: algorithm, engine: _} ->
+          :crypto.sign(algorithm, hash, info_der, private_key)
+
+        _ ->
+          :public_key.sign(info_der, hash, private_key)
+      end
 
     certification_request(
       certificationRequestInfo: info,
