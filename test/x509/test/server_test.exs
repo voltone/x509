@@ -142,7 +142,7 @@ defmodule X509.Test.ServerTest do
                  cacertfile: context.cacertfile
                )
 
-      assert inspect(reason) =~ "decrypt"
+      assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
     end
 
     test "valid-wrong-host", context do
@@ -237,12 +237,20 @@ defmodule X509.Test.ServerTest do
     end
 
     test "client-cert", context do
-      assert {:error, {:tls_alert, reason}} =
+      assert {:error, error} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
+      case error do
+        {:tls_alert, reason} ->
+          assert inspect(reason) =~ "handshake"
 
-      assert inspect(reason) =~ "handshake"
+        {:ssl_error, _sock, {:tls_alert, reason}} ->
+          assert {:certificate_required, _message} = reason
+
+        _else ->
+          flunk("Expected a handshake error, got #{inspect error}")
+      end
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -315,7 +323,7 @@ defmodule X509.Test.ServerTest do
                  cacerts: context.suite.cacerts
                )
 
-      assert inspect(reason) =~ "decrypt"
+      assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
     end
 
     test "valid-wrong-host", context do
@@ -410,12 +418,21 @@ defmodule X509.Test.ServerTest do
     end
 
     test "client-cert", context do
-      assert {:error, {:tls_alert, reason}} =
+      assert {:error, error} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
 
-      assert inspect(reason) =~ "handshake"
+      case error do
+        {:tls_alert, reason} ->
+          assert inspect(reason) =~ "handshake"
+
+        {:ssl_error, _sock, {:tls_alert, reason}} ->
+          assert {:certificate_required, _message} = reason
+
+        _else ->
+          flunk("Expected a handshake error, got #{inspect error}")
+      end
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -482,7 +499,7 @@ defmodule X509.Test.ServerTest do
                    cacertfile: context.cacertfile
                  )
 
-        assert inspect(reason) =~ "decrypt"
+        assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
       end
 
       test "valid-wrong-host", context do
@@ -577,12 +594,21 @@ defmodule X509.Test.ServerTest do
       end
 
       test "client-cert", context do
-        assert {:error, {:tls_alert, reason}} =
+        assert {:error, error} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
 
-        assert inspect(reason) =~ "handshake"
+        case error do
+          {:tls_alert, reason} ->
+            assert inspect(reason) =~ "handshake"
+
+          {:ssl_error, _sock, {:tls_alert, reason}} ->
+            assert {:certificate_required, _message} = reason
+
+          _else ->
+            flunk("Expected a handshake error, got #{inspect error}")
+        end
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -655,7 +681,7 @@ defmodule X509.Test.ServerTest do
                    cacerts: context.suite.cacerts
                  )
 
-        assert inspect(reason) =~ "decrypt"
+        assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
       end
 
       test "valid-wrong-host", context do
@@ -750,12 +776,21 @@ defmodule X509.Test.ServerTest do
       end
 
       test "client-cert", context do
-        assert {:error, {:tls_alert, reason}} =
+        assert {:error, error} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
 
-        assert inspect(reason) =~ "handshake"
+        case error do
+          {:tls_alert, reason} ->
+            assert inspect(reason) =~ "handshake"
+
+          {:ssl_error, _sock, {:tls_alert, reason}} ->
+            assert {:certificate_required, _message} = reason
+
+          _else ->
+            flunk("Expected a handshake error, got #{inspect error}")
+        end
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
