@@ -42,7 +42,12 @@ defmodule X509.Test.ServerTest do
     # root CAs that were passed in via the `cacerts` option; to get the
     # connection to succeed, CRL checks have to be limited to the peer
     # certificate only
-    crl_check = (Keyword.has_key?(opts, :cacerts) && :peer) || true
+    # crl_check = (Keyword.has_key?(opts, :cacerts) && :peer) || true
+
+    # ISSUE: CRL checks with OTP 23.2 and 23.1 are broken when passing CA
+    # trust store as a list of DER binaries:
+    # https://github.com/erlang/otp/issues/4589
+    crl_check = !Keyword.has_key?(opts, :cacerts)
 
     # ISSUE: `httpc` requires explicit opt-in to peer certificate verification,
     # with HTTPS connections to misconfigured or malicious servers succeeding
@@ -142,7 +147,7 @@ defmodule X509.Test.ServerTest do
                  cacertfile: context.cacertfile
                )
 
-      assert inspect(reason) =~ "decrypt"
+      assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
     end
 
     test "valid-wrong-host", context do
@@ -237,12 +242,21 @@ defmodule X509.Test.ServerTest do
     end
 
     test "client-cert", context do
-      assert {:error, {:tls_alert, reason}} =
+      assert {:error, error} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                  cacertfile: context.cacertfile
                )
 
-      assert inspect(reason) =~ "handshake"
+      case error do
+        {:tls_alert, reason} ->
+          assert inspect(reason) =~ "handshake"
+
+        {:ssl_error, _sock, {:tls_alert, reason}} ->
+          assert {:certificate_required, _message} = reason
+
+        _else ->
+          flunk("Expected a handshake error, got #{inspect(error)}")
+      end
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -315,7 +329,7 @@ defmodule X509.Test.ServerTest do
                  cacerts: context.suite.cacerts
                )
 
-      assert inspect(reason) =~ "decrypt"
+      assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
     end
 
     test "valid-wrong-host", context do
@@ -391,6 +405,10 @@ defmodule X509.Test.ServerTest do
       assert inspect(reason) =~ "expired"
     end
 
+    # ISSUE: CRL checks with OTP 23.2 and 23.1 are broken when passing CA
+    # trust store as a list of DER binaries:
+    # https://github.com/erlang/otp/issues/4589
+    @tag :known_to_fail
     test "revoked", context do
       assert {:error, {:tls_alert, reason}} =
                request('https://revoked.#{context.suite.domain}:#{context.port}/',
@@ -410,12 +428,21 @@ defmodule X509.Test.ServerTest do
     end
 
     test "client-cert", context do
-      assert {:error, {:tls_alert, reason}} =
+      assert {:error, error} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                  cacerts: context.suite.cacerts
                )
 
-      assert inspect(reason) =~ "handshake"
+      case error do
+        {:tls_alert, reason} ->
+          assert inspect(reason) =~ "handshake"
+
+        {:ssl_error, _sock, {:tls_alert, reason}} ->
+          assert {:certificate_required, _message} = reason
+
+        _else ->
+          flunk("Expected a handshake error, got #{inspect(error)}")
+      end
 
       assert {:ok, _} =
                request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -482,7 +509,7 @@ defmodule X509.Test.ServerTest do
                    cacertfile: context.cacertfile
                  )
 
-        assert inspect(reason) =~ "decrypt"
+        assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
       end
 
       test "valid-wrong-host", context do
@@ -577,12 +604,21 @@ defmodule X509.Test.ServerTest do
       end
 
       test "client-cert", context do
-        assert {:error, {:tls_alert, reason}} =
+        assert {:error, error} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                    cacertfile: context.cacertfile
                  )
 
-        assert inspect(reason) =~ "handshake"
+        case error do
+          {:tls_alert, reason} ->
+            assert inspect(reason) =~ "handshake"
+
+          {:ssl_error, _sock, {:tls_alert, reason}} ->
+            assert {:certificate_required, _message} = reason
+
+          _else ->
+            flunk("Expected a handshake error, got #{inspect(error)}")
+        end
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
@@ -655,7 +691,7 @@ defmodule X509.Test.ServerTest do
                    cacerts: context.suite.cacerts
                  )
 
-        assert inspect(reason) =~ "decrypt"
+        assert inspect(reason) =~ ~r/decrypt|CertificateVerify/
       end
 
       test "valid-wrong-host", context do
@@ -731,6 +767,10 @@ defmodule X509.Test.ServerTest do
         assert inspect(reason) =~ "expired"
       end
 
+      # ISSUE: CRL checks with OTP 23.2 and 23.1 are broken when passing CA
+      # trust store as a list of DER binaries:
+      # https://github.com/erlang/otp/issues/4589
+      @tag :known_to_fail
       test "revoked", context do
         assert {:error, {:tls_alert, reason}} =
                  request('https://revoked.#{context.suite.domain}:#{context.port}/',
@@ -750,12 +790,21 @@ defmodule X509.Test.ServerTest do
       end
 
       test "client-cert", context do
-        assert {:error, {:tls_alert, reason}} =
+        assert {:error, error} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
                    cacerts: context.suite.cacerts
                  )
 
-        assert inspect(reason) =~ "handshake"
+        case error do
+          {:tls_alert, reason} ->
+            assert inspect(reason) =~ "handshake"
+
+          {:ssl_error, _sock, {:tls_alert, reason}} ->
+            assert {:certificate_required, _message} = reason
+
+          _else ->
+            flunk("Expected a handshake error, got #{inspect(error)}")
+        end
 
         assert {:ok, _} =
                  request('https://client-cert.#{context.suite.domain}:#{context.port}/',
