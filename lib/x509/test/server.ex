@@ -67,7 +67,7 @@ defmodule X509.Test.Server do
         receive do
           :start -> worker(socket, state.suite, state.response)
         after
-          1_000 -> :gen_tcp.close(socket)
+          250 -> :gen_tcp.close(socket)
         end
       end)
 
