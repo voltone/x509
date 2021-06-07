@@ -21,8 +21,13 @@ defmodule X509.CSR do
   Returns a `:CertificationRequest` record for the given key pair and subject.
 
   Supports RSA and EC private keys. The public key is extracted from the
-  private key and encoded, together with the subject, in the CSR. The CSR is
-  then signed with the private key, using a configurable hash algorithm.
+  private key (unless overridden; see Options below) and encoded, together with
+  the subject, in the CSR. The CSR is then signed with the private key, using a
+  configurable hash algorithm.
+
+  The private key may be specified as an 'engine reference'. Please refer to
+  documentation for Erlang/OTP's `:crypto` application for further information
+  about engines.
 
   The default hash algorithm is `:sha256`. An alternative algorithm can be
   specified using the `:hash` option. Possible values include `:sha224`,
@@ -38,6 +43,10 @@ defmodule X509.CSR do
     `:sha256`)
   * `:extension_request` - a list of certificate extensions to be included as
     an `extensionRequest` attribute (see `X509.Certificate.Extension`)
+  * `:public_key` - the public key to include in the CSR; by default the public
+    key is derived from the private key, but if that does not work (for certain
+    private keys stored in an 'engine') it can be useful to override the value
+    using this option (default: from private key)
 
   ## Example:
 
