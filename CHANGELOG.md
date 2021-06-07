@@ -1,5 +1,13 @@
 # Changes
 
+## v0.8.3
+
+### Enhancements
+
+* [X509.PublicKey] Support 'engine' reference for private keys in `derive/1`
+* [X509.CSR] Support 'engine' reference for private keys in `new/2,3`
+* [X509.CSR] Add `:public_key` option for `new/3`
+
 ## v0.8.2
 
 ### Fixes
