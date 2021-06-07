@@ -21,8 +21,13 @@ defmodule X509.CSR do
   Returns a `:CertificationRequest` record for the given key pair and subject.
 
   Supports RSA and EC private keys. The public key is extracted from the
-  private key and encoded, together with the subject, in the CSR. The CSR is
-  then signed with the private key, using a configurable hash algorithm.
+  private key (unless overridden; see Options below) and encoded, together with
+  the subject, in the CSR. The CSR is then signed with the private key, using a
+  configurable hash algorithm.
+
+  The private key may be specified as an 'engine reference'. Please refer to
+  documentation for Erlang/OTP's `:crypto` application for further information
+  about engines.
 
   The default hash algorithm is `:sha256`. An alternative algorithm can be
   specified using the `:hash` option. Possible values include `:sha224`,
@@ -38,6 +43,10 @@ defmodule X509.CSR do
     `:sha256`)
   * `:extension_request` - a list of certificate extensions to be included as
     an `extensionRequest` attribute (see `X509.Certificate.Extension`)
+  * `:public_key` - the public key to include in the CSR; by default the public
+    key is derived from the private key, but if that does not work (for certain
+    private keys stored in an 'engine') it can be useful to override the value
+    using this option (default: from private key)
 
   ## Example:
 
@@ -52,10 +61,19 @@ defmodule X509.CSR do
     true
 
   """
-  @spec new(X509.PrivateKey.t(), String.t() | X509.RDNSequence.t(), Keyword.t()) :: t()
+  @spec new(
+          X509.PrivateKey.t() | :crypto.engine_key_ref(),
+          String.t() | X509.RDNSequence.t(),
+          Keyword.t()
+        ) :: t()
   def new(private_key, subject, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
     extensions = Keyword.get(opts, :extension_request, [])
+
+    public_key =
+      Keyword.get_lazy(opts, :public_key, fn ->
+        X509.PublicKey.derive(private_key)
+      end)
 
     algorithm =
       X509.SignatureAlgorithm.new(hash, private_key, :CertificationRequest_signatureAlgorithm)
@@ -99,15 +117,20 @@ defmodule X509.CSR do
       certification_request_info(
         version: @version,
         subject: subject_rdn_sequence,
-        subjectPKInfo:
-          private_key
-          |> X509.PublicKey.derive()
-          |> X509.PublicKey.wrap(:CertificationRequestInfo_subjectPKInfo),
+        subjectPKInfo: X509.PublicKey.wrap(public_key, :CertificationRequestInfo_subjectPKInfo),
         attributes: attributes
       )
 
     info_der = :public_key.der_encode(:CertificationRequestInfo, info)
-    signature = :public_key.sign(info_der, hash, private_key)
+
+    signature =
+      case private_key do
+        %{algorithm: algorithm, engine: _} ->
+          :crypto.sign(algorithm, hash, info_der, private_key)
+
+        _ ->
+          :public_key.sign(info_der, hash, private_key)
+      end
 
     certification_request(
       certificationRequestInfo: info,

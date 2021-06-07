@@ -9,6 +9,10 @@ defmodule X509.SignatureAlgorithm do
 
   def new(hash, signature, type \\ :SignatureAlgorithm)
 
+  def new(hash, %{algorithm: algorithm, engine: _}, type) do
+    new(hash, algorithm, type)
+  end
+
   def new(hash, rsa_private_key(), type) do
     new(hash, :rsa, type)
   end

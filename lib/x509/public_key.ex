@@ -18,8 +18,17 @@ defmodule X509.PublicKey do
 
   @doc """
   Derives the public key from the given RSA or EC private key.
+
+  The private key may be specified as an 'engine reference'. Please refer to
+  documentation for Erlang/OTP's `:crypto` application for further information
+  about engines. However, please note that `:crypto` may not support this API
+  for all key types.
   """
-  @spec derive(X509.PrivateKey.t()) :: t()
+  @spec derive(X509.PrivateKey.t() | :crypto.engine_key_ref()) :: t()
+  def derive(%{algorithm: algorithm, engine: _} = private_key) do
+    :crypto.privkey_to_pubkey(algorithm, private_key)
+  end
+
   def derive(rsa_private_key(modulus: m, publicExponent: e)) do
     rsa_public_key(modulus: m, publicExponent: e)
   end
