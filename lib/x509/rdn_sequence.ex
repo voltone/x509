@@ -301,7 +301,7 @@ defmodule X509.RDNSequence do
   defp new_attr({"ST", value}), do: new_attr({:stateOrProvinceName, value})
   defp new_attr({"CN", value}), do: new_attr({:commonName, value})
   defp new_attr({"L", value}), do: new_attr({:localityName, value})
-  defp new_attr({"SN", value}), do: new_attr({:surName, value})
+  defp new_attr({"SN", value}), do: new_attr({:surname, value})
   defp new_attr({"GN", value}), do: new_attr({:givenName, value})
   defp new_attr({"DC", value}), do: new_attr({:domainComponent, value})
   defp new_attr({"E", value}), do: new_attr({:emailAddress, value})
