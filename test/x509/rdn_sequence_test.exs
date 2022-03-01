@@ -7,4 +7,8 @@ defmodule X509.RDNSequenceTest do
     # the spec; OTP's :public_key does the same
     assert {:rdnSequence, _} = X509.RDNSequence.new("/C=Germany/O=ACME GmbH")
   end
+
+  test "surname" do
+    assert {:rdnSequence, _} = X509.RDNSequence.new("/SN=Germany/O=ACME GmbH")
+  end
 end
