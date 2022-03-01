@@ -59,6 +59,7 @@ defmodule X509.CSR do
     ...> )
     iex> X509.CSR.valid?(csr)
     true
+    ```
 
   """
   @spec new(
