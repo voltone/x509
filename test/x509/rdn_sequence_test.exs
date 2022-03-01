@@ -9,6 +9,6 @@ defmodule X509.RDNSequenceTest do
   end
 
   test "surname" do
-    assert {:rdnSequence, _} = X509.RDNSequence.new("/SN=Germany/O=ACME GmbH")
+    assert {:rdnSequence, _} = X509.RDNSequence.new("/SN=Erlang/GN=Agner Krarup")
   end
 end
