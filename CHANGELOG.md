@@ -1,5 +1,11 @@
 # Changes
 
+## v0.8.4
+
+### Fixes
+
+* [X509.RDNSequence] Fix handling of surname attribute
+
 ## v0.8.3
 
 ### Enhancements
