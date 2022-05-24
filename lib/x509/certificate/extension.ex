@@ -401,6 +401,7 @@ defmodule X509.Certificate.Extension do
   `nil` if the specified extension is not present in the certificate.
   """
   @spec find([t()], extension_id() | :public_key.oid()) :: t() | nil
+  def find(:asn1_NOVALUE, _), do: nil
   def find(list, :basic_constraints), do: find(list, oid(:"id-ce-basicConstraints"))
   def find(list, :key_usage), do: find(list, oid(:"id-ce-keyUsage"))
   def find(list, :ext_key_usage), do: find(list, oid(:"id-ce-extKeyUsage"))
