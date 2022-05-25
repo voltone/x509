@@ -1,5 +1,11 @@
 # Changes
 
+## v0.8.5
+
+### Fixes
+
+* [X509.Test.Server] Use `:ssl.handshake/3` if available
+
 ## v0.8.4
 
 ### Fixes
