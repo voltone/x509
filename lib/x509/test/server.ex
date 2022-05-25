@@ -78,15 +78,14 @@ defmodule X509.Test.Server do
   end
 
   defp worker(socket, suite, response) do
-    case :ssl.ssl_accept(
-           socket,
-           [
-             active: false,
-             sni_fun: X509.Test.Suite.sni_fun(suite),
-             reuse_sessions: false
-           ] ++ log_opts(),
-           1000
-         ) do
+    opts =
+      [
+        active: false,
+        sni_fun: X509.Test.Suite.sni_fun(suite),
+        reuse_sessions: false
+      ] ++ log_opts()
+
+    case handshake(socket, opts, 1000) do
       {:ok, ssl_socket} ->
         flush(ssl_socket)
         :ssl.send(ssl_socket, response)
@@ -94,6 +93,16 @@ defmodule X509.Test.Server do
 
       {:error, _reason} ->
         :gen_tcp.close(socket)
+    end
+  end
+
+  if Code.ensure_loaded?(:ssl) and function_exported?(:ssl, :handshake, 3) do
+    defp handshake(socket, opts, timeout) do
+      :ssl.handshake(socket, opts, timeout)
+    end
+  else
+    defp handshake(socket, opts, timeout) do
+      :ssl.ssl_accept(socket, opts, timeout)
     end
   end
 
