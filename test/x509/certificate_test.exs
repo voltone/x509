@@ -224,8 +224,7 @@ defmodule X509.CertificateTest do
     assert {:Extension, oid(:"id-ce-authorityKeyIdentifier"), false, _} =
              X509.Certificate.extension(context.selfsigned_rsa, :authority_key_identifier)
 
-    assert {:Extension, oid(:"id-ce-basicConstraints"), false,
-            {:BasicConstraints, true, :asn1_NOVALUE}} =
+    assert {:Extension, oid(:"id-ce-basicConstraints"), true, {:BasicConstraints, true, 1}} =
              X509.Certificate.extension(context.selfsigned_rsa, :basic_constraints)
   end
 
