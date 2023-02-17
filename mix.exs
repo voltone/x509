@@ -15,13 +15,13 @@ defmodule X509.MixProject do
       description: description(),
       package: package(),
       docs: docs(),
-      xref: [exclude: [IEx, :epp_dodger]]
+      xref: [exclude: [IEx]]
     ]
   end
 
   def application do
     [
-      extra_applications: [:crypto, :public_key, :logger, :ssl]
+      extra_applications: [:crypto, :public_key, :logger, :ssl, :syntax_tools]
     ]
   end
 
