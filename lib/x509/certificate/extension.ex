@@ -6,6 +6,8 @@ defmodule X509.Certificate.Extension do
 
   import X509.ASN1, except: [basic_constraints: 2, authority_key_identifier: 1]
 
+  alias X509.Util
+
   @typedoc "`:Extension` record, as used in Erlang's `:public_key` module"
   @type t :: X509.ASN1.record(:extension)
 
@@ -408,7 +410,18 @@ defmodule X509.Certificate.Extension do
   def find(list, :subject_key_identifier), do: find(list, oid(:"id-ce-subjectKeyIdentifier"))
   def find(list, :authority_key_identifier), do: find(list, oid(:"id-ce-authorityKeyIdentifier"))
   def find(list, :subject_alt_name), do: find(list, oid(:"id-ce-subjectAltName"))
-  def find(list, :crl_distribution_points), do: find(list, oid(:"id-ce-cRLDistributionPoints"))
+
+  def find(list, :crl_distribution_points) do
+    case find(list, oid(:"id-ce-cRLDistributionPoints")) do
+      extension(extnValue: der) = ext when is_binary(der) ->
+        # Older OTP versions decoded this automatically, but newer ones don't...
+        extension(ext, extnValue: :public_key.der_decode(:CRLDistributionPoints, der))
+
+      crl_distribution_points ->
+        crl_distribution_points
+    end
+  end
+
   def find(list, :authority_info_access), do: find(list, oid(:"id-pe-authorityInfoAccess"))
   def find(list, :ocsp_nocheck), do: find(list, @ocsp_nocheck_oid)
 
@@ -439,6 +452,20 @@ defmodule X509.Certificate.Extension do
     :public_key.der_decode(:Extension, der)
     |> decode()
   end
+
+  @doc false
+  # Intended for internal use only
+  def prepare(extension(extnID: oid(:"id-ce-cRLDistributionPoints"), extnValue: value) = ext)
+      when is_list(value) do
+    # Older OTP versions encoded this automatically, but newer ones don't...
+    if Util.app_version(:public_key) >= [1, 13, 3] do
+      encode(ext)
+    else
+      ext
+    end
+  end
+
+  def prepare(ext), do: ext
 
   defp encode(extension(extnID: oid(:"id-ce-basicConstraints"), extnValue: value) = ext) do
     extension(ext, extnValue: :public_key.der_encode(:BasicConstraints, value))

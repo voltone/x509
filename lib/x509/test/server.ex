@@ -4,6 +4,8 @@ defmodule X509.Test.Server do
   """
   use GenServer
 
+  alias X509.Util
+
   @doc """
   Starts a test server for the given test suite.
 
@@ -117,19 +119,10 @@ defmodule X509.Test.Server do
   end
 
   def log_opts do
-    if version(:ssl) >= [9, 3] do
+    if Util.app_version(:ssl) >= [9, 3] do
       [log_level: :emergency]
     else
       [log_alert: false]
     end
-  end
-
-  defp version(application) do
-    application
-    |> Application.spec()
-    |> Keyword.get(:vsn)
-    |> to_string()
-    |> String.split(".")
-    |> Enum.map(&String.to_integer/1)
   end
 end

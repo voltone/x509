@@ -412,6 +412,7 @@ defmodule X509.Certificate do
         template.extensions
         |> Keyword.values()
         |> Enum.reject(&(&1 == false))
+        |> Enum.map(&Extension.prepare/1)
     )
   end
 
