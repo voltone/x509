@@ -1,5 +1,11 @@
 # Changes
 
+## v0.8.6
+
+### Fixes
+
+* Compatibility with Erlang/OTP 25.3
+
 ## v0.8.5
 
 ### Fixes
