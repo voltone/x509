@@ -4,75 +4,30 @@ defmodule X509.ASN1 do
   require Record
   alias X509.ASN1.OIDImport
 
-  # Records to import from :public_key's HRL files, and their snake-case names
-  @records [
-    # RSA keys
-    rsa_private_key: :RSAPrivateKey,
-    rsa_public_key: :RSAPublicKey,
+  records = Record.extract_all(from_lib: "public_key/include/public_key.hrl")
 
-    # EC keys
-    ec_private_key: :ECPrivateKey,
-    ec_point: :ECPoint,
+  record_keys_normalized =
+    Enum.map(Keyword.keys(records), fn rec ->
+      key =
+        rec
+        |> Atom.to_string()
+        |> String.replace("-", "")
+        |> Macro.underscore()
+        |> String.replace("otptbs_", "otp_tbs_")
+        |> String.replace("certification_request_info_", "certification_request_")
+        |> String.to_atom()
 
-    # PrivateKeyInfo and SPKI
-    private_key_info: :PrivateKeyInfo,
-    private_key_info_private_key_algorithm: :PrivateKeyInfo_privateKeyAlgorithm,
-    otp_subject_public_key_info: :OTPSubjectPublicKeyInfo,
-    subject_public_key_info: :SubjectPublicKeyInfo,
-    public_key_algorithm: :PublicKeyAlgorithm,
-    algorithm_identifier: :AlgorithmIdentifier,
+      case key do
+        :attribute_pkcs10 -> :certification_request_attribute
+        :tbs_cert_list_revoked_certificates_seqof -> :tbs_cert_list_revoked_certificate
+        key -> key
+      end
+    end)
 
-    # Names (RDNs)
-    attribute_type_and_value: :AttributeTypeAndValue,
+  @record_mappings Enum.zip(record_keys_normalized, records)
 
-    # CSRs
-    certification_request: :CertificationRequest,
-    certification_request_info: :CertificationRequestInfo,
-    certification_request_subject_pk_info: :CertificationRequestInfo_subjectPKInfo,
-    certification_request_subject_pk_info_algorithm:
-      :CertificationRequestInfo_subjectPKInfo_algorithm,
-    certification_request_signature_algorithm: :CertificationRequest_signatureAlgorithm,
-    certification_request_attribute: :"AttributePKCS-10",
-
-    # Certificates
-    certificate: :Certificate,
-    otp_certificate: :OTPCertificate,
-    tbs_certificate: :TBSCertificate,
-    otp_tbs_certificate: :OTPTBSCertificate,
-    signature_algorithm: :SignatureAlgorithm,
-    validity: :Validity,
-    extension: :Extension,
-    basic_constraints: :BasicConstraints,
-    authority_key_identifier: :AuthorityKeyIdentifier,
-    access_description: :AccessDescription,
-
-    # CRLs
-    certificate_list: :CertificateList,
-    tbs_cert_list: :TBSCertList,
-    tbs_cert_list_revoked_certificate: :TBSCertList_revokedCertificates_SEQOF
-  ]
-
-  # The :ECPoint record is the only ASN.1 record defined in public_key.hrl;
-  # all other records are in either OTP-PUB-KEY.hrl or PKCS-FRAME.hrl
-  Enum.each(@records, fn
-    {name, :ECPoint} ->
-      Record.defrecord(
-        name,
-        :ECPoint,
-        Record.extract(:ECPoint, from_lib: "public_key/include/public_key.hrl")
-      )
-
-    {name, record} ->
-      Record.defrecord(
-        name,
-        record,
-        try do
-          Record.extract(record, from_lib: "public_key/include/OTP-PUB-KEY.hrl")
-        rescue
-          ArgumentError ->
-            Record.extract(record, from_lib: "public_key/include/PKCS-FRAME.hrl")
-        end
-      )
+  Enum.each(@record_mappings, fn {name, {pubkey_name, definitions}} ->
+    Record.defrecord(name, pubkey_name, definitions)
   end)
 
   # ASN.1 helpers
