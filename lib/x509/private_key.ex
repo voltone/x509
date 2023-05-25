@@ -61,7 +61,7 @@ defmodule X509.PrivateKey do
   does not support all curve names returned by the `:crypto.ec_curves/0`
   function. In particular, the NIST Prime curves must be selected by their
   SECG id, e.g. NIST P-256 is `:secp256r1` rather than `:prime256v1`. Please
-  refer to [RFC4492 appendix A](https://tools.ietf.org/search/rfc4492#appendix-A)
+  refer to [RFC4492 appendix A](https://www.rfc-editor.org/rfc/rfc4492.html#appendix-A)
   for a mapping table.
   """
   @spec new_ec(:crypto.ec_named_curve() | :public_key.oid()) :: :public_key.ec_private_key()
