@@ -1,6 +1,11 @@
 defmodule X509.ASN1.OIDImport do
   @moduledoc false
 
+  # TODO: Remove when we require Elixir 1.15
+  if function_exported?(Mix, :ensure_application!, 1) do
+    Mix.ensure_application!(:syntax_tools)
+  end
+
   def from_lib(file) do
     file
     |> from_lib_file()
