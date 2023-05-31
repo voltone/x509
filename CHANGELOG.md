@@ -1,5 +1,10 @@
 # Changes
 
+## v0.8.7
+
+### Fixes
+
+* Compatibility with Elixir 1.15
 ## v0.8.6
 
 ### Fixes
