@@ -1,29 +1,30 @@
-# Changes
+# Changelog
 
-## v0.8.7
+## v0.8.7 (2023-05-31)
 
 ### Fixes
 
 * Compatibility with Elixir 1.15
-## v0.8.6
+
+## v0.8.6 (2023-04-04)
 
 ### Fixes
 
 * Compatibility with Erlang/OTP 25.3
 
-## v0.8.5
+## v0.8.5 (2022-05-25)
 
 ### Fixes
 
 * [X509.Test.Server] Use `:ssl.handshake/3` if available
 
-## v0.8.4
+## v0.8.4 (2022-03-01)
 
 ### Fixes
 
 * [X509.RDNSequence] Fix handling of surname attribute
 
-## v0.8.3
+## v0.8.3 (2021-06-07)
 
 ### Enhancements
 
@@ -31,26 +32,26 @@
 * [X509.CSR] Support 'engine' reference for private keys in `new/2,3`
 * [X509.CSR] Add `:public_key` option for `new/3`
 
-## v0.8.2
+## v0.8.2 (2020-11-05)
 
 ### Fixes
 
 * Support for Elixir v1.11
 
-## v0.8.1
+## v0.8.1 (2020-02-29)
 
 ### Fixes
 
 * [X509.Certificate] Support both 'plain' and 'otp' `rdnSequence` records
 * [X509.CSR] Support both 'plain' and 'otp' `rdnSequence` records
 
-## v0.8.0
+## v0.8.0 (2019-12-09)
 
 ### Enhancements
 
 * [X509.CSR] Add support for extension requests
 
-## v0.7.0
+## v0.7.0 (2019-07-15)
 
 ### Enhancements
 
@@ -63,7 +64,7 @@
 * [X509.RDNSequence] Handle `teletexString` encoding (7-bit only, for now)
 * [X509.PrivateKey] Documentation fixes
 
-## v0.6.0
+## v0.6.0 (2019-06-18)
 
 ### Enhancements
 
@@ -77,26 +78,26 @@
 * [`x509.gen.suite` Mix task] Generate 'ca_and_chain.pem' file
 * [`x509.gen.selfsigned` Mix task] Add --force option
 
-## v0.5.4
+## v0.5.4 (2019-04-15)
 
 ### Enhancements
 
 * [X509.RDNSequence] Relax length restriction on `countryName` attribute
 
-## v0.5.3
+## v0.5.3 (2019-03-14)
 
 ### Fixes
 
 * [X509.RDNSequence] Support more attribute types in `to_string/1`
 
-## v0.5.2
+## v0.5.2 (2019-02-21)
 
 ### Enhancements
 
 * [X509.Certificate] Add `version/1`, `subject/2` and `issuer/2`
 * [X509.RDNSequence] Add `get_attr/2`
 
-## v0.5.1
+## v0.5.1 (2019-01-03)
 
 ### Fixes
 
@@ -104,7 +105,7 @@
   used for dates from 2050 forward, was not recognized by OTP, causing
   certificate creation and encoding to fail (#24)
 
-## v0.5.0
+## v0.5.0 (2018-11-27)
 
 ### Enhancements
 
@@ -127,7 +128,7 @@
     (including the `backdate_seconds` shift); it is now set relative to the
     current time
 
-## v0.4.0
+## v0.4.0 (2018-10-19)
 
 ### Breaking changes
 
@@ -162,7 +163,7 @@ The only exception is the `from_pem` function in X509, which returns a
   * [X509.PublicKey] Documentation: corrected the default value for the
     `wrap` option for RSA keys in `to_der/1` and `to_pem/1`
 
-## v0.3.0
+## v0.3.0 (2018-09-22)
 
 This release paves the way for some changes in the way PEM and DER
 decoding works. Eventually there will be six functions in each module, as
@@ -199,7 +200,7 @@ have been deprecated. Please use their entity-specific functions in the
 appropriate module instead. The deprecated functions will be removed in an
 upcoming release, prior to v1.0.
 
-## v0.2.0
+## v0.2.0 (2018-07-24)
 
 ### Breaking changes
 
@@ -210,6 +211,6 @@ upcoming release, prior to v1.0.
   * [X509] `to_der` and `to_pem` now delegate now support `:OTPCertificate` records, by delegating to `X509.Certificate`
   * [X509.Certificate] Added certificate-specific implementations of `to_der`, `to_pem`, `from_der` and `from_pem`
 
-## v0.1.0
+## v0.1.0 (2018-07-02)
 
 First public release

@@ -2,7 +2,7 @@
 
 When regenerating the test dataset, ensure to update all files! Test cases
 assume that the different variants of a private/public key encode the same
-keypair.
+key pair.
 
 ## RSA keys
 
