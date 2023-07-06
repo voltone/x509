@@ -21,8 +21,16 @@ defmodule X509.MixProject do
 
   def application do
     [
-      extra_applications: [:crypto, :public_key, :logger, :ssl]
+      extra_applications: extra_applications(Mix.env())
     ]
+  end
+
+  defp extra_applications(:test) do
+    extra_applications(:prod) ++ [:inets]
+  end
+
+  defp extra_applications(_env) do
+    [:crypto, :public_key, :logger, :ssl]
   end
 
   defp deps do
