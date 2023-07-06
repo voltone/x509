@@ -35,7 +35,7 @@ defmodule Mix.Tasks.X509.Gen.Suite do
       CRL distribution points
     * `--output` (`-o`): the path where the certificates and keys should be
       stored (default: #{@default_path})
-    * `--force` (`-f`): overwite existing files without prompting for
+    * `--force` (`-f`): overwrite existing files without prompting for
       confirmation
 
   Requires OTP 20 or later.

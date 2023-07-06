@@ -56,7 +56,7 @@ defmodule X509.Certificate.Extension do
   paths that include this certificate.
 
   This extension is always marked as critical for CA certificates, and
-  non-criticial when CA is set to false.
+  non-critical when CA is set to false.
 
   Examples:
 

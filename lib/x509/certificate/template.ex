@@ -70,7 +70,7 @@ defmodule X509.Certificate.Template do
       is not possible when OCSP Nocheck is set.
 
   All of the above templates generate a random 8 byte (64 bit) serial number,
-  which can be overriden through the `:serial` option (see below).
+  which can be overridden through the `:serial` option (see below).
 
   The `extensions` attribute of a template is a keyword list of extension
   name/value pairs, where the value should typically be an

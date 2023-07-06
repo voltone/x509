@@ -27,7 +27,7 @@ defmodule X509.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "~> 0.22", only: :dev}
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 
@@ -50,9 +50,10 @@ defmodule X509.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "CHANGELOG.md"],
+      extras: ["CHANGELOG.md", "README.md"],
       source_ref: "v#{@version}",
-      source_url: @source_url
+      source_url: @source_url,
+      formatters: ["html"]
     ]
   end
 end

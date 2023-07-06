@@ -1,6 +1,6 @@
 defmodule X509.RDNSequence do
   @moduledoc """
-  Convenience functions for creating `:rdnSquence` tuples, as defined in
+  Convenience functions for creating `:rdnSequence` tuples, as defined in
   Erlang's `:public_key` module as the `issuer_name()` type, and representing
   the X.509 RDNSequence type. RDNSequences are primarily used for the Subject
   and Issuer fields of certificates, as well as the Subject field of CSRs.
@@ -55,7 +55,7 @@ defmodule X509.RDNSequence do
   @type attr_list :: [attr]
 
   @doc """
-  Creates a new `:rdnSquence` tuple.
+  Creates a new `:rdnSequence` tuple.
 
   The value can be specified in one of the following formats:
 
@@ -138,7 +138,7 @@ defmodule X509.RDNSequence do
   end
 
   @doc """
-  Converts an `:rdnSquence` tuple to a human readable string, in hierarchical
+  Converts an `:rdnSequence` tuple to a human readable string, in hierarchical
   format.
 
   ## Examples:
@@ -156,7 +156,7 @@ defmodule X509.RDNSequence do
   end
 
   @doc """
-  Extracts the values for the specified attributes from a `:rdnSquence` tuple.
+  Extracts the values for the specified attributes from a `:rdnSequence` tuple.
 
   The attribute type may be specified as an attribute name (long or short form,
   as a string, or long from as an atom) or an OID tuple. Refer to the

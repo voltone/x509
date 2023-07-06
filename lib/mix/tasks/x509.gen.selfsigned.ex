@@ -39,7 +39,7 @@ defmodule Mix.Tasks.X509.Gen.Selfsigned do
       key (default: #{@default_path})
     * `--name` (`-n`): the Common Name value in certificate's subject
       (default: "#{@default_name}")
-      * `--force` (`-f`): overwite existing files without prompting for
+      * `--force` (`-f`): overwrite existing files without prompting for
         confirmation
 
   Requires OTP 20 or later.

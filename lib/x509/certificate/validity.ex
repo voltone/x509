@@ -49,7 +49,7 @@ defmodule X509.Certificate.Validity do
   from being rejected by peers due to poorly synchronized clocks.
 
   For CA certificates, consider using `new/2` instead, with a `not_before`
-  value that does not reveal the exact time when the keypair was generated.
+  value that does not reveal the exact time when the key pair was generated.
   This minimizes information leakage about the state of the RNG.
   """
   @spec days_from_now(integer(), non_neg_integer()) :: t()

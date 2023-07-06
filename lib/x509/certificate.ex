@@ -419,8 +419,8 @@ defmodule X509.Certificate do
   # If the template includes the Subject Key Identifier extension, sets the
   # value based on the given public key value
   defp update_ski(template, public_key) do
-    Map.update!(template, :extensions, fn extentions ->
-      Keyword.update(extentions, :subject_key_identifier, false, fn
+    Map.update!(template, :extensions, fn extensions ->
+      Keyword.update(extensions, :subject_key_identifier, false, fn
         true -> Extension.subject_key_identifier(public_key)
         false -> false
       end)

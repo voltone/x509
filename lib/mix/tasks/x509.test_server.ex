@@ -64,7 +64,7 @@ defmodule Mix.Tasks.X509.TestServer do
     Sample invocation of `curl`:
       curl --cacert #{cacertfile} https://valid.#{suite.domain}:#{port}/
 
-    Please refer to the documenation for X509.Test.Suite for a list of
+    Please refer to the documentation for X509.Test.Suite for a list of
     available endpoints and their expected behaviour.
     """)
 
