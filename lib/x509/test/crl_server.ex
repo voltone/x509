@@ -107,7 +107,7 @@ defmodule X509.Test.CRLServer do
       {:ok, :http_eoh} ->
         case Map.get(crl_map, path) do
           nil ->
-            Logger.warn("No CRL defined for #{path}")
+            Logger.warning("No CRL defined for #{path}")
             respond(socket, 404)
             :gen_tcp.close(socket)
 

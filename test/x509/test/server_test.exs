@@ -839,7 +839,7 @@ defmodule X509.Test.ServerTest do
       end
     end
   else
-    Logger.warn("ECDSA certificates can't be tested on the current OTP version")
+    Logger.warning("ECDSA certificates can't be tested on the current OTP version")
   end
 
   #
