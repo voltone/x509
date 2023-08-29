@@ -25,7 +25,6 @@ defmodule X509.Test.ServerTest do
 
   use ExUnit.Case
   import X509.TestHelper
-  require Logger
 
   #
   # Client under test
@@ -839,7 +838,7 @@ defmodule X509.Test.ServerTest do
       end
     end
   else
-    Logger.warn("ECDSA certificates can't be tested on the current OTP version")
+    X509.Util.warn("ECDSA certificates can't be tested on the current OTP version")
   end
 
   #
