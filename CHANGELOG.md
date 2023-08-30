@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.8 (2023-08-30)
+
+### Fixes
+
+* Avoid Logger.warn deprecation warning on recent Elixir versions
+
 ## v0.8.7 (2023-05-31)
 
 ### Fixes
