@@ -27,7 +27,7 @@ defmodule X509.DateTime do
   def utc_time(%DateTime{} = datetime) do
     iso = DateTime.to_iso8601(datetime, :basic)
     [_, date, time] = Regex.run(~r/^\d\d(\d{6})T(\d{6})(?:\.\d+)?Z$/, iso)
-    '#{date}#{time}Z'
+    ~c"#{date}#{time}Z"
   end
 
   # Builds ASN.1 GeneralTime as charlist
@@ -40,7 +40,7 @@ defmodule X509.DateTime do
   def general_time(%DateTime{} = datetime) do
     iso = DateTime.to_iso8601(datetime, :basic)
     [_, date, time] = Regex.run(~r/^(\d{8})T(\d{6})(?:\.\d+)?Z$/, iso)
-    '#{date}#{time}Z'
+    ~c"#{date}#{time}Z"
   end
 
   def to_datetime({:utcTime, time}) do

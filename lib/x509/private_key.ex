@@ -236,7 +236,7 @@ defmodule X509.PrivateKey do
   def from_pem(pem, opts \\ []) do
     password =
       opts
-      |> Keyword.get(:password, '')
+      |> Keyword.get(:password, ~c"")
       |> to_charlist()
 
     pem
@@ -307,6 +307,6 @@ defmodule X509.PrivateKey do
   end
 
   defp cipher_info() do
-    {'DES-EDE3-CBC', :crypto.strong_rand_bytes(8)}
+    {~c"DES-EDE3-CBC", :crypto.strong_rand_bytes(8)}
   end
 end

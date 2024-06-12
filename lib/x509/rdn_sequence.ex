@@ -405,7 +405,7 @@ defmodule X509.RDNSequence do
                      ?A..?Z |> Enum.into([]),
                      ?a..?z |> Enum.into([]),
                      ?0..?9 |> Enum.into([]),
-                     ' \'()+,-./:=?'
+                     ~c" '()+,-./:=?"
                    ]
                    |> List.flatten()
 

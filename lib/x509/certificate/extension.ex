@@ -250,11 +250,11 @@ defmodule X509.Certificate.Extension do
 
       iex> X509.Certificate.Extension.subject_alt_name(["www.example.com", "example.com"])
       {:Extension, {2, 5, 29, 17}, false,
-       [dNSName: 'www.example.com', dNSName: 'example.com']}
+       [dNSName: ~c"www.example.com", dNSName: ~c"example.com"]}
 
-      iex> X509.Certificate.Extension.subject_alt_name(emailAddress: 'user@example.com')
+      iex> X509.Certificate.Extension.subject_alt_name(emailAddress: ~c"user@example.com")
       {:Extension, {2, 5, 29, 17}, false,
-       [emailAddress: 'user@example.com']}
+       [emailAddress: ~c"user@example.com"]}
   """
   @spec subject_alt_name([san_value()]) :: t()
   def subject_alt_name(value) do
@@ -289,7 +289,7 @@ defmodule X509.Certificate.Extension do
       {:Extension, {2, 5, 29, 31}, false,
        [
          {:DistributionPoint,
-          {:fullName, [uniformResourceIdentifier: 'http://crl.example.org/root.crl']},
+          {:fullName, [uniformResourceIdentifier: ~c"http://crl.example.org/root.crl"]},
           :asn1_NOVALUE, :asn1_NOVALUE}
        ]}
   """
