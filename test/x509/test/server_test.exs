@@ -490,7 +490,8 @@ defmodule X509.Test.ServerTest do
         # intermediate CAs from the provided trust store
         if version(:ssl) >= [9, 0, 2] do
           assert {:ok, _} =
-                   request(~c'https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                   request(
+                     ~c'https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
                      cacertfile: context.cacertfile_with_chain
                    )
         end
@@ -674,7 +675,8 @@ defmodule X509.Test.ServerTest do
           # issuer of the peer certificate in this case is taken from `cacerts`,
           # no CRL checks can be performed
           assert {:ok, _} =
-                   request(~c'https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                   request(
+                     ~c'https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
                      cacerts: context.suite.cacerts ++ context.suite.chain,
                      crl_check: false
                    )
