@@ -80,9 +80,19 @@ defmodule X509.Test.Server do
   end
 
   defp worker(socket, suite, response) do
+    # Default certificates and keys, which are overriden by sni_fun according
+    # to the specific test case. OTP 27 requires that valid certificates and
+    # keys are passed to the listener socket.
+    default_cert = X509.Certificate.to_der(suite.valid)
+    default_key = {:PrivateKeyInfo, X509.PrivateKey.to_der(suite.server_key, wrap: true)}
+    default_cacerts = suite.chain
+
     opts =
       [
         active: false,
+        cert: default_cert,
+        key: default_key,
+        cacerts: default_cacerts,
         sni_fun: X509.Test.Suite.sni_fun(suite),
         reuse_sessions: false
       ] ++ log_opts()
