@@ -26,13 +26,13 @@ defmodule X509.Certificate.Validity do
       iex> {:ok, not_before, 0} = DateTime.from_iso8601("2018-01-01T00:00:00Z")
       iex> {:ok, not_after, 0} = DateTime.from_iso8601("2018-12-31T23:59:59Z")
       iex> X509.Certificate.Validity.new(not_before, not_after)
-      {:Validity, {:utcTime, '180101000000Z'}, {:utcTime, '181231235959Z'}}
+      {:Validity, {:utcTime, ~c"180101000000Z"}, {:utcTime, ~c"181231235959Z"}}
 
       iex> {:ok, not_before, 0} = DateTime.from_iso8601("2051-01-01T00:00:00Z")
       iex> {:ok, not_after, 0} = DateTime.from_iso8601("2051-12-31T23:59:59Z")
       iex> X509.Certificate.Validity.new(not_before, not_after)
-      {:Validity, {:generalTime, '20510101000000Z'},
-        {:generalTime, '20511231235959Z'}}
+      {:Validity, {:generalTime, ~c"20510101000000Z"},
+        {:generalTime, ~c"20511231235959Z"}}
   """
   @spec new(DateTime.t(), DateTime.t()) :: t()
   def new(%DateTime{} = not_before, %DateTime{} = not_after) do
