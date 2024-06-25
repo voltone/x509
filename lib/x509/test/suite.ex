@@ -581,7 +581,7 @@ defmodule X509.Test.Suite do
         %__MODULE__{valid: valid, chain: chain, server_key: server_key},
         scenario
       ) do
-    X509.Util.warn("Unknown scenario: #{scenario}")
+    X509.Logger.warn("Unknown scenario: #{scenario}")
 
     [
       cert: X509.Certificate.to_der(valid),
