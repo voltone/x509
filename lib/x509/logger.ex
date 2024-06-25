@@ -4,7 +4,7 @@ defmodule X509.Logger do
 
   require Logger
 
-  if Util.app_version(:elixir) >= [1, 11, 0] do
+  if Util.app_version(:logger) >= [1, 11, 0] do
     def warn(message, metadata \\ []) do
       Logger.warning(message, metadata)
     end
