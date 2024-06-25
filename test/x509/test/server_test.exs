@@ -97,14 +97,14 @@ defmodule X509.Test.ServerTest do
 
     test "valid", context do
       assert {:ok, _} =
-               request('https://valid.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
     end
 
     test "valid-missing-chain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -116,7 +116,7 @@ defmodule X509.Test.ServerTest do
       # intermediate CAs from the provided trust store
       if version(:ssl) >= [9, 0, 2] do
         assert {:ok, _} =
-                 request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile_with_chain
                  )
       end
@@ -124,7 +124,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-expired-chain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-expired-chain.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -133,7 +133,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-revoked-chain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -142,7 +142,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-wrong-key", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-wrong-key.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -151,7 +151,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-wrong-host", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-wrong-host.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -167,7 +167,7 @@ defmodule X509.Test.ServerTest do
     @tag :known_to_fail
     test "valid-cross-signed, cross-signed CA", context do
       assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
     end
@@ -176,7 +176,7 @@ defmodule X509.Test.ServerTest do
       # TODO: this only works with 'best effort' CRL checks; this may be an
       # issue with the test suite
       assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.alternate_cacertfile,
                  crl_check: :best_effort
                )
@@ -188,7 +188,7 @@ defmodule X509.Test.ServerTest do
       # versions this test would fail
       if version(:public_key) >= [1, 6] do
         assert {:ok, _} =
-                 request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid.wildcard.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
       end
@@ -196,7 +196,7 @@ defmodule X509.Test.ServerTest do
 
     test "wildcard, bare domain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://wildcard.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://wildcard.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -206,7 +206,7 @@ defmodule X509.Test.ServerTest do
     test "invalid.subdomain.wildcard", context do
       assert {:error, {:tls_alert, reason}} =
                request(
-                 'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
+                 ~c"https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -215,7 +215,7 @@ defmodule X509.Test.ServerTest do
 
     test "expired", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://expired.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://expired.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -224,7 +224,7 @@ defmodule X509.Test.ServerTest do
 
     test "revoked", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://revoked.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://revoked.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -233,7 +233,7 @@ defmodule X509.Test.ServerTest do
 
     test "selfsigned", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://selfsigned.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -242,7 +242,7 @@ defmodule X509.Test.ServerTest do
 
     test "client-cert", context do
       assert {:error, error} =
-               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                  cacertfile: context.cacertfile
                )
 
@@ -264,7 +264,7 @@ defmodule X509.Test.ServerTest do
       end
 
       assert {:ok, _} =
-               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.chain ++ context.suite.cacerts,
                  cert: X509.Certificate.to_der(context.suite.client),
                  key: {:RSAPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
@@ -277,14 +277,14 @@ defmodule X509.Test.ServerTest do
 
     test "valid", context do
       assert {:ok, _} =
-               request('https://valid.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
     end
 
     test "valid-missing-chain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -300,7 +300,7 @@ defmodule X509.Test.ServerTest do
         # issuer of the peer certificate in this case is taken from `cacerts`,
         # no CRL checks can be performed
         assert {:ok, _} =
-                 request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts ++ context.suite.chain,
                    crl_check: false
                  )
@@ -309,7 +309,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-expired-chain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-expired-chain.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -321,7 +321,7 @@ defmodule X509.Test.ServerTest do
     @tag :known_to_fail
     test "valid-revoked-chain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -330,7 +330,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-wrong-key", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-wrong-key.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -339,7 +339,7 @@ defmodule X509.Test.ServerTest do
 
     test "valid-wrong-host", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-wrong-host.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -355,7 +355,7 @@ defmodule X509.Test.ServerTest do
     @tag :known_to_fail
     test "valid-cross-signed, cross-signed CA", context do
       assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
     end
@@ -364,7 +364,7 @@ defmodule X509.Test.ServerTest do
       # TODO: this does not work with CRL checks at all, not even peer-only;
       # this may be an issue with the test suite
       assert {:ok, _} =
-               request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.alternate_cacerts,
                  crl_check: false
                )
@@ -376,7 +376,7 @@ defmodule X509.Test.ServerTest do
       # versions this test would fail
       if version(:public_key) >= [1, 6] do
         assert {:ok, _} =
-                 request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid.wildcard.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
       end
@@ -384,7 +384,7 @@ defmodule X509.Test.ServerTest do
 
     test "wildcard, bare domain", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://wildcard.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://wildcard.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -394,7 +394,7 @@ defmodule X509.Test.ServerTest do
     test "invalid.subdomain.wildcard", context do
       assert {:error, {:tls_alert, reason}} =
                request(
-                 'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
+                 ~c"https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -403,7 +403,7 @@ defmodule X509.Test.ServerTest do
 
     test "expired", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://expired.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://expired.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -416,7 +416,7 @@ defmodule X509.Test.ServerTest do
     @tag :known_to_fail
     test "revoked", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://revoked.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://revoked.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -425,7 +425,7 @@ defmodule X509.Test.ServerTest do
 
     test "selfsigned", context do
       assert {:error, {:tls_alert, reason}} =
-               request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://selfsigned.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -434,7 +434,7 @@ defmodule X509.Test.ServerTest do
 
     test "client-cert", context do
       assert {:error, error} =
-               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.cacerts
                )
 
@@ -456,7 +456,7 @@ defmodule X509.Test.ServerTest do
       end
 
       assert {:ok, _} =
-               request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+               request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                  cacerts: context.suite.chain ++ context.suite.cacerts,
                  cert: X509.Certificate.to_der(context.suite.client),
                  key: {:RSAPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
@@ -471,14 +471,14 @@ defmodule X509.Test.ServerTest do
 
       test "valid", context do
         assert {:ok, _} =
-                 request('https://valid.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
       end
 
       test "valid-missing-chain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -490,7 +490,8 @@ defmodule X509.Test.ServerTest do
         # intermediate CAs from the provided trust store
         if version(:ssl) >= [9, 0, 2] do
           assert {:ok, _} =
-                   request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                   request(
+                     ~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                      cacertfile: context.cacertfile_with_chain
                    )
         end
@@ -498,7 +499,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-expired-chain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-expired-chain.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -507,7 +508,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-revoked-chain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -516,7 +517,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-wrong-key", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-wrong-key.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -525,7 +526,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-wrong-host", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-wrong-host.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -541,7 +542,7 @@ defmodule X509.Test.ServerTest do
       @tag :known_to_fail
       test "valid-cross-signed, cross-signed CA", context do
         assert {:ok, _} =
-                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
       end
@@ -550,7 +551,7 @@ defmodule X509.Test.ServerTest do
         # TODO: this only works with 'best effort' CRL checks; this may be an
         # issue with the test suite
         assert {:ok, _} =
-                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.alternate_cacertfile,
                    crl_check: :best_effort
                  )
@@ -562,7 +563,7 @@ defmodule X509.Test.ServerTest do
         # versions this test would fail
         if version(:public_key) >= [1, 6] do
           assert {:ok, _} =
-                   request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                   request(~c"https://valid.wildcard.#{context.suite.domain}:#{context.port}/",
                      cacertfile: context.cacertfile
                    )
         end
@@ -570,7 +571,7 @@ defmodule X509.Test.ServerTest do
 
       test "wildcard, bare domain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://wildcard.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://wildcard.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -580,7 +581,7 @@ defmodule X509.Test.ServerTest do
       test "invalid.subdomain.wildcard", context do
         assert {:error, {:tls_alert, reason}} =
                  request(
-                   'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
+                   ~c"https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -589,7 +590,7 @@ defmodule X509.Test.ServerTest do
 
       test "expired", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://expired.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://expired.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -598,7 +599,7 @@ defmodule X509.Test.ServerTest do
 
       test "revoked", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://revoked.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://revoked.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -607,7 +608,7 @@ defmodule X509.Test.ServerTest do
 
       test "selfsigned", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://selfsigned.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -616,7 +617,7 @@ defmodule X509.Test.ServerTest do
 
       test "client-cert", context do
         assert {:error, error} =
-                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                    cacertfile: context.cacertfile
                  )
 
@@ -638,7 +639,7 @@ defmodule X509.Test.ServerTest do
         end
 
         assert {:ok, _} =
-                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.chain ++ context.suite.cacerts,
                    cert: X509.Certificate.to_der(context.suite.client),
                    key: {:ECPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}
@@ -651,14 +652,14 @@ defmodule X509.Test.ServerTest do
 
       test "valid", context do
         assert {:ok, _} =
-                 request('https://valid.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
       end
 
       test "valid-missing-chain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -674,7 +675,8 @@ defmodule X509.Test.ServerTest do
           # issuer of the peer certificate in this case is taken from `cacerts`,
           # no CRL checks can be performed
           assert {:ok, _} =
-                   request('https://valid-missing-chain.#{context.suite.domain}:#{context.port}/',
+                   request(
+                     ~c"https://valid-missing-chain.#{context.suite.domain}:#{context.port}/",
                      cacerts: context.suite.cacerts ++ context.suite.chain,
                      crl_check: false
                    )
@@ -683,7 +685,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-expired-chain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-expired-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-expired-chain.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -695,7 +697,7 @@ defmodule X509.Test.ServerTest do
       @tag :known_to_fail
       test "valid-revoked-chain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-revoked-chain.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -704,7 +706,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-wrong-key", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-wrong-key.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-wrong-key.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -713,7 +715,7 @@ defmodule X509.Test.ServerTest do
 
       test "valid-wrong-host", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://valid-wrong-host.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-wrong-host.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -729,7 +731,7 @@ defmodule X509.Test.ServerTest do
       @tag :known_to_fail
       test "valid-cross-signed, cross-signed CA", context do
         assert {:ok, _} =
-                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
       end
@@ -738,7 +740,7 @@ defmodule X509.Test.ServerTest do
         # TODO: this does not work with CRL checks at all, not even peer-only;
         # this may be an issue with the test suite
         assert {:ok, _} =
-                 request('https://valid-cross-signed.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://valid-cross-signed.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.alternate_cacerts,
                    crl_check: false
                  )
@@ -750,7 +752,7 @@ defmodule X509.Test.ServerTest do
         # versions this test would fail
         if version(:public_key) >= [1, 6] do
           assert {:ok, _} =
-                   request('https://valid.wildcard.#{context.suite.domain}:#{context.port}/',
+                   request(~c"https://valid.wildcard.#{context.suite.domain}:#{context.port}/",
                      cacerts: context.suite.cacerts
                    )
         end
@@ -758,7 +760,7 @@ defmodule X509.Test.ServerTest do
 
       test "wildcard, bare domain", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://wildcard.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://wildcard.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -768,7 +770,7 @@ defmodule X509.Test.ServerTest do
       test "invalid.subdomain.wildcard", context do
         assert {:error, {:tls_alert, reason}} =
                  request(
-                   'https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/',
+                   ~c"https://invalid.subdomain.wildcard.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -777,7 +779,7 @@ defmodule X509.Test.ServerTest do
 
       test "expired", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://expired.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://expired.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -790,7 +792,7 @@ defmodule X509.Test.ServerTest do
       @tag :known_to_fail
       test "revoked", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://revoked.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://revoked.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -799,7 +801,7 @@ defmodule X509.Test.ServerTest do
 
       test "selfsigned", context do
         assert {:error, {:tls_alert, reason}} =
-                 request('https://selfsigned.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://selfsigned.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -808,7 +810,7 @@ defmodule X509.Test.ServerTest do
 
       test "client-cert", context do
         assert {:error, error} =
-                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.cacerts
                  )
 
@@ -830,7 +832,7 @@ defmodule X509.Test.ServerTest do
         end
 
         assert {:ok, _} =
-                 request('https://client-cert.#{context.suite.domain}:#{context.port}/',
+                 request(~c"https://client-cert.#{context.suite.domain}:#{context.port}/",
                    cacerts: context.suite.chain ++ context.suite.cacerts,
                    cert: X509.Certificate.to_der(context.suite.client),
                    key: {:ECPrivateKey, X509.PrivateKey.to_der(context.suite.client_key)}

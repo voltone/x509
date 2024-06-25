@@ -63,7 +63,7 @@ defmodule X509.Certificate.ExtensionTest do
       assert certs.server
              |> X509.Certificate.extension(:subject_alt_name)
              |> extension(:extnValue) ==
-               [dNSName: '*.tools.ietf.org', dNSName: 'tools.ietf.org']
+               [dNSName: ~c"*.tools.ietf.org", dNSName: ~c"tools.ietf.org"]
     end
 
     test "crl_distribution_points", %{certs: certs} do
@@ -73,7 +73,7 @@ defmodule X509.Certificate.ExtensionTest do
                {:DistributionPoint,
                 {:fullName,
                  [
-                   uniformResourceIdentifier: 'http://crl.starfieldtech.com/sfig2s1-128.crl'
+                   uniformResourceIdentifier: ~c"http://crl.starfieldtech.com/sfig2s1-128.crl"
                  ]}, :asn1_NOVALUE, :asn1_NOVALUE}
              ]
     end
@@ -83,10 +83,10 @@ defmodule X509.Certificate.ExtensionTest do
              |> X509.Certificate.extension(:authority_info_access)
              |> extension(:extnValue) == [
                {:AccessDescription, {1, 3, 6, 1, 5, 5, 7, 48, 1},
-                {:uniformResourceIdentifier, 'http://ocsp.starfieldtech.com/'}},
+                {:uniformResourceIdentifier, ~c"http://ocsp.starfieldtech.com/"}},
                {:AccessDescription, {1, 3, 6, 1, 5, 5, 7, 48, 2},
                 {:uniformResourceIdentifier,
-                 'http://certificates.starfieldtech.com/repository/sfig2.crt'}}
+                 ~c"http://certificates.starfieldtech.com/repository/sfig2.crt"}}
              ]
     end
 

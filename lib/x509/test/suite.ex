@@ -419,6 +419,7 @@ defmodule X509.Test.Suite do
       ) do
     [
       cert: X509.Certificate.to_der(valid),
+      cacerts: [],
       key: {:PrivateKeyInfo, X509.PrivateKey.to_der(server_key, wrap: true)}
     ]
   end

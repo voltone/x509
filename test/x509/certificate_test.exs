@@ -116,7 +116,7 @@ defmodule X509.CertificateTest do
                |> X509.Certificate.extension(:key_usage)
                |> extension(:extnValue)
 
-      assert [rfc822Name: 'end.entity@example.com'] =
+      assert [rfc822Name: ~c"end.entity@example.com"] =
                cert2
                |> X509.Certificate.extension(:subject_alt_name)
                |> extension(:extnValue)

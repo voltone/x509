@@ -8,7 +8,7 @@ defmodule X509.Certificate.ValidityTest do
     validity = X509.Certificate.Validity.new(not_before, not_after)
     assert <<der::binary>> = :public_key.der_encode(:Validity, validity)
 
-    assert {:Validity, {:utcTime, '220101000000Z'}, {:generalTime, '20511231235959Z'}} =
+    assert {:Validity, {:utcTime, ~c"220101000000Z"}, {:generalTime, ~c"20511231235959Z"}} =
              :public_key.der_decode(:Validity, der)
   end
 end
