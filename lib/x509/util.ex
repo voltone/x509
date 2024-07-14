@@ -7,6 +7,9 @@ defmodule X509.Util do
     |> Keyword.get(:vsn)
     |> to_string()
     |> String.split(".")
-    |> Enum.map(&String.to_integer/1)
+    |> Enum.map(fn str ->
+      {num, _} = Integer.parse(str)
+      num
+    end)
   end
 end
