@@ -50,6 +50,8 @@ defmodule Mix.Tasks.X509.Gen.Selfsigned do
 
   @doc false
   def run(all_args) do
+    _ = Application.ensure_all_started(:x509)
+
     {opts, args} =
       OptionParser.parse!(
         all_args,
