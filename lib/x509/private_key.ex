@@ -100,12 +100,19 @@ defmodule X509.PrivateKey do
   @doc """
   Extracts a private key from a PKCS#8 PrivateKeyInfo container.
   """
-  @spec wrap(X509.ASN.record(:private_key_info)) :: t()
+  @spec unwrap(X509.ASN.record(:private_key_info)) :: t()
   def unwrap(
         private_key_info(version: :v1, privateKeyAlgorithm: algorithm, privateKey: private_key)
       ) do
     case algorithm do
       private_key_info_private_key_algorithm(algorithm: oid(:rsaEncryption)) ->
+        :public_key.der_decode(:RSAPrivateKey, private_key)
+
+      private_key_info_private_key_algorithm(algorithm: oid(:"id-RSASSA-PSS")) ->
+        # There have been cases where the PKCS#8 PrivateKeyInfo container
+        # contains the OID for RSASSA-PSS, which seems odd: the algorithm here
+        # should only identify the type of key, not one of the algorithms it
+        # might be used for...
         :public_key.der_decode(:RSAPrivateKey, private_key)
 
       private_key_info_private_key_algorithm(
