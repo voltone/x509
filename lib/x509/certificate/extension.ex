@@ -18,7 +18,7 @@ defmodule X509.Certificate.Extension do
           | :subject_key_identifier
           | :authority_key_identifier
           | :subject_alt_name
-          | :crl_distribution_point
+          | :crl_distribution_points
           | :authority_information_access
           | :ocsp_nocheck
 
