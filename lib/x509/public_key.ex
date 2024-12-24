@@ -132,6 +132,8 @@ defmodule X509.PublicKey do
 
       algorithm_identifier(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
         {ec_point(point: public_key), :public_key.der_decode(:EcpkParameters, parameters)}
+
+      _ -> public_key
     end
   end
 
