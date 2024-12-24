@@ -144,6 +144,8 @@ defmodule X509.PublicKey do
 
       public_key_algorithm(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
         {public_key, parameters}
+        
+      _ -> public_key
     end
   end
 
