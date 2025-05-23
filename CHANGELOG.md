@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.8.10 (2024-10-16)
+
+### Fixes
+
+* Fix version check for Elixir by [@wojtekmach](https://github.com/wojtekmach)
+* Ensure application is started before running task by [@josevalim](https://github.com/josevalim)
+* Remove unnecessary file accidentally included in Hex package of v0.8.9 (as reported in [#79](https://github.com/voltone/x509/issues/79))
+
+## v0.8.9 (2024-06-24)
+
+### Enhancements
+
+* Support OTP 27
+* Clean up deprecation warnings
+
 ## v0.8.8 (2023-08-30)
 
 ### Fixes
