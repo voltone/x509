@@ -24,3 +24,6 @@ x509-*.tar
 
 # Ignore any Mix-task generated certificates/keys
 /priv/cert/
+
+# Libraries should not put mix.lock under version control
+mix.lock
