@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.8.9 (2024-06-24)
+
+### Enhancements
+
+* Support OTP 27
+* Clean up deprecation warnings
+
 ## v0.8.8 (2023-08-30)
 
 ### Fixes
