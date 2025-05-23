@@ -16,37 +16,19 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: '1.5.3'
-              otp: '20.1.7.1'
+              elixir: '1.12'
+              otp: '24.3'
           - pair:
-              elixir: '1.6.6'
-              otp: '20.3.8.26'
-          - pair:
-              elixir: '1.6.6'
-              otp: '21.0.9'
-          - pair:
-              elixir: '1.8.2'
-              otp: '21.3.8.21'
-          - pair:
-              elixir: '1.10.4'
-              otp: '23.0.4'
-          - pair:
-              elixir: '1.11.3'
-              otp: '23.2.7'
-          - pair:
-              elixir: '1.12.3'
-              otp: '24.3.4'
-          - pair:
-              elixir: '1.13.4'
+              elixir: '1.13'
               otp: '25.0'
           - pair:
-              elixir: '1.14.3'
+              elixir: '1.14'
               otp: '25.3'
           - pair:
-              elixir: '1.15.1'
-              otp: '26.0.2'
+              elixir: '1.15'
+              otp: '26.0'
           - pair:
-              elixir: '1.17.1'
+              elixir: '1.17'
               otp: '27.0'
             lint: lint
     steps:
