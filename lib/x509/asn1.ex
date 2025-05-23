@@ -84,12 +84,11 @@ defmodule X509.ASN1 do
   @oids OIDImport.from_lib("public_key/include/OTP-PUB-KEY.hrl") ++
           OIDImport.from_lib("public_key/include/PKCS-FRAME.hrl")
 
-  # OIDs defined as macros, so they may be used in pattern matching
-  for {name, oid} <- @oids do
-    @name name
-    @oid Macro.escape(oid)
-    defmacro oid(@name) do
-      @oid
+  # OIDs defined as a macro, so they may be used in pattern matching
+  defmacro oid(name) do
+    case @oids[name] do
+      nil -> raise "Unknown OID key: #{inspect(name)}"
+      value -> Macro.escape(value)
     end
   end
 end
