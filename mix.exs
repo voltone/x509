@@ -30,7 +30,7 @@ defmodule X509.MixProject do
   end
 
   defp extra_applications(_env) do
-    [:crypto, :public_key, :logger, :ssl]
+    [:crypto, :public_key, :logger, :ssl, :syntax_tools]
   end
 
   defp deps do
