@@ -79,35 +79,6 @@ defmodule X509.RDNSequence do
   attribute types, when attribute values exceed the maximum length
   ('upper bound' in the RFC) or when values cannot be coerced into the
   expected ASN.1 type.
-
-  ## Examples:
-
-      iex> X509.RDNSequence.new("/C=US/CN=Bob")
-      {:rdnSequence,
-       [
-         [{:AttributeTypeAndValue, {2, 5, 4, 6}, <<19, 2, 85, 83>>}],
-         [{:AttributeTypeAndValue, {2, 5, 4, 3}, <<12, 3, 66, 111, 98>>}]
-       ]}
-
-      iex> X509.RDNSequence.new("C=CN, givenName=麗")
-      {:rdnSequence,
-       [
-         [{:AttributeTypeAndValue, {2, 5, 4, 6}, <<19, 2, 67, 78>>}],
-         [{:AttributeTypeAndValue, {2, 5, 4, 42}, <<12, 3, 233, 186, 151>>}]
-       ]}
-
-      iex> X509.RDNSequence.new(commonName: "Elixir")
-      {:rdnSequence,
-       [
-         [{:AttributeTypeAndValue, {2, 5, 4, 3}, <<12, 6, 69, 108, 105, 120, 105, 114>>}]
-       ]}
-
-      iex> X509.RDNSequence.new(language: "Elixir")
-      ** (FunctionClauseError) no function clause matching in X509.RDNSequence.new_attr/1
-
-      iex> X509.RDNSequence.new("C=!!")
-      ** (ArgumentError) unsupported character(s) in `PrintableString` attribute
-
   """
   @spec new(String.t() | attr_list(), :plain | :otp) :: t()
   def new(rdn, type \\ :plain)
@@ -178,7 +149,7 @@ defmodule X509.RDNSequence do
   def get_attr({:rdnSequence, sequence}, attr_type) do
     oid = attr_type_to_oid(attr_type)
 
-    for {:AttributeTypeAndValue, ^oid, value} = attr <- List.flatten(sequence) do
+    for {_, ^oid, value} = attr <- List.flatten(sequence) do
       if is_binary(value) do
         # FIXME: avoid calls to undocumented functions in :public_key app
         {_, _, value} = :pubkey_cert_records.transform(attr, :decode)
@@ -252,6 +223,10 @@ defmodule X509.RDNSequence do
     attr_oid_to_string(oid) <> "=" <> attr_value_to_string(value)
   end
 
+  defp attr_to_string({:SingleAttribute, oid, value}) do
+    attr_oid_to_string(oid) <> "=" <> attr_value_to_string(value)
+  end
+
   defp attr_oid_to_string(oid(:"id-at-countryName")), do: "C"
   defp attr_oid_to_string(oid(:"id-at-organizationName")), do: "O"
   defp attr_oid_to_string(oid(:"id-at-organizationalUnitName")), do: "OU"
@@ -277,6 +252,7 @@ defmodule X509.RDNSequence do
     |> Enum.join(".")
   end
 
+  defp attr_value_to_string({:correct, value}), do: List.to_string(value)
   defp attr_value_to_string({:utf8String, value}), do: value
   defp attr_value_to_string({:printableString, value}), do: List.to_string(value)
   defp attr_value_to_string({:ia5String, value}), do: List.to_string(value)
