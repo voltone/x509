@@ -2,6 +2,8 @@ defmodule X509.CRLTest do
   use ExUnit.Case
   import X509.ASN1
 
+  alias X509.Util
+
   doctest X509.CRL
 
   describe "RSA" do
@@ -49,7 +51,11 @@ defmodule X509.CRLTest do
     test :issuer, context do
       crl = X509.CRL.new([], context.ca, context.ca_key)
 
-      assert X509.CRL.issuer(crl) == X509.RDNSequence.new("/CN=My Root CA")
+      if Util.app_version(:public_key) >= [1, 18] do
+        assert X509.CRL.issuer(crl) == X509.RDNSequence.new("/CN=My Root CA", :otp)
+      else
+        assert X509.CRL.issuer(crl) == X509.RDNSequence.new("/CN=My Root CA")
+      end
     end
 
     test "this_update and next_update", context do
