@@ -32,7 +32,7 @@ jobs:
               otp: '27.0'
             lint: lint
           - pair:
-              elixir: '1.18'
+              elixir: '1.18.4-otp-27'
               otp: '28.0'
     steps:
       - uses: actions/checkout@v2
