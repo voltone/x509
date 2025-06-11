@@ -3,6 +3,8 @@ defmodule X509.SignatureAlgorithm do
 
   import X509.ASN1
 
+  alias X509.Util
+
   # Returns a signature algorithm record for the given public key type and hash
   # algorithm; this is essentially the reverse of
   # `:public_key.pkix_sign_types/1`
@@ -31,16 +33,40 @@ defmodule X509.SignatureAlgorithm do
     certification_request_signature_algorithm(algorithm: oid, parameters: parameters)
   end
 
-  def new(hash, signature, :AlgorithmIdentifier) do
-    # The AlgorithmIdentifier encoder in OTP's :public_key expects the
-    # parameters to be passed in as a raw binary DER, rather than an ASN.1
-    # OpenType record
-    case algorithm(hash, signature) do
-      {oid, {:asn1_OPENTYPE, parameters_der}} ->
-        algorithm_identifier(algorithm: oid, parameters: parameters_der)
+  if Util.app_version(:public_key) >= [1, 18] do
+    def new(hash, signature, :AlgorithmIdentifier) do
+      case algorithm(hash, signature) do
+        {oid, :asn1_NOVALUE} ->
+          algorithm_identifier(algorithm: oid)
 
-      {oid, :asn1_NOVALUE} ->
-        algorithm_identifier(algorithm: oid)
+        {oid, parameters} ->
+          algorithm_identifier(algorithm: oid, parameters: parameters)
+      end
+    end
+  else
+    def new(hash, signature, :AlgorithmIdentifier) do
+      # The AlgorithmIdentifier encoder in OTP's :public_key expects the
+      # parameters to be passed in as a raw binary DER, rather than an ASN.1
+      # OpenType record
+      case algorithm(hash, signature) do
+        {oid, {:asn1_OPENTYPE, parameters_der}} ->
+          algorithm_identifier(algorithm: oid, parameters: parameters_der)
+
+        {oid, :asn1_NOVALUE} ->
+          algorithm_identifier(algorithm: oid)
+      end
+    end
+  end
+
+  if Util.app_version(:public_key) >= [1, 18] do
+    def new(hash, signature, :TBSCertList_signature) do
+      {oid, parameters} = algorithm(hash, signature)
+      tbs_cert_list_signature(algorithm: oid, parameters: parameters)
+    end
+
+    def new(hash, signature, :CertificateList_algorithmIdentifier) do
+      {oid, parameters} = algorithm(hash, signature)
+      certificate_list_algorithm_identifier(algorithm: oid, parameters: parameters)
     end
   end
 

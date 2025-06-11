@@ -432,7 +432,7 @@ defmodule X509.Certificate.Extension do
   @doc false
   # Intended for internal use only
   def to_der(list) when is_list(list) do
-    :public_key.der_encode(:OTPExtensions, Enum.map(list, &encode/1))
+    :public_key.der_encode(:Extensions, Enum.map(list, &encode/1))
   end
 
   def to_der(extension() = ext) do
@@ -443,8 +443,8 @@ defmodule X509.Certificate.Extension do
   # Intended for internal use only
   def from_der!(der, type \\ :Extension)
 
-  def from_der!(der, :OTPExtensions) do
-    :public_key.der_decode(:OTPExtensions, der)
+  def from_der!(der, :Extensions) do
+    :public_key.der_decode(:Extensions, der)
     |> Enum.map(&decode/1)
   end
 

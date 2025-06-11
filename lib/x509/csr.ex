@@ -173,7 +173,7 @@ defmodule X509.CSR do
 
     case attribute do
       certification_request_attribute(values: [asn1_OPENTYPE: der]) ->
-        Extension.from_der!(der, :OTPExtensions)
+        Extension.from_der!(der, :Extensions)
 
       _ ->
         []
