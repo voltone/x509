@@ -344,6 +344,20 @@ defmodule X509.PublicKey do
       nil ->
         {:error, :not_found}
 
+      {:SubjectPublicKeyInfo, der, :not_encrypted} ->
+        # Some OTP versions fail when calling `pem_entry_decode/1` on EdDSA
+        # keys in a PKCS#8 container; need to DER-decode and unwrap ourselves
+        try do
+          :public_key.der_decode(:SubjectPublicKeyInfo, der)
+          |> unwrap()
+        rescue
+          MatchError ->
+            {:error, :malformed}
+        else
+          public_key ->
+            {:ok, public_key}
+        end
+
       entry ->
         try do
           :public_key.pem_entry_decode(entry)
