@@ -2,7 +2,7 @@ defmodule X509.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/voltone/x509"
-  @version "0.8.10"
+  @version "0.9.0"
 
   def project do
     [

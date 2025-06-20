@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.0 (2025-06-20)
+
+### Enhancements
+
+* Support OTP 28: requires 28.0.1 or later; see caveats in README.md
+* Add support for EdDSA keys
+
 ## v0.8.10 (2024-10-16)
 
 ### Fixes
