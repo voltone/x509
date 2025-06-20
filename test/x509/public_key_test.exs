@@ -66,6 +66,14 @@ defmodule X509.PublicKeyTest do
       assert match?({ec_point(), _}, derive(context.ec_key))
       signature = :public_key.sign("message", :sha256, context.ec_key)
       assert :public_key.verify("message", :sha256, signature, derive(context.ec_key))
+
+      ed25519 = X509.PrivateKey.new_ec(:ed25519)
+      signature = :public_key.sign("message", :sha256, ed25519)
+      assert :public_key.verify("message", :sha256, signature, derive(ed25519))
+
+      ed448 = X509.PrivateKey.new_ec(:ed448)
+      signature = :public_key.sign("message", :sha256, ed448)
+      assert :public_key.verify("message", :sha256, signature, derive(ed448))
     end
 
     test "wrap and unwrap", context do
@@ -91,20 +99,24 @@ defmodule X509.PublicKeyTest do
                context.ec_pub |> wrap(:CertificationRequestInfo_subjectPKInfo) |> unwrap()
     end
 
-    test "PEM decode and encode", context do
-      pem = File.read!("test/data/prime256v1_pub.pem")
-      assert match?({:ok, {ec_point(), _}}, from_pem(pem))
+    for curve <- ["prime256v1", "ed25519", "ed448"] do
+      @curve curve
 
-      assert context.ec_pub == context.ec_pub |> to_pem() |> from_pem!()
-      # EC public key encoding always wraps, ignoring the `wrap: false` option,
-      # so this test is effectively the same as the previous one
-      assert context.ec_pub == context.ec_pub |> to_pem(wrap: false) |> from_pem!()
-    end
+      test "PEM decode and encode: #{@curve}", context do
+        pem = File.read!("test/data/#{@curve}_pub.pem")
+        assert match?({:ok, {ec_point(), _}}, from_pem(pem))
 
-    test "DER decode and encode" do
-      der = File.read!("test/data/prime256v1_pub.der")
-      assert match?({:ok, {ec_point(), _}}, from_der(der))
-      assert der == der |> from_der!() |> to_der()
+        assert context.ec_pub == context.ec_pub |> to_pem() |> from_pem!()
+        # EC public key encoding always wraps, ignoring the `wrap: false` option,
+        # so this test is effectively the same as the previous one
+        assert context.ec_pub == context.ec_pub |> to_pem(wrap: false) |> from_pem!()
+      end
+
+      test "DER decode and encode: #{@curve}" do
+        der = File.read!("test/data/#{@curve}_pub.der")
+        assert match?({:ok, {ec_point(), _}}, from_der(der))
+        assert der == der |> from_der!() |> to_der()
+      end
     end
   end
 end

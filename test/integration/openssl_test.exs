@@ -54,6 +54,25 @@ defmodule X509.OpenSSLTest do
       assert openssl(["ec", "-pubin", "-in", file, "-text", "-noout"]) =~ "ASN1 OID: prime256v1"
     end
 
+    test "OpenSSL can read EdDSA private keys" do
+      file =
+        X509.PrivateKey.new_ec(:ed25519)
+        |> X509.PrivateKey.to_pem()
+        |> write_tmp()
+
+      assert openssl(["pkey", "-in", file, "-text", "-noout"]) =~ "ED25519 Private-Key"
+    end
+
+    test "OpenSSL can read EdDSA public keys" do
+      file =
+        X509.PrivateKey.new_ec(:ed448)
+        |> X509.PublicKey.derive()
+        |> X509.PublicKey.to_pem(wrap: true)
+        |> write_tmp()
+
+      assert openssl(["pkey", "-pubin", "-in", file, "-text", "-noout"]) =~ "ED448 Public-Key"
+    end
+
     test "OpenSSL can read CSRs (RSA)" do
       file =
         X509.PrivateKey.new_rsa(2048)

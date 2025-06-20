@@ -34,6 +34,7 @@ defmodule X509.PrivateKey do
 
   @private_key_records [:RSAPrivateKey, :ECPrivateKey, :PrivateKeyInfo]
   @default_e 65537
+  @edwards_curves [oid(:"id-Ed25519"), oid(:"id-Ed448")]
 
   @doc """
   Generates a new RSA private key. To derive the public key, use
@@ -85,6 +86,15 @@ defmodule X509.PrivateKey do
     )
   end
 
+  def wrap(ec_private_key(parameters: {:namedCurve, curve}, privateKey: private_key))
+      when curve in @edwards_curves do
+    private_key_info(
+      version: :v1,
+      privateKeyAlgorithm: private_key_info_private_key_algorithm(algorithm: curve),
+      privateKey: :public_key.der_encode(:CurvePrivateKey, private_key)
+    )
+  end
+
   def wrap(ec_private_key(parameters: parameters) = private_key) do
     private_key_info(
       version: :v1,
@@ -123,11 +133,11 @@ defmodule X509.PrivateKey do
   ## Options:
 
     * `:wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
-      (default: `false`)
+      (default: `false`, but always `true` for EdDSA keys)
   """
   @spec to_der(t(), Keyword.t()) :: binary()
   def to_der(private_key, opts \\ []) do
-    if Keyword.get(opts, :wrap, false) do
+    if Keyword.get(opts, :wrap, false) or is_edwards_curve(private_key) do
       private_key
       |> wrap()
       |> der_encode()
@@ -143,13 +153,13 @@ defmodule X509.PrivateKey do
   ## Options:
 
     * `:wrap` - Wrap the private key in a PKCS#8 PrivateKeyInfo container
-      (default: `false`)
+      (default: `false`, but always `true` for EdDSA keys)
     * `:password` - If a password is specified, the private key is encrypted
-      using 3DES; to password will be required to decode the PEM entry
+      using 3DES; the password will be required to decode the PEM entry
   """
   @spec to_pem(t(), Keyword.t()) :: String.t()
   def to_pem(private_key, opts \\ []) do
-    if Keyword.get(opts, :wrap, false) do
+    if Keyword.get(opts, :wrap, false) or is_edwards_curve(private_key) do
       private_key
       |> wrap()
     else
@@ -159,6 +169,12 @@ defmodule X509.PrivateKey do
     |> List.wrap()
     |> :public_key.pem_encode()
   end
+
+  defp is_edwards_curve(ec_private_key(parameters: {:namedCurve, curve}))
+       when curve in @edwards_curves,
+       do: true
+
+  defp is_edwards_curve(_private_key), do: false
 
   @doc """
   Attempts to parse a private key in DER (binary) format. Raises in case of failure.
