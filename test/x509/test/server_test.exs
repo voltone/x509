@@ -897,7 +897,7 @@ defmodule X509.Test.ServerTest do
   defp create_pem_files(context) do
     tmp_dir =
       System.tmp_dir!()
-      |> Path.join("x509_server_test#{System.get_pid()}")
+      |> Path.join("x509_server_test#{System.pid()}")
 
     File.mkdir(tmp_dir)
 

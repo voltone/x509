@@ -17,6 +17,7 @@ defmodule X509.PublicKey do
           | X509.ASN.record(:certification_request_subject_pk_info)
 
   @public_key_records [:RSAPublicKey, :SubjectPublicKeyInfo]
+  @edwards_curves [oid(:"id-Ed25519"), oid(:"id-Ed448")]
 
   @doc """
   Derives the public key from the given RSA or EC private key.
@@ -35,8 +36,20 @@ defmodule X509.PublicKey do
     rsa_public_key(modulus: m, publicExponent: e)
   end
 
-  def derive(ec_private_key(parameters: params, publicKey: pub)) do
+  def derive(ec_private_key(parameters: params, publicKey: pub)) when is_binary(pub) do
     {ec_point(point: pub), params}
+  end
+
+  def derive(
+        ec_private_key(parameters: {:namedCurve, oid(:"id-Ed25519")}, privateKey: private_key)
+      ) do
+    {public_key, _} = :crypto.generate_key(:eddsa, :ed25519, private_key)
+    {ec_point(point: public_key), {:namedCurve, oid(:"id-Ed25519")}}
+  end
+
+  def derive(ec_private_key(parameters: {:namedCurve, oid(:"id-Ed448")}, privateKey: private_key)) do
+    {public_key, _} = :crypto.generate_key(:eddsa, :ed448, private_key)
+    {ec_point(point: public_key), {:namedCurve, oid(:"id-Ed448")}}
   end
 
   @doc """
@@ -65,6 +78,14 @@ defmodule X509.PublicKey do
     )
   end
 
+  def wrap({ec_point(point: public_key), {:namedCurve, curve}}, :SubjectPublicKeyInfo)
+      when curve in @edwards_curves do
+    subject_public_key_info(
+      algorithm: algorithm_identifier(algorithm: curve),
+      subjectPublicKey: public_key
+    )
+  end
+
   def wrap({ec_point(point: public_key), parameters}, :SubjectPublicKeyInfo) do
     subject_public_key_info(
       algorithm:
@@ -83,6 +104,14 @@ defmodule X509.PublicKey do
           algorithm: oid(:rsaEncryption),
           parameters: null()
         ),
+      subjectPublicKey: public_key
+    )
+  end
+
+  def wrap({ec_point() = public_key, {:namedCurve, curve}}, :OTPSubjectPublicKeyInfo)
+      when curve in @edwards_curves do
+    otp_subject_public_key_info(
+      algorithm: public_key_algorithm(algorithm: curve),
       subjectPublicKey: public_key
     )
   end
@@ -106,6 +135,17 @@ defmodule X509.PublicKey do
           parameters: null()
         ),
       subjectPublicKey: :public_key.der_encode(:RSAPublicKey, public_key)
+    )
+  end
+
+  def wrap(
+        {ec_point(point: public_key), {:namedCurve, curve}},
+        :CertificationRequestInfo_subjectPKInfo
+      )
+      when curve in @edwards_curves do
+    certification_request_subject_pk_info(
+      algorithm: certification_request_subject_pk_info_algorithm(algorithm: curve),
+      subjectPublicKey: public_key
     )
   end
 
@@ -148,6 +188,10 @@ defmodule X509.PublicKey do
 
       algorithm_identifier(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
         {ec_point(point: public_key), parameters}
+
+      algorithm_identifier(algorithm: curve, parameters: :asn1_NOVALUE)
+      when curve in @edwards_curves ->
+        {ec_point(point: public_key), {:namedCurve, curve}}
     end
   end
 
@@ -158,6 +202,10 @@ defmodule X509.PublicKey do
 
       public_key_algorithm(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
         {public_key, parameters}
+
+      public_key_algorithm(algorithm: curve, parameters: :asn1_NOVALUE)
+      when curve in @edwards_curves ->
+        {public_key, {:namedCurve, curve}}
     end
   end
 
@@ -173,6 +221,13 @@ defmodule X509.PublicKey do
         parameters: {:asn1_OPENTYPE, parameters}
       ) ->
         {ec_point(point: public_key), :public_key.der_decode(:EcpkParameters, parameters)}
+
+      certification_request_subject_pk_info_algorithm(
+        algorithm: curve,
+        parameters: :asn1_NOVALUE
+      )
+      when curve in @edwards_curves ->
+        {ec_point(point: public_key), {:namedCurve, curve}}
     end
   end
 

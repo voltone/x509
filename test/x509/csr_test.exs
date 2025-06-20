@@ -86,19 +86,23 @@ defmodule X509.CSRTest do
       assert X509.CSR.public_key(csr) == X509.PublicKey.derive(context.key)
     end
 
-    test "PEM decode and encode" do
-      pem = File.read!("test/data/csr_prime256v1.pem")
-      csr = X509.CSR.from_pem!(pem)
-      assert match?(certification_request(), csr)
-      assert X509.CSR.valid?(csr)
+    for curve <- ["prime256v1", "ed25519", "ed448"] do
+      @curve curve
 
-      assert csr == csr |> X509.CSR.to_pem() |> X509.CSR.from_pem!()
-    end
+      test "PEM decode and encode: #{@curve}" do
+        pem = File.read!("test/data/csr_#{@curve}.pem")
+        csr = X509.CSR.from_pem!(pem)
+        assert match?(certification_request(), csr)
+        assert X509.CSR.valid?(csr)
 
-    test "DER decode and encode" do
-      der = File.read!("test/data/csr_prime256v1.der")
-      assert match?(certification_request(), X509.CSR.from_der!(der))
-      assert der == der |> X509.CSR.from_der!() |> X509.CSR.to_der()
+        assert csr == csr |> X509.CSR.to_pem() |> X509.CSR.from_pem!()
+      end
+
+      test "DER decode and encode: #{@curve}" do
+        der = File.read!("test/data/csr_#{@curve}.der")
+        assert match?(certification_request(), X509.CSR.from_der!(der))
+        assert der == der |> X509.CSR.from_der!() |> X509.CSR.to_der()
+      end
     end
   end
 end
