@@ -1,6 +1,8 @@
 defmodule X509.PublicKey do
   import X509.ASN1
 
+  alias X509.Util
+
   @moduledoc """
   Functions for deriving, reading and writing RSA and EC public keys.
   """
@@ -57,8 +59,7 @@ defmodule X509.PublicKey do
       algorithm:
         algorithm_identifier(
           algorithm: oid(:rsaEncryption),
-          # NULL, DER encoded
-          parameters: <<5, 0>>
+          parameters: maybe_encode_parameters(:NULL)
         ),
       subjectPublicKey: :public_key.der_encode(:RSAPublicKey, public_key)
     )
@@ -69,7 +70,7 @@ defmodule X509.PublicKey do
       algorithm:
         algorithm_identifier(
           algorithm: oid(:"id-ecPublicKey"),
-          parameters: :public_key.der_encode(:EcpkParameters, parameters)
+          parameters: maybe_encode_parameters(parameters)
         ),
       subjectPublicKey: public_key
     )
@@ -119,6 +120,17 @@ defmodule X509.PublicKey do
     )
   end
 
+  if Util.app_version(:public_key) >= [1, 18] do
+    defp maybe_encode_parameters(:NULL), do: :NULL
+    defp maybe_encode_parameters(parameters), do: parameters
+  else
+    defp maybe_encode_parameters(:NULL), do: <<5, 0>>
+
+    defp maybe_encode_parameters(parameters) do
+      :public_key.der_encode(:EcpkParameters, parameters)
+    end
+  end
+
   @doc """
   Extracts a public key from a SubjectPublicKeyInfo style container.
 
@@ -130,8 +142,12 @@ defmodule X509.PublicKey do
       algorithm_identifier(algorithm: oid(:rsaEncryption)) ->
         :public_key.der_decode(:RSAPublicKey, public_key)
 
-      algorithm_identifier(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
+      algorithm_identifier(algorithm: oid(:"id-ecPublicKey"), parameters: parameters)
+      when is_binary(parameters) ->
         {ec_point(point: public_key), :public_key.der_decode(:EcpkParameters, parameters)}
+
+      algorithm_identifier(algorithm: oid(:"id-ecPublicKey"), parameters: parameters) ->
+        {ec_point(point: public_key), parameters}
     end
   end
 

@@ -18,6 +18,7 @@ defmodule X509.CRL do
 
   alias X509.{Certificate, SignatureAlgorithm}
   alias X509.CRL.{Entry, Extension}
+  alias X509.Util
 
   @typedoc """
   `:CertificateList` record, as used in Erlang's `:public_key` module
@@ -57,7 +58,7 @@ defmodule X509.CRL do
   @spec new([Entry.t()], Certificate.t(), X509.PrivateKey.t(), Keyword.t()) :: t()
   def new(revoked, issuer, issuer_key, opts \\ []) do
     hash = Keyword.get(opts, :hash, :sha256)
-    algorithm = SignatureAlgorithm.new(hash, issuer_key, :AlgorithmIdentifier)
+    {algorithm1, algorithm2} = signature_algorithms(hash, issuer_key)
 
     this_update =
       opts
@@ -87,8 +88,8 @@ defmodule X509.CRL do
     tbs =
       tbs_cert_list(
         version: :v2,
-        signature: algorithm,
-        issuer: issuer |> Certificate.subject() |> :pubkey_cert_records.transform(:encode),
+        signature: algorithm1,
+        issuer: issuer_subject(issuer),
         thisUpdate: this_update,
         nextUpdate: next_update,
         revokedCertificates: revoked_certificates(revoked),
@@ -99,9 +100,31 @@ defmodule X509.CRL do
 
     certificate_list(
       tbsCertList: tbs,
-      signatureAlgorithm: algorithm,
+      signatureAlgorithm: algorithm2,
       signature: :public_key.sign(tbs_der, hash, issuer_key)
     )
+  end
+
+  if Util.app_version(:public_key) >= [1, 18] do
+    defp signature_algorithms(hash, issuer_key) do
+      {
+        SignatureAlgorithm.new(hash, issuer_key, :TBSCertList_signature),
+        SignatureAlgorithm.new(hash, issuer_key, :CertificateList_algorithmIdentifier)
+      }
+    end
+
+    defp issuer_subject(cert) do
+      cert |> Certificate.subject()
+    end
+  else
+    defp signature_algorithms(hash, issuer_key) do
+      algorithm = SignatureAlgorithm.new(hash, issuer_key, :AlgorithmIdentifier)
+      {algorithm, algorithm}
+    end
+
+    defp issuer_subject(cert) do
+      cert |> Certificate.subject() |> :pubkey_cert_records.transform(:encode)
+    end
   end
 
   @doc """

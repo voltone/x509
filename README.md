@@ -15,6 +15,17 @@ Requires Erlang/OTP 20.1 or later.
 Development and public release of this package were made possible by
 [Bluecode](https://bluecode.com/).
 
+## OTP 28 support
+
+Due to internal changes in the Erlang/OTP `public_key` application in OTP 28,
+please beware that:
+
+* When using OTP >= 28, please use OTP 28.0.1 or later; this package is not
+  compatible with the initial OTP 28.0 release (more specifically: it requires
+  `public_key` version 1.18.1, it will not work with 1.18)
+* When compiled with OTP 27 or earlier, this package will not run on OTP 28
+  or later
+
 ## Usage
 
 ### As a Certificate Authority (CA)
