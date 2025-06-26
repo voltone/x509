@@ -5,6 +5,8 @@ defmodule X509.SignatureAlgorithm do
 
   alias X509.Util
 
+  @edwards_curves [oid(:"id-Ed25519"), oid(:"id-Ed448")]
+
   # Returns a signature algorithm record for the given public key type and hash
   # algorithm; this is essentially the reverse of
   # `:public_key.pkix_sign_types/1`
@@ -13,6 +15,11 @@ defmodule X509.SignatureAlgorithm do
 
   def new(hash, %{algorithm: algorithm, engine: _}, type) do
     new(hash, algorithm, type)
+  end
+
+  def new(hash, ec_private_key(parameters: {:namedCurve, curve}), type)
+      when curve in @edwards_curves do
+    new(hash, {:eddsa, curve}, type)
   end
 
   def new(hash, rsa_private_key(), type) do
@@ -81,6 +88,7 @@ defmodule X509.SignatureAlgorithm do
   defp algorithm(:sha384, :ecdsa), do: {oid(:"ecdsa-with-SHA384"), :asn1_NOVALUE}
   defp algorithm(:sha512, :rsa), do: {oid(:sha512WithRSAEncryption), null()}
   defp algorithm(:sha512, :ecdsa), do: {oid(:"ecdsa-with-SHA512"), :asn1_NOVALUE}
+  defp algorithm(_, {:eddsa, curve}), do: {curve, :asn1_NOVALUE}
 
   defp algorithm(hash, :rsa) do
     raise ArgumentError, "Unsupported hashing algorithm for RSA signing: #{inspect(hash)}"

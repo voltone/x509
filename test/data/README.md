@@ -75,4 +75,5 @@ Generating PEM output:
 ```bash
 openssl req -new -key rsa.pem -days 365 -x509 -subj "/C=US/ST=NT/L=Springfield/O=ACME Inc." -out selfsigned_rsa.pem
 openssl req -new -key prime256v1.pem -days 365 -x509 -subj "/C=US/ST=NT/L=Springfield/O=ACME Inc." -out selfsigned_prime256v1.pem
+openssl req -new -key ed25519.pem -days 365 -x509 -subj "/C=US/ST=NT/L=Springfield/O=ACME Inc." -out selfsigned_ed25519.pem
 ```
