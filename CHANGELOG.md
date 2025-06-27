@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.1 (2025-06-27)
+
+### Fixes
+
+* [X509.Certificate] Fix signature algorithm for certificates signed by EdDSA keys
+
 ## v0.9.0 (2025-06-20)
 
 ### Enhancements
